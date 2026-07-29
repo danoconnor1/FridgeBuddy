@@ -1,0 +1,30 @@
+---
+description: FridgeBuddy file map for focused edits
+globs:
+  - "**/*"
+alwaysApply: false
+---
+
+# FridgeBuddy architecture
+
+Zero-build GitHub Pages app. Scripts load in order via `index.html`.
+
+| File | Purpose |
+|------|---------|
+| `lib.js` | Pure helpers: catalog, fridge availability, dates, ingredient math |
+| `ui-styles.js` | Shared inline style objects (`window.FB_STYLES`) |
+| `useFridgeBuddy.js` | All React state, effects, handlers (`window.useFridgeBuddy`) |
+| `app.jsx` | Thin shell: tab bar, wires hook to components (~150 lines) |
+| `components/HomeTab.jsx` | Home alerts and recipe suggestions |
+| `components/GroceryStoreTab.jsx` | Catalog list, add-to-fridge rows |
+| `components/FridgeTab.jsx` | Fridge items, search, sort |
+| `components/RecipesTab.jsx` | Add recipe form, recipe list |
+| `components/RecipeIngredientEditor.jsx` | Shared ingredient row editor |
+| `components/RecipeIngredientList.jsx` | Recipe ingredient display with fridge highlighting |
+| `components/RecipeCard.jsx` | Shared recipe display (name, quantities toggle, ingredient list) |
+| `components/RecipeViewModal.jsx` | Home tab view-recipe modal |
+| `components/AddCatalogModal.jsx` | Add grocery item modal |
+| `components/EditCatalogModal.jsx` | Edit grocery item modal |
+| `components/EditRecipeModal.jsx` | Edit recipe modal |
+
+Components register on `window.FBComponents`. Prefer editing the smallest file that owns the feature.
