@@ -1,159 +1,207 @@
 function FridgeTab({
-    items, filteredFridgeItems, fridgeItemGroups, fridgeSearch, setFridgeSearch,
-    fridgeSort, setFridgeSort, isSeasoningFridgeItem,
-    adjustFridgeSeasoningStatus, adjustItemQuantity, removeItem
+    items, catalogItems, filteredFridgeItems, fridgeItemGroups, fridgeSearch, setFridgeSearch,
+    fridgeSort, setFridgeSort, isSeasoningFridgeItem, isLeftoverFridgeItem,
+    removeItem, openEditFridgeItemModal, openAddLeftoverModal, setActiveTab,
+    haulImportPaste, setHaulImportPaste,
+    haulImportPreview, haulImportError,
+    haulImportSuccess,
+    previewHaulImport, confirmHaulImport, clearHaulImport
 }) {
     const {
         formatExpiresIn, formatSeasoningStatus, getDaysUntilExpiry,
-        getFridgeItemQuantity, getItemQuantityDisplay, getSeasoningStatusColor
+        getSeasoningStatusColor, getItemQuantityDisplay,
+        estimateFridgeItemCalories, formatCalories, isFoodCategory
     } = window.FB;
-    const { categoryHeading } = window.FB_STYLES;
+    const { ImportHaulSection } = window.FBComponents;
+
+    const getItemCategory = (item) => {
+        if (isLeftoverFridgeItem(item)) return 'leftovers';
+        return catalogItems.find(entry => entry.id === item.catalogItemId)?.category || 'other';
+    };
+
+    const renderFridgeItemCard = (item) => {
+        const isSeasoning = isSeasoningFridgeItem(item);
+        const isLeftover = isLeftoverFridgeItem(item);
+        const itemCategory = getItemCategory(item);
+        const days = isSeasoning ? null : getDaysUntilExpiry(item.expiry);
+        let statusColor = isSeasoning
+            ? getSeasoningStatusColor(item.seasoningStatus)
+            : 'var(--fill-success)';
+        let statusText = isSeasoning
+            ? formatSeasoningStatus(item.seasoningStatus)
+            : (days > 3 ? 'Fresh' : days <= 0 ? 'Expired' : 'Expiring soon');
+        if (!isSeasoning) {
+            if (days <= 0) statusColor = 'var(--fill-danger)';
+            else if (days <= 3) statusColor = 'var(--fill-warning)';
+        }
+
+        const itemCalories = !isSeasoning && !isLeftover ? estimateFridgeItemCalories(item, catalogItems) : null;
+        const quantityLabel = isLeftover
+            ? 'Leftover'
+            : isSeasoning
+                ? formatSeasoningStatus(item.seasoningStatus)
+                : getItemQuantityDisplay(item);
+
+        return (
+            <div
+                key={item.id}
+                className="fridge-column-card"
+                data-category={isFoodCategory(itemCategory) ? itemCategory : undefined}
+            >
+                <p className="fridge-column-card-name">{item.name}</p>
+                {!isSeasoning && (
+                    <p className="fridge-column-card-meta">{formatExpiresIn(item.expiry)}</p>
+                )}
+                {!isSeasoning && itemCalories != null && (
+                    <p className="fridge-column-card-meta">{formatCalories(itemCalories)} cal</p>
+                )}
+                <div className="fridge-column-card-status">
+                    <i className="ti ti-circle-filled" style={{ fontSize: '7px', color: statusColor }} aria-hidden="true"></i>
+                    <span style={{ color: statusColor }}>{statusText}</span>
+                </div>
+                <div className="fridge-column-card-controls">
+                    <span
+                        className="fridge-column-qty-label"
+                        style={{ color: isSeasoning ? statusColor : 'var(--text-secondary)' }}
+                    >
+                        {quantityLabel}
+                    </span>
+                    <div className="fridge-column-card-actions">
+                        <button
+                            type="button"
+                            className="fridge-column-edit-btn"
+                            onClick={() => openEditFridgeItemModal(item)}
+                            aria-label={`Edit ${item.name}`}
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M4 20h4l10.5-10.5a2.828 2.828 0 1 0-4-4L4 16v4" />
+                                <path d="M13.5 6.5l4 4" />
+                            </svg>
+                        </button>
+                        <button
+                            type="button"
+                            className="fridge-column-remove-btn"
+                            onClick={() => removeItem(item.id)}
+                            aria-label={`Remove ${item.name} from fridge`}
+                        >
+                            <span aria-hidden="true">−</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div>
-            {items.length > 0 && (
-                <input
-                    type="text"
-                    placeholder="Search items..."
-                    value={fridgeSearch}
-                    onChange={(e) => setFridgeSearch(e.target.value)}
-                    style={{ marginBottom: '1.5rem' }}
-                    aria-label="Search fridge items"
-                />
-            )}
+            <section className="meals-section fridge-add-section">
+                <div className="meals-section-box">
+                    <h2 className="meals-section-title">Add to fridge</h2>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', margin: '1.5rem 0 1rem 0' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '500', margin: '0' }}>Your items</h3>
-                {items.length > 0 && (
-                    <select
-                        value={fridgeSort}
-                        onChange={(e) => setFridgeSort(e.target.value)}
-                        style={{ marginBottom: 0, width: 'auto', flexShrink: 0 }}
-                        aria-label="Sort fridge items"
-                    >
-                        <option value="category">Food group</option>
-                        <option value="expiration">Expiration</option>
-                    </select>
-                )}
-            </div>
+                    <div className="meals-add-columns">
+                        <div className="meals-add-option">
+                            <p className="meals-option-label">Option A: Using AI</p>
+                            <ImportHaulSection
+                                haulImportPaste={haulImportPaste}
+                                setHaulImportPaste={setHaulImportPaste}
+                                haulImportPreview={haulImportPreview}
+                                haulImportError={haulImportError}
+                                haulImportSuccess={haulImportSuccess}
+                                previewHaulImport={previewHaulImport}
+                                confirmHaulImport={confirmHaulImport}
+                                clearHaulImport={clearHaulImport}
+                            />
+                        </div>
 
-            {items.length === 0 ? (
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No items yet</p>
-            ) : filteredFridgeItems.length === 0 ? (
-                <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No items match your search.</p>
-            ) : (
-                fridgeItemGroups.map(group => (
-                    <div key={group.key} style={{ marginBottom: '1.5rem' }}>
-                        <h4 style={categoryHeading}>{group.label}</h4>
-                        {group.items.map(item => {
-                            const isSeasoning = isSeasoningFridgeItem(item);
-                            const itemQuantity = getFridgeItemQuantity(item);
-                            const days = isSeasoning ? null : getDaysUntilExpiry(item.expiry);
-                            let statusColor = isSeasoning
-                                ? getSeasoningStatusColor(item.seasoningStatus)
-                                : 'var(--fill-success)';
-                            let statusText = isSeasoning
-                                ? formatSeasoningStatus(item.seasoningStatus)
-                                : (days > 3 ? 'Fresh' : days <= 0 ? 'Expired' : 'Expiring soon');
-                            if (!isSeasoning) {
-                                if (days <= 0) statusColor = 'var(--fill-danger)';
-                                else if (days <= 3) statusColor = 'var(--fill-warning)';
-                            }
+                        <div className="meals-add-option">
+                            <p className="meals-option-label">Option B: Add leftover</p>
+                            <div className="meals-add-column-card">
+                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0', lineHeight: 1.4 }}>
+                                    Log a leftover meal with a name and expiration date.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={openAddLeftoverModal}
+                                    className="meals-add-btn"
+                                    style={{ marginTop: 0 }}
+                                >
+                                    Add leftover
+                                </button>
+                            </div>
+                        </div>
 
-                            return (
-                                <div key={item.id} style={{
-                                    ...window.FB_STYLES.card,
-                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px'
-                                }}>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <p style={{ fontSize: '14px', fontWeight: '500', margin: '0 0 4px 0' }}>{item.name}</p>
-                                        {!isSeasoning && (
-                                            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0' }}>
-                                                {formatExpiresIn(item.expiry)}
-                                            </p>
-                                        )}
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px', fontSize: '12px' }}>
-                                            <i className="ti ti-circle-filled" style={{ fontSize: '8px', color: statusColor }} aria-hidden="true"></i>
-                                            <span style={{ color: statusColor }}>{statusText}</span>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                                        {isSeasoning ? (
-                                            <>
-                                                <button
-                                                    onClick={() => adjustFridgeSeasoningStatus(item.id, -1)}
-                                                    disabled={(item.seasoningStatus || 'full') === 'almost-empty'}
-                                                    style={{
-                                                        width: '32px', height: '32px', background: 'var(--surface-0)', border: '1px solid var(--border)',
-                                                        borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        padding: 0, color: 'var(--text-primary)', fontSize: '20px', fontWeight: '600', lineHeight: 1,
-                                                        opacity: (item.seasoningStatus || 'full') === 'almost-empty' ? 0.4 : 1,
-                                                        cursor: (item.seasoningStatus || 'full') === 'almost-empty' ? 'not-allowed' : 'pointer'
-                                                    }}
-                                                    aria-label={`Decrease ${item.name} status`}
-                                                >−</button>
-                                                <span style={{ minWidth: '88px', textAlign: 'center', fontSize: '13px', fontWeight: '500', color: statusColor }}>
-                                                    {formatSeasoningStatus(item.seasoningStatus)}
-                                                </span>
-                                                <button
-                                                    onClick={() => adjustFridgeSeasoningStatus(item.id, 1)}
-                                                    disabled={(item.seasoningStatus || 'full') === 'full'}
-                                                    style={{
-                                                        width: '32px', height: '32px', background: 'var(--surface-0)', border: '1px solid var(--border)',
-                                                        borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        padding: 0, color: 'var(--text-primary)', fontSize: '20px', fontWeight: '600', lineHeight: 1,
-                                                        opacity: (item.seasoningStatus || 'full') === 'full' ? 0.4 : 1,
-                                                        cursor: (item.seasoningStatus || 'full') === 'full' ? 'not-allowed' : 'pointer'
-                                                    }}
-                                                    aria-label={`Increase ${item.name} status`}
-                                                >+</button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button
-                                                    onClick={() => adjustItemQuantity(item.id, -1)}
-                                                    disabled={itemQuantity <= 1}
-                                                    style={{
-                                                        width: '32px', height: '32px', background: 'var(--surface-0)', border: '1px solid var(--border)',
-                                                        borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        padding: 0, color: 'var(--text-primary)', fontSize: '20px', fontWeight: '600', lineHeight: 1,
-                                                        opacity: itemQuantity <= 1 ? 0.4 : 1,
-                                                        cursor: itemQuantity <= 1 ? 'not-allowed' : 'pointer'
-                                                    }}
-                                                    aria-label={`Decrease ${item.name} quantity`}
-                                                >−</button>
-                                                <span style={{ minWidth: '56px', textAlign: 'center', fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)' }}>
-                                                    {getItemQuantityDisplay(item)}
-                                                </span>
-                                                <button
-                                                    onClick={() => adjustItemQuantity(item.id, 1)}
-                                                    style={{
-                                                        width: '32px', height: '32px', background: 'var(--surface-0)', border: '1px solid var(--border)',
-                                                        borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        padding: 0, color: 'var(--text-primary)', fontSize: '20px', fontWeight: '600', lineHeight: 1
-                                                    }}
-                                                    aria-label={`Increase ${item.name} quantity`}
-                                                >+</button>
-                                            </>
-                                        )}
-                                    </div>
-                                    <button
-                                        onClick={() => removeItem(item.id)}
-                                        style={{
-                                            width: '36px', height: '36px', background: 'var(--fill-danger)', border: 'none',
-                                            borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            padding: 0, flexShrink: 0
-                                        }}
-                                        aria-label={`Remove ${item.name} from fridge`}
-                                    >
-                                        <span style={{ color: '#ffffff', fontSize: '24px', fontWeight: '600', lineHeight: 1, marginTop: '-1px' }} aria-hidden="true">−</span>
-                                    </button>
-                                </div>
-                            );
-                        })}
+                        <div className="meals-add-option">
+                            <p className="meals-option-label">Option C: Add from grocery store</p>
+                            <div className="meals-add-column-card">
+                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0', lineHeight: 1.4 }}>
+                                    Add items from your grocery store catalog to the fridge.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab('allItems')}
+                                    className="meals-add-btn"
+                                    style={{ marginTop: 0 }}
+                                >
+                                    Go to grocery store
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                ))
-            )}
+                </div>
+            </section>
+
+            <section className="meals-section fridge-my-section">
+                <h2 className="meals-section-title">My fridge</h2>
+
+                {items.length > 0 && (
+                    <div className="fridge-my-controls">
+                        <input
+                            type="text"
+                            placeholder="Search items..."
+                            value={fridgeSearch}
+                            onChange={(e) => setFridgeSearch(e.target.value)}
+                            aria-label="Search fridge items"
+                        />
+                        <select
+                            value={fridgeSort}
+                            onChange={(e) => setFridgeSort(e.target.value)}
+                            style={{ marginBottom: 0, width: 'auto', flexShrink: 0 }}
+                            aria-label="Sort fridge items"
+                        >
+                            <option value="category">Food group</option>
+                            <option value="expiration">Expiration</option>
+                        </select>
+                    </div>
+                )}
+
+                {items.length === 0 ? (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No items yet</p>
+                ) : filteredFridgeItems.length === 0 ? (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No items match your search.</p>
+                ) : (
+                    <div className="fridge-columns-scroll">
+                        <div
+                            className={`fridge-columns${fridgeSort === 'expiration' ? ' fridge-columns-expiration' : ''}`}
+                            role="region"
+                            aria-label="Fridge items"
+                        >
+                            {fridgeItemGroups.map(group => (
+                                <section
+                                    key={group.key}
+                                    className="fridge-column"
+                                    data-category={fridgeSort === 'category' && isFoodCategory(group.key) ? group.key : undefined}
+                                    aria-label={group.label}
+                                >
+                                    <h4 className="fridge-column-heading">{group.label}</h4>
+                                    <div className="fridge-column-items">
+                                        {group.items.map(renderFridgeItemCard)}
+                                    </div>
+                                </section>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </section>
         </div>
     );
 }

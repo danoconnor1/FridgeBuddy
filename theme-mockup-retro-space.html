@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fridge Buddy — Retro Space (Theme Mockup)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --surface-0: #1a2840;
+            --surface-1: rgba(36, 54, 82, 0.88);
+            --surface-2: rgba(46, 66, 96, 0.9);
+            --surface-3: rgba(56, 80, 112, 0.92);
+            --surface-glass: rgba(36, 54, 82, 0.82);
+            --text-primary: #f0e6d4;
+            --text-secondary: #c8d4e0;
+            --text-muted: #8a9cb0;
+            --text-on-coral: #1e3348;
+            --border: rgba(240, 230, 212, 0.14);
+            --border-cyan: rgba(106, 171, 191, 0.45);
+            --accent-coral: #d85642;
+            --accent-coral-hover: #c04a38;
+            --accent-cream: #f0e6d4;
+            --accent-cyan: #6aabbf;
+            --accent-cyan-soft: #8ec4d4;
+            --on-accent: #f0e6d4;
+            --success: #6ec4a0;
+            --warning: #e8c878;
+            --danger: #e06550;
+            --radius: 8px;
+            --radius-pill: 999px;
+            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        body {
+            font-family: 'DM Sans', 'Exo 2', -apple-system, sans-serif;
+            background: var(--surface-0);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* retro space landscape artwork */
+        .bg-scene {
+            position: fixed;
+            inset: 0;
+            background: url('assets/retro-space-landscape.png') center bottom / cover no-repeat;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(
+                    to bottom,
+                    rgba(18, 28, 48, 0.82) 0%,
+                    rgba(22, 34, 56, 0.68) 28%,
+                    rgba(26, 40, 64, 0.52) 55%,
+                    rgba(26, 40, 64, 0.38) 100%
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* extra stars above artwork */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(1px 1px at 18% 14%, rgba(240, 230, 212, 0.75) 0%, transparent 100%),
+                radial-gradient(1.5px 1.5px at 62% 8%, rgba(232, 200, 120, 0.7) 0%, transparent 100%),
+                radial-gradient(1px 1px at 88% 20%, rgba(240, 230, 212, 0.55) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* rocket stripe band */
+        .accent-strip {
+            height: 8px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--accent-coral) 0px,
+                var(--accent-coral) 24px,
+                var(--accent-cream) 24px,
+                var(--accent-cream) 48px
+            );
+        }
+
+        .mockup-banner {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(26, 40, 64, 0.78);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-cyan);
+            padding: 10px 16px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: 0.06em;
+        }
+
+        .mockup-banner strong {
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 1.25rem 1rem 2.5rem;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 1.25rem;
+            padding: 1rem 1.1rem;
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            border: 2px solid var(--border-cyan);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--accent-coral) 0px,
+                var(--accent-coral) 16px,
+                var(--accent-cream) 16px,
+                var(--accent-cream) 32px
+            );
+            opacity: 0.85;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-brand .ti-fridge {
+            font-size: 32px;
+            color: var(--accent-coral);
+        }
+
+        .header-brand h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--accent-cream);
+            line-height: 1.2;
+        }
+
+        .header-sub {
+            font-size: 11px;
+            color: var(--accent-cyan-soft);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 3px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--border-cyan);
+            background: var(--surface-2);
+            color: var(--accent-cream);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .icon-btn:hover {
+            background: var(--surface-3);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 1.5rem;
+            padding: 6px;
+            background: rgba(22, 34, 56, 0.75);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-cyan);
+            overflow-x: auto;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: fit-content;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--accent-cream);
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0;
+            text-transform: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .tab.active {
+            background: var(--accent-coral);
+            color: var(--text-on-coral);
+            font-weight: 700;
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(106, 171, 191, 0.15);
+            color: #fff;
+        }
+
+        .section-label {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: none;
+            color: var(--text-on-coral);
+            background: var(--accent-coral);
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+        }
+
+        .card {
+            background: var(--surface-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        .import-card {
+            margin-bottom: 1.25rem;
+        }
+
+        .import-card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--accent-cyan-soft);
+            margin-bottom: 0.5rem;
+        }
+
+        .import-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 6px;
+            align-items: flex-start;
+        }
+
+        .import-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-cyan);
+            background: var(--surface-2);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .input::placeholder { color: var(--text-muted); }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 2px rgba(106, 171, 191, 0.25);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0;
+            text-transform: none;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: var(--accent-coral);
+            color: var(--text-on-coral);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-coral-hover);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--accent-cyan-soft);
+            border: 1px solid var(--border-cyan);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(106, 171, 191, 0.12);
+        }
+
+        .fridge-columns {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .fridge-column {
+            flex: 1 1 160px;
+            min-width: 160px;
+            background: var(--surface-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 8px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .fridge-column:nth-child(1) { border-top: 3px solid var(--accent-cyan); }
+        .fridge-column:nth-child(2) { border-top: 3px solid var(--accent-coral); }
+        .fridge-column:nth-child(3) { border-top: 3px solid var(--accent-cream); }
+
+        .column-heading {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0;
+            text-transform: none;
+            color: var(--accent-cream);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .column-count {
+            display: block;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        .item-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .item-card:last-child { margin-bottom: 0; }
+
+        .item-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .item-meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .status-dot.fresh { background: var(--success); }
+        .status-dot.soon { background: var(--warning); }
+        .status-dot.expired { background: var(--danger); }
+
+        .status.fresh { color: var(--success); }
+        .status.soon { color: var(--warning); }
+        .status.expired { color: var(--danger); }
+
+        .swatches {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .swatch {
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .swatch-color { height: 48px; }
+
+        .swatch-label {
+            padding: 6px 8px;
+            font-size: 10px;
+            background: var(--surface-1);
+            color: var(--text-secondary);
+        }
+
+        .swatch-label code {
+            display: block;
+            color: var(--text-muted);
+            font-size: 9px;
+            margin-top: 2px;
+        }
+
+        .recipe-preview { margin-top: 1.5rem; }
+
+        .recipe-preview .card h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--accent-cream);
+            margin-bottom: 0.75rem;
+        }
+
+        .ingredient-list {
+            padding-left: 1.25rem;
+            font-size: 13px;
+            column-count: 2;
+            column-gap: 1.5rem;
+        }
+
+        .ingredient-list li {
+            margin-bottom: 4px;
+            break-inside: avoid;
+        }
+
+        .ingredient-list .enough { color: var(--success); }
+        .ingredient-list .insufficient { color: var(--warning); }
+        .ingredient-list .missing { color: var(--danger); }
+
+        .meal-time {
+            font-size: 12px;
+            color: var(--accent-cyan-soft);
+            margin-bottom: 8px;
+        }
+
+        .meal-ingredients {
+            padding-left: 1.25rem;
+            font-size: 13px;
+            list-style: disc;
+        }
+
+        .meal-ingredients li { margin-bottom: 4px; }
+
+        .minus-inline {
+            color: var(--danger);
+            font-weight: 700;
+            margin-left: 3px;
+        }
+
+        @media (max-width: 640px) {
+            .ingredient-list { column-count: 1; }
+            .header-brand h1 { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-scene" aria-hidden="true"></div>
+    <div class="bg-overlay" aria-hidden="true"></div>
+    <div class="accent-strip" aria-hidden="true"></div>
+    <div class="mockup-banner">
+        <strong>RETRO SPACE</strong> — theme mockup inspired by 1950s space-age illustration (not wired into the app yet)
+    </div>
+
+    <div class="app">
+        <header class="header">
+            <div class="header-brand">
+                <i class="ti ti-fridge" aria-hidden="true"></i>
+                <div>
+                    <h1>Fridge Buddy</h1>
+                    <p class="header-sub">Mission control for your kitchen</p>
+                </div>
+            </div>
+            <button type="button" class="icon-btn" aria-label="Theme">
+                <i class="ti ti-sun" aria-hidden="true"></i>
+            </button>
+        </header>
+
+        <nav class="tabs" aria-label="Main navigation">
+            <button type="button" class="tab">Home</button>
+            <button type="button" class="tab">Grocery store</button>
+            <button type="button" class="tab active">Fridge</button>
+            <button type="button" class="tab">Recipes</button>
+            <button type="button" class="tab">Meals</button>
+        </nav>
+
+        <p class="section-label">Fridge</p>
+
+        <div class="card import-card">
+            <h3>Import grocery haul</h3>
+            <p class="import-hint">
+                <i class="ti ti-copy" style="font-size:14px;color:var(--accent-cyan);flex-shrink:0;margin-top:1px"></i>
+                Copy and paste prompt into claude, explain what you bought, and paste response below
+            </p>
+            <div class="import-row">
+                <input type="text" class="input" placeholder="Paste response here">
+                <button type="button" class="btn btn-primary">Preview</button>
+            </div>
+        </div>
+
+        <div class="fridge-columns">
+            <section class="fridge-column">
+                <h4 class="column-heading">Dairy<span class="column-count">2</span></h4>
+                <article class="item-card">
+                    <p class="item-name">Milk</p>
+                    <p class="item-meta">Expires in 4 days</p>
+                    <div class="status fresh">
+                        <span class="status-dot fresh"></span> Fresh
+                    </div>
+                </article>
+                <article class="item-card">
+                    <p class="item-name">Cheese</p>
+                    <p class="item-meta">Expires in 2 days</p>
+                    <div class="status soon">
+                        <span class="status-dot soon"></span> Expiring soon
+                    </div>
+                </article>
+            </section>
+
+            <section class="fridge-column">
+                <h4 class="column-heading">Meat<span class="column-count">1</span></h4>
+                <article class="item-card">
+                    <p class="item-name">Chicken</p>
+                    <p class="item-meta">Expired 1 day ago</p>
+                    <div class="status expired">
+                        <span class="status-dot expired"></span> Expired
+                    </div>
+                </article>
+            </section>
+
+            <section class="fridge-column">
+                <h4 class="column-heading">Vegetables<span class="column-count">2</span></h4>
+                <article class="item-card">
+                    <p class="item-name">Bell pepper</p>
+                    <p class="item-meta">Expires in 5 days</p>
+                    <div class="status fresh">
+                        <span class="status-dot fresh"></span> Fresh
+                    </div>
+                </article>
+                <article class="item-card">
+                    <p class="item-name">Frozen peas</p>
+                    <p class="item-meta">Expires in 90 days</p>
+                    <div class="status fresh">
+                        <span class="status-dot fresh"></span> Fresh
+                    </div>
+                </article>
+            </section>
+        </div>
+
+        <div class="recipe-preview">
+            <p class="section-label" style="margin-top:1.5rem">Recipes</p>
+            <div class="card">
+                <h3>Chicken Tacos</h3>
+                <ul class="ingredient-list">
+                    <li class="enough">1 lb Chicken (Have 2)</li>
+                    <li class="enough">8 piece Tortillas (Have 20)</li>
+                    <li class="insufficient">1 piece Cheese (Have 0)</li>
+                    <li class="missing">1 cup Salsa</li>
+                </ul>
+                <button type="button" class="btn btn-ghost" style="margin-top:12px;width:100%">Show fridge quantities</button>
+            </div>
+        </div>
+
+        <div class="recipe-preview">
+            <p class="section-label" style="margin-top:1.5rem">Meals</p>
+            <div class="card">
+                <h3 style="font-family:'Orbitron',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.04em;color:var(--accent-cream);margin-bottom:2px">Tuesday dinner</h3>
+                <p class="meal-time">Jul 30, 2026, 7:32 PM</p>
+                <ul class="meal-ingredients">
+                    <li>1 lb Chicken<span class="minus-inline">−</span></li>
+                    <li>2 cup Rice<span class="minus-inline">−</span></li>
+                    <li>1 piece Bell pepper<span class="minus-inline">−</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="swatches">
+            <div class="swatch">
+                <div class="swatch-color" style="background:#1a2840"></div>
+                <div class="swatch-label">Space navy <code>#1A2840</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#d85642"></div>
+                <div class="swatch-label">Rocket coral <code>#D85642</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#f0e6d4"></div>
+                <div class="swatch-label">Star cream <code>#F0E6D4</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#6aabbf"></div>
+                <div class="swatch-label">Orbit cyan <code>#6AABBF</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#243652"></div>
+                <div class="swatch-label">Panel navy <code>#243652</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#6ec4a0"></div>
+                <div class="swatch-label">Signal green <code>#6EC4A0</code></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

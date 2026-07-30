@@ -2,7 +2,8 @@ function GroceryStoreTab({
     catalogItems, groupedCatalogItems, groceryStoreSearch, setGroceryStoreSearch,
     catalogAddSuccess, openAddCatalogModal, addedToFridgeItemId,
     getCatalogDraft, updateCatalogDraft, adjustCatalogDraftField,
-    isSeasoningCatalogItem, addFromCatalogRow, openEditCatalogModal
+    isSeasoningCatalogItem, addFromCatalogRow, openEditCatalogModal,
+    adjustCatalogItemCalories
 }) {
     const { UNITS, formatCategory, formatUnitLabel, SEASONING_STATUSES } = window.FB;
     const { categoryHeading, smallStepBtn, tickerLabel, compactSelect } = window.FB_STYLES;
@@ -11,6 +12,26 @@ function GroceryStoreTab({
     return (
         <div>
             <h3 style={{ fontSize: '15px', fontWeight: '500', margin: '0 0 1rem 0' }}>Items</h3>
+
+            {catalogAddSuccess ? (
+                <p style={{
+                    width: '100%', padding: '10px', marginBottom: '1rem', textAlign: 'center',
+                    fontSize: '14px', fontWeight: '500', color: 'var(--fill-success)'
+                }}>
+                    Added to grocery store
+                </p>
+            ) : (
+                <button
+                    onClick={openAddCatalogModal}
+                    style={{
+                        width: '100%', padding: '10px', marginBottom: '1rem', background: 'var(--fill-accent)', color: '#ffffff',
+                        border: 'none', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px'
+                    }}
+                >
+                    Add new item to the grocery store
+                </button>
+            )}
+
             {catalogItems.length > 0 && (
                 <input
                     type="text"
@@ -27,8 +48,8 @@ function GroceryStoreTab({
                 <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No items match your search.</p>
             ) : (
                 groupedCatalogItems.map(group => (
-                    <div key={group.category} style={{ marginBottom: '1.5rem' }}>
-                        <h4 style={categoryHeading}>{formatCategory(group.category)}</h4>
+                    <div key={group.category} className="grocery-category-group" data-category={group.category} style={{ marginBottom: '1.5rem' }}>
+                        <h4 className="food-category-heading" style={categoryHeading}>{formatCategory(group.category)}</h4>
                         {group.items.map(item => {
                             const draft = getCatalogDraft(item);
                             const isSeasoning = isSeasoningCatalogItem(item);
@@ -80,6 +101,13 @@ function GroceryStoreTab({
                                                     <option value="months">months</option>
                                                 </select>
                                                 <button type="button" onClick={(e) => { e.stopPropagation(); adjustCatalogDraftField(item, 'expirationValue', 1); }} style={smallStepBtn} aria-label="Increase expiration">+</button>
+                                                <span style={tickerLabel}>Cal</span>
+                                                <button type="button" onClick={(e) => { e.stopPropagation(); adjustCatalogItemCalories(item.id, -10); }} style={smallStepBtn} aria-label="Decrease calories per serving">−</button>
+                                                <span style={{ minWidth: '16px', textAlign: 'center', fontSize: '12px', fontWeight: '500' }}>
+                                                    {item.caloriesPerDefault != null ? window.FB.formatCalories(item.caloriesPerDefault) : '—'}
+                                                </span>
+                                                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>cal</span>
+                                                <button type="button" onClick={(e) => { e.stopPropagation(); adjustCatalogItemCalories(item.id, 10); }} style={smallStepBtn} aria-label="Increase calories per serving">+</button>
                                                 <span style={tickerLabel}>Qt</span>
                                                 <button type="button" onClick={(e) => { e.stopPropagation(); adjustCatalogDraftField(item, 'quantity', -1); }} style={smallStepBtn} aria-label="Decrease quantity">−</button>
                                                 <span style={{ minWidth: '16px', textAlign: 'center', fontSize: '12px', fontWeight: '500' }}>{draft.quantity}</span>
@@ -134,25 +162,6 @@ function GroceryStoreTab({
                         })}
                     </div>
                 ))
-            )}
-
-            {catalogAddSuccess ? (
-                <p style={{
-                    width: '100%', padding: '10px', marginTop: '1.5rem', textAlign: 'center',
-                    fontSize: '14px', fontWeight: '500', color: 'var(--fill-success)'
-                }}>
-                    Added to grocery store
-                </p>
-            ) : (
-                <button
-                    onClick={openAddCatalogModal}
-                    style={{
-                        width: '100%', padding: '10px', marginTop: '1.5rem', background: 'var(--fill-accent)', color: '#ffffff',
-                        border: 'none', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px'
-                    }}
-                >
-                    Add new item to the grocery store
-                </button>
             )}
         </div>
     );

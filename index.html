@@ -6,11 +6,23 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Fridge Buddy">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#ffffff" id="theme-color-meta">
     <title>Fridge Buddy</title>
+    <script src="lib.js"></script>
+    <script>
+        (function () {
+            var theme = window.FB.normalizeFridgeTheme(localStorage.getItem('fridgeTheme'));
+            document.documentElement.setAttribute('data-theme', theme);
+            var meta = document.getElementById('theme-color-meta');
+            if (meta) meta.setAttribute('content', window.FB.getFridgeThemeColor(theme));
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23378ADD' width='180' height='180'/><text x='90' y='100' font-size='80' fill='white' text-anchor='middle' font-weight='bold'>🧊</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23378ADD' width='180' height='180'/><text x='90' y='100' font-size='80' fill='white' text-anchor='middle' font-weight='bold'>🧊</text></svg>">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -18,19 +30,28 @@
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    <script src="lib.js"></script>
     <script src="ui-styles.js"></script>
     <script src="useFridgeBuddy.js"></script>
+    <script type="text/babel" data-presets="react" src="components/CaloriesField.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/RecipeIngredientEditor.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/RecipeIngredientList.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/RecipeCard.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/RecipeViewModal.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/HomeTab.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/GroceryStoreTab.jsx"></script>
+    <script type="text/babel" data-presets="react" src="components/ImportHaulSection.jsx"></script>
+    <script type="text/babel" data-presets="react" src="components/ImportRecipeSection.jsx"></script>
+    <script type="text/babel" data-presets="react" src="components/ImportMealSection.jsx"></script>
+    <script type="text/babel" data-presets="react" src="components/MealIngredientList.jsx"></script>
+    <script type="text/babel" data-presets="react" src="components/MealCard.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/FridgeTab.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/RecipesTab.jsx"></script>
+    <script type="text/babel" data-presets="react" src="components/MealsTab.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/DuplicateFridgeConfirmModal.jsx"></script>
+    <script type="text/babel" data-presets="react" src="components/ImportUnmatchedConfirmModal.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/AddCatalogModal.jsx"></script>
+    <script type="text/babel" data-presets="react" src="components/AddLeftoverModal.jsx"></script>
+    <script type="text/babel" data-presets="react" src="components/EditFridgeItemModal.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/EditCatalogModal.jsx"></script>
     <script type="text/babel" data-presets="react" src="components/EditRecipeModal.jsx"></script>
     <script type="text/babel" data-presets="react" src="app.jsx"></script>

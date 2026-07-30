@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fridge Buddy — Harvest Kitchen (Theme Mockup)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --surface-0: #f5ebe0;
+            --surface-1: #fff6eb;
+            --surface-2: #ede0cf;
+            --surface-3: #dfc9b0;
+            --text-primary: #3d2a1f;
+            --text-secondary: #6f5344;
+            --text-muted: #9a7d6a;
+            --border: rgba(61, 42, 31, 0.12);
+            --border-strong: rgba(139, 41, 66, 0.2);
+            --accent-pumpkin: #c8651a;
+            --accent-pumpkin-hover: #a85415;
+            --accent-cranberry: #8b2942;
+            --accent-cranberry-soft: #a33a55;
+            --accent-gold: #c9922a;
+            --on-accent: #fff6eb;
+            --success: #5c7354;
+            --warning: #c9922a;
+            --danger: #9e3a3a;
+            --radius: 10px;
+            --radius-pill: 999px;
+            --shadow-card: 0 2px 16px rgba(61, 42, 31, 0.08);
+            --shadow-soft: 0 1px 4px rgba(61, 42, 31, 0.06);
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--surface-0);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 15% 0%, rgba(200, 101, 26, 0.09) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 100%, rgba(139, 41, 66, 0.07) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(201, 146, 42, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .accent-strip {
+            height: 4px;
+            background: linear-gradient(
+                90deg,
+                var(--accent-cranberry) 0%,
+                var(--accent-pumpkin) 50%,
+                var(--accent-gold) 100%
+            );
+        }
+
+        .mockup-banner {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(245, 235, 224, 0.94);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .mockup-banner strong {
+            color: var(--accent-cranberry);
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 1.25rem 1rem 2.5rem;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 1.25rem;
+            padding: 1rem 1.1rem;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-card);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-brand .ti-fridge {
+            font-size: 32px;
+            color: var(--accent-pumpkin);
+        }
+
+        .header-brand h1 {
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 1.45rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--accent-cranberry);
+            line-height: 1.15;
+        }
+
+        .header-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--surface-3);
+            color: var(--accent-cranberry);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 1.5rem;
+            padding: 5px;
+            background: var(--surface-2);
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: fit-content;
+            padding: 9px 14px;
+            border: none;
+            border-radius: var(--radius-pill);
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            background: var(--accent-cranberry);
+            color: var(--on-accent);
+            font-weight: 600;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--accent-pumpkin);
+        }
+
+        .section-label {
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-cranberry);
+            margin-bottom: 0.75rem;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--accent-gold);
+            display: inline-block;
+        }
+
+        .card {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        .import-card {
+            margin-bottom: 1.25rem;
+        }
+
+        .import-card h3 {
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .import-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 6px;
+            align-items: flex-start;
+        }
+
+        .import-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-strong);
+            background: var(--surface-2);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .input::placeholder { color: var(--text-muted); }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--accent-pumpkin);
+            box-shadow: 0 0 0 3px rgba(200, 101, 26, 0.15);
+            background: var(--surface-1);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: var(--accent-pumpkin);
+            color: var(--on-accent);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-pumpkin-hover);
+        }
+
+        .btn-ghost {
+            background: var(--surface-2);
+            color: var(--accent-cranberry);
+            border: 1px solid var(--border-strong);
+        }
+
+        .btn-ghost:hover {
+            background: var(--surface-3);
+        }
+
+        .fridge-columns {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .fridge-column {
+            flex: 1 1 160px;
+            min-width: 160px;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 8px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .fridge-column:nth-child(1) { border-top: 3px solid var(--success); }
+        .fridge-column:nth-child(2) { border-top: 3px solid var(--accent-pumpkin); }
+        .fridge-column:nth-child(3) { border-top: 3px solid var(--accent-gold); }
+
+        .column-heading {
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .column-count {
+            display: block;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .item-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .item-card:last-child { margin-bottom: 0; }
+
+        .item-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .item-meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .status-dot.fresh { background: var(--success); }
+        .status-dot.soon { background: var(--warning); }
+        .status-dot.expired { background: var(--danger); }
+
+        .status.fresh { color: var(--success); }
+        .status.soon { color: var(--warning); }
+        .status.expired { color: var(--danger); }
+
+        .swatches {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .swatch {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .swatch-color { height: 48px; }
+
+        .swatch-label {
+            padding: 6px 8px;
+            font-size: 10px;
+            background: var(--surface-1);
+            color: var(--text-secondary);
+        }
+
+        .swatch-label code {
+            display: block;
+            color: var(--text-muted);
+            font-size: 9px;
+            margin-top: 2px;
+        }
+
+        .recipe-preview { margin-top: 1.5rem; }
+
+        .recipe-preview .card h3 {
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-cranberry);
+            margin-bottom: 0.75rem;
+        }
+
+        .ingredient-list {
+            padding-left: 1.25rem;
+            font-size: 13px;
+            column-count: 2;
+            column-gap: 1.5rem;
+        }
+
+        .ingredient-list li {
+            margin-bottom: 4px;
+            break-inside: avoid;
+        }
+
+        .ingredient-list .enough { color: var(--success); }
+        .ingredient-list .insufficient { color: var(--warning); }
+        .ingredient-list .missing { color: var(--danger); }
+
+        .meal-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .meal-ingredients {
+            padding-left: 1.25rem;
+            font-size: 13px;
+            list-style: disc;
+        }
+
+        .meal-ingredients li { margin-bottom: 4px; }
+
+        .minus-inline {
+            color: var(--danger);
+            font-weight: 600;
+            margin-left: 3px;
+        }
+
+        @media (max-width: 640px) {
+            .ingredient-list { column-count: 1; }
+            .header-brand h1 { font-size: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="accent-strip" aria-hidden="true"></div>
+    <div class="mockup-banner">
+        <strong>Harvest Kitchen</strong> — Thanksgiving-inspired theme mockup (not wired into the app yet)
+    </div>
+
+    <div class="app">
+        <header class="header">
+            <div class="header-brand">
+                <i class="ti ti-fridge" aria-hidden="true"></i>
+                <div>
+                    <h1>Fridge Buddy</h1>
+                    <p class="header-sub">Gather, cook, enjoy</p>
+                </div>
+            </div>
+            <button type="button" class="icon-btn" aria-label="Theme">
+                <i class="ti ti-moon" aria-hidden="true"></i>
+            </button>
+        </header>
+
+        <nav class="tabs" aria-label="Main navigation">
+            <button type="button" class="tab">Home</button>
+            <button type="button" class="tab">Grocery store</button>
+            <button type="button" class="tab active">Fridge</button>
+            <button type="button" class="tab">Recipes</button>
+            <button type="button" class="tab">Meals</button>
+        </nav>
+
+        <p class="section-label">Fridge</p>
+
+        <div class="card import-card">
+            <h3>Import grocery haul</h3>
+            <p class="import-hint">
+                <i class="ti ti-copy" style="font-size:14px;color:var(--accent-pumpkin);flex-shrink:0;margin-top:1px"></i>
+                Copy and paste prompt into claude, explain what you bought, and paste response below
+            </p>
+            <div class="import-row">
+                <input type="text" class="input" placeholder="Paste response here">
+                <button type="button" class="btn btn-primary">Preview</button>
+            </div>
+        </div>
+
+        <div class="fridge-columns">
+            <section class="fridge-column">
+                <h4 class="column-heading">Dairy<span class="column-count">2</span></h4>
+                <article class="item-card">
+                    <p class="item-name">Milk</p>
+                    <p class="item-meta">Expires in 4 days</p>
+                    <div class="status fresh">
+                        <span class="status-dot fresh"></span> Fresh
+                    </div>
+                </article>
+                <article class="item-card">
+                    <p class="item-name">Cheese</p>
+                    <p class="item-meta">Expires in 2 days</p>
+                    <div class="status soon">
+                        <span class="status-dot soon"></span> Expiring soon
+                    </div>
+                </article>
+            </section>
+
+            <section class="fridge-column">
+                <h4 class="column-heading">Meat<span class="column-count">1</span></h4>
+                <article class="item-card">
+                    <p class="item-name">Chicken</p>
+                    <p class="item-meta">Expired 1 day ago</p>
+                    <div class="status expired">
+                        <span class="status-dot expired"></span> Expired
+                    </div>
+                </article>
+            </section>
+
+            <section class="fridge-column">
+                <h4 class="column-heading">Vegetables<span class="column-count">2</span></h4>
+                <article class="item-card">
+                    <p class="item-name">Bell pepper</p>
+                    <p class="item-meta">Expires in 5 days</p>
+                    <div class="status fresh">
+                        <span class="status-dot fresh"></span> Fresh
+                    </div>
+                </article>
+                <article class="item-card">
+                    <p class="item-name">Frozen peas</p>
+                    <p class="item-meta">Expires in 90 days</p>
+                    <div class="status fresh">
+                        <span class="status-dot fresh"></span> Fresh
+                    </div>
+                </article>
+            </section>
+        </div>
+
+        <div class="recipe-preview">
+            <p class="section-label" style="margin-top:1.5rem">Recipes</p>
+            <div class="card">
+                <h3>Chicken Tacos</h3>
+                <ul class="ingredient-list">
+                    <li class="enough">1 lb Chicken (Have 2)</li>
+                    <li class="enough">8 piece Tortillas (Have 20)</li>
+                    <li class="insufficient">1 piece Cheese (Have 0)</li>
+                    <li class="missing">1 cup Salsa</li>
+                </ul>
+                <button type="button" class="btn btn-ghost" style="margin-top:12px;width:100%">Show fridge quantities</button>
+            </div>
+        </div>
+
+        <div class="recipe-preview">
+            <p class="section-label" style="margin-top:1.5rem">Meals</p>
+            <div class="card">
+                <h3 style="font-family:'Fraunces',Georgia,serif;font-size:16px;font-weight:600;color:var(--accent-cranberry);margin-bottom:2px">Tuesday dinner</h3>
+                <p class="meal-time">Jul 30, 2026, 7:32 PM</p>
+                <ul class="meal-ingredients">
+                    <li>1 lb Chicken<span class="minus-inline">−</span></li>
+                    <li>2 cup Rice<span class="minus-inline">−</span></li>
+                    <li>1 piece Bell pepper<span class="minus-inline">−</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="swatches">
+            <div class="swatch">
+                <div class="swatch-color" style="background:#f5ebe0"></div>
+                <div class="swatch-label">Oat cream <code>#F5EBE0</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#fff6eb"></div>
+                <div class="swatch-label">Butter ivory <code>#FFF6EB</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#c8651a"></div>
+                <div class="swatch-label">Pumpkin <code>#C8651A</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#8b2942"></div>
+                <div class="swatch-label">Cranberry <code>#8B2942</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#c9922a"></div>
+                <div class="swatch-label">Harvest gold <code>#C9922A</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#5c7354"></div>
+                <div class="swatch-label">Sage <code>#5C7354</code></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

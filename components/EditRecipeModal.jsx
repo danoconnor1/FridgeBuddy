@@ -1,10 +1,11 @@
 function EditRecipeModal({
     catalogItems, editRecipeName, setEditRecipeName,
+    editRecipeCalories, setEditRecipeCalories, adjustEditRecipeCalories,
     editDraftIngredients, setEditDraftIngredients,
     addIngredientRowToList, updateIngredientInList, adjustIngredientQuantityInList, removeIngredientRowFromList,
     closeEditRecipeModal, saveRecipeEdit, deleteRecipeFromModal
 }) {
-    const { RecipeIngredientEditor } = window.FBComponents;
+    const { RecipeIngredientEditor, CaloriesField } = window.FBComponents;
     const { modalOverlay, modalCard } = window.FB_STYLES;
 
     return (
@@ -39,6 +40,13 @@ function EditRecipeModal({
                         >
                             Add item
                         </button>
+                        <CaloriesField
+                            label="Calories"
+                            value={editRecipeCalories}
+                            onChange={setEditRecipeCalories}
+                            onAdjust={adjustEditRecipeCalories}
+                            hint="Defaults to ingredient estimate; adjust to override"
+                        />
                     </>
                 )}
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>

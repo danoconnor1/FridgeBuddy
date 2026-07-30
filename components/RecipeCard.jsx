@@ -1,5 +1,6 @@
-function RecipeCard({ recipe, items, isSeasoningFridgeItem, toggleRecipeShowQuantities, onEdit }) {
-    const { RecipeIngredientList } = window.FBComponents;
+function RecipeCard({ recipe, catalogItems, items, isSeasoningFridgeItem, toggleRecipeShowQuantities, onEdit, onUpdateCalories }) {
+    const { RecipeIngredientList, CaloriesField } = window.FBComponents;
+    const displayCalories = window.FB.getRecipeDisplayCalories(recipe, catalogItems);
 
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -17,6 +18,27 @@ function RecipeCard({ recipe, items, isSeasoningFridgeItem, toggleRecipeShowQuan
                         {recipe.showQuantities ? 'Hide fridge quantities' : 'Show fridge quantities'}
                     </button>
                 </div>
+                {onUpdateCalories ? (
+                    <div style={{ marginBottom: '8px', maxWidth: '240px' }}>
+                        <CaloriesField
+                            label="Calories"
+                            value={displayCalories != null ? String(displayCalories) : ''}
+                            onChange={(value) => onUpdateCalories(recipe.id, value)}
+                            onAdjust={(delta) => {
+                                const current = displayCalories ?? 0;
+                                onUpdateCalories(recipe.id, String(window.FB.adjustCalories(current, delta)));
+                            }}
+                        />
+                    </div>
+                ) : displayCalories != null && (
+                    <div style={{ marginBottom: '8px', maxWidth: '240px' }}>
+                        <CaloriesField
+                            label="Calories"
+                            value={String(displayCalories)}
+                            readOnly
+                        />
+                    </div>
+                )}
                 <RecipeIngredientList
                     ingredients={recipe.ingredients}
                     showQuantities={recipe.showQuantities}

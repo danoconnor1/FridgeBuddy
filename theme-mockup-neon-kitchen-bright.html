@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fridge Buddy — Neon Kitchen Bright (Theme Mockup)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --surface-0: #0f0f1a;
+            --surface-1: #1a1a2e;
+            --surface-2: #252542;
+            --text-primary: #f0f0ff;
+            --text-secondary: #a5a5c8;
+            --text-muted: #6b6b8d;
+            --border: rgba(167, 139, 250, 0.2);
+            --border-strong: rgba(167, 139, 250, 0.45);
+            --accent: #a78bfa;
+            --accent-bright: #c4b5fd;
+            --accent-gradient: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+            --neon-pink: #ff2a6d;
+            --neon-cyan: #05d9e8;
+            --on-accent: #ffffff;
+            --success: #34d399;
+            --success-glow: rgba(52, 211, 153, 0.45);
+            --warning: #fbbf24;
+            --warning-glow: rgba(251, 191, 36, 0.45);
+            --danger: #fb7185;
+            --danger-glow: rgba(251, 113, 133, 0.45);
+            --radius: 12px;
+            --radius-pill: 999px;
+            --shadow-card: 0 4px 24px rgba(124, 58, 237, 0.15);
+            --shadow-glow: 0 0 20px rgba(124, 58, 237, 0.25);
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, sans-serif;
+            background: var(--surface-0);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 45%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .mockup-banner {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 15, 26, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .mockup-banner strong {
+            color: var(--accent-bright);
+            font-weight: 600;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 1.25rem 1rem 2rem;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-brand .ti-fridge {
+            font-size: 32px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(167, 139, 250, 0.5));
+        }
+
+        .header-brand h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface-1);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--border-strong);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 1.5rem;
+            padding: 4px;
+            background: var(--surface-1);
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: fit-content;
+            padding: 10px 14px;
+            border: none;
+            border-radius: var(--radius-pill);
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            background: var(--accent-gradient);
+            color: var(--on-accent);
+            box-shadow: var(--shadow-glow);
+            font-weight: 600;
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--accent-bright);
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .card {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-card);
+        }
+
+        .import-card {
+            margin-bottom: 1.25rem;
+        }
+
+        .import-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .import-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            gap: 6px;
+            align-items: flex-start;
+        }
+
+        .import-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface-2);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .input::placeholder { color: var(--text-muted); }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            border: none;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: var(--on-accent);
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 24px rgba(124, 58, 237, 0.45);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--border-strong);
+            color: var(--accent-bright);
+        }
+
+        .fridge-columns {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .fridge-column {
+            flex: 1 1 160px;
+            min-width: 160px;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 8px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .fridge-column:nth-child(1) { border-top: 3px solid #60a5fa; }
+        .fridge-column:nth-child(2) { border-top: 3px solid var(--neon-pink); }
+        .fridge-column:nth-child(3) { border-top: 3px solid var(--success); }
+
+        .column-heading {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .column-count {
+            display: block;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .item-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .item-card:last-child { margin-bottom: 0; }
+
+        .item-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .item-meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .status-dot.fresh {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success-glow);
+        }
+
+        .status-dot.soon {
+            background: var(--warning);
+            box-shadow: 0 0 8px var(--warning-glow);
+        }
+
+        .status-dot.expired {
+            background: var(--danger);
+            box-shadow: 0 0 8px var(--danger-glow);
+        }
+
+        .status.fresh { color: var(--success); }
+        .status.soon { color: var(--warning); }
+        .status.expired { color: var(--danger); }
+
+        .swatches {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .swatch {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .swatch-color { height: 48px; }
+
+        .swatch-label {
+            padding: 6px 8px;
+            font-size: 10px;
+            background: var(--surface-1);
+            color: var(--text-secondary);
+        }
+
+        .swatch-label code {
+            display: block;
+            color: var(--text-muted);
+            font-size: 9px;
+            margin-top: 2px;
+        }
+
+        .recipe-preview { margin-top: 1.5rem; }
+
+        .recipe-preview .card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .ingredient-list {
+            padding-left: 1.25rem;
+            font-size: 13px;
+            column-count: 2;
+            column-gap: 1.5rem;
+        }
+
+        .ingredient-list li {
+            margin-bottom: 4px;
+            break-inside: avoid;
+        }
+
+        .ingredient-list .enough { color: var(--success); }
+        .ingredient-list .insufficient { color: var(--warning); }
+        .ingredient-list .missing { color: var(--danger); }
+
+        .meal-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .meal-ingredients {
+            padding-left: 1.25rem;
+            font-size: 13px;
+            list-style: disc;
+        }
+
+        .meal-ingredients li { margin-bottom: 4px; }
+
+        .minus-inline {
+            color: var(--danger);
+            font-weight: 600;
+            margin-left: 3px;
+        }
+
+        @media (max-width: 640px) {
+            .ingredient-list { column-count: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-banner">
+        <strong>Neon Kitchen</strong> — bright original theme mockup (not wired into the app yet)
+    </div>
+
+    <div class="app">
+        <header class="header">
+            <div class="header-brand">
+                <i class="ti ti-fridge" aria-hidden="true"></i>
+                <h1>Fridge Buddy</h1>
+            </div>
+            <button type="button" class="icon-btn" aria-label="Theme">
+                <i class="ti ti-sun" aria-hidden="true"></i>
+            </button>
+        </header>
+
+        <nav class="tabs" aria-label="Main navigation">
+            <button type="button" class="tab">Home</button>
+            <button type="button" class="tab">Grocery store</button>
+            <button type="button" class="tab active">Fridge</button>
+            <button type="button" class="tab">Recipes</button>
+            <button type="button" class="tab">Meals</button>
+        </nav>
+
+        <p class="section-label">Fridge tab preview</p>
+
+        <div class="card import-card">
+            <h3>Import grocery haul</h3>
+            <p class="import-hint">
+                <i class="ti ti-copy" style="font-size:14px;color:var(--accent);flex-shrink:0;margin-top:1px"></i>
+                Copy and paste prompt into claude, explain what you bought, and paste response below
+            </p>
+            <div class="import-row">
+                <input type="text" class="input" placeholder="Paste response here">
+                <button type="button" class="btn btn-primary">Preview</button>
+            </div>
+        </div>
+
+        <div class="fridge-columns">
+            <section class="fridge-column">
+                <h4 class="column-heading">Dairy<span class="column-count">2</span></h4>
+                <article class="item-card">
+                    <p class="item-name">Milk</p>
+                    <p class="item-meta">Expires in 4 days</p>
+                    <div class="status fresh">
+                        <span class="status-dot fresh"></span> Fresh
+                    </div>
+                </article>
+                <article class="item-card">
+                    <p class="item-name">Cheese</p>
+                    <p class="item-meta">Expires in 2 days</p>
+                    <div class="status soon">
+                        <span class="status-dot soon"></span> Expiring soon
+                    </div>
+                </article>
+            </section>
+
+            <section class="fridge-column">
+                <h4 class="column-heading">Meat<span class="column-count">1</span></h4>
+                <article class="item-card">
+                    <p class="item-name">Chicken</p>
+                    <p class="item-meta">Expired 1 day ago</p>
+                    <div class="status expired">
+                        <span class="status-dot expired"></span> Expired
+                    </div>
+                </article>
+            </section>
+
+            <section class="fridge-column">
+                <h4 class="column-heading">Vegetables<span class="column-count">2</span></h4>
+                <article class="item-card">
+                    <p class="item-name">Bell pepper</p>
+                    <p class="item-meta">Expires in 5 days</p>
+                    <div class="status fresh">
+                        <span class="status-dot fresh"></span> Fresh
+                    </div>
+                </article>
+                <article class="item-card">
+                    <p class="item-name">Frozen peas</p>
+                    <p class="item-meta">Expires in 90 days</p>
+                    <div class="status fresh">
+                        <span class="status-dot fresh"></span> Fresh
+                    </div>
+                </article>
+            </section>
+        </div>
+
+        <div class="recipe-preview">
+            <p class="section-label" style="margin-top:1.5rem">Recipes tab preview</p>
+            <div class="card">
+                <h3>Chicken Tacos</h3>
+                <ul class="ingredient-list">
+                    <li class="enough">1 lb Chicken (Have 2)</li>
+                    <li class="enough">8 piece Tortillas (Have 20)</li>
+                    <li class="insufficient">1 piece Cheese (Have 0)</li>
+                    <li class="missing">1 cup Salsa</li>
+                </ul>
+                <button type="button" class="btn btn-ghost" style="margin-top:12px;width:100%">Show fridge quantities</button>
+            </div>
+        </div>
+
+        <div class="recipe-preview">
+            <p class="section-label" style="margin-top:1.5rem">Meals tab preview</p>
+            <div class="card">
+                <h3 style="font-size:14px;font-weight:600;margin-bottom:2px">Tuesday dinner</h3>
+                <p class="meal-time">Jul 30, 2026, 7:32 PM</p>
+                <ul class="meal-ingredients">
+                    <li>1 lb Chicken<span class="minus-inline">−</span></li>
+                    <li>2 cup Rice<span class="minus-inline">−</span></li>
+                    <li>1 piece Bell pepper<span class="minus-inline">−</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="swatches">
+            <div class="swatch">
+                <div class="swatch-color" style="background:#0f0f1a"></div>
+                <div class="swatch-label">Page bg <code>#0F0F1A</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#1a1a2e"></div>
+                <div class="swatch-label">Card <code>#1A1A2E</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:linear-gradient(135deg,#7c3aed,#ec4899)"></div>
+                <div class="swatch-label">Accent gradient</div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#34d399"></div>
+                <div class="swatch-label">Fresh <code>#34D399</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#fbbf24"></div>
+                <div class="swatch-label">Soon <code>#FBBF24</code></div>
+            </div>
+            <div class="swatch">
+                <div class="swatch-color" style="background:#fb7185"></div>
+                <div class="swatch-label">Expired <code>#FB7185</code></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

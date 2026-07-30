@@ -25,7 +25,7 @@ function AddCatalogModal({
                         }}
                         style={{ marginBottom: 0 }}
                     >
-                        {CATEGORIES.map(category => (
+                        {CATEGORIES.filter(category => category !== 'leftovers').map(category => (
                             <option key={category} value={category}>{formatCategory(category)}</option>
                         ))}
                     </select>

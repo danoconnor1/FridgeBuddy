@@ -26,7 +26,7 @@ function EditCatalogModal({
                         style={{ marginBottom: 0 }}
                     >
                         <option value="">Select food group</option>
-                        {CATEGORIES.map(category => (
+                        {CATEGORIES.filter(category => category !== 'leftovers').map(category => (
                             <option key={category} value={category}>{formatCategory(category)}</option>
                         ))}
                     </select>

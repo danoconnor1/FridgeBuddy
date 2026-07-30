@@ -31,7 +31,6 @@
         categoryHeading: {
             fontSize: '13px',
             fontWeight: '600',
-            color: 'var(--text-secondary)',
             textTransform: 'uppercase',
             letterSpacing: '0.04em',
             margin: '0 0 10px 0'
