@@ -1,10 +1,10 @@
 function FridgeBuddy() {
     const fb = useFridgeBuddy();
     const {
-        HomeTab, GroceryStoreTab, FridgeTab, RecipesTab, MealsTab,
+        HomeTab, GroceryStoreTab, FridgeTab, RecipesTab, MealsTab, MoneyTab,
         AddCatalogModal, EditCatalogModal, EditRecipeModal, RecipeViewModal,
         DuplicateFridgeConfirmModal, ImportUnmatchedConfirmModal, AddLeftoverModal,
-        EditFridgeItemModal
+        EditFridgeItemModal, EmptyFridgeConfirmModal, AddExpenseCategoryModal, DeleteExpenseCategoryModal
     } = window.FBComponents;
     const [themeMenuOpen, setThemeMenuOpen] = React.useState(false);
     const themeMenuRef = React.useRef(null);
@@ -25,7 +25,8 @@ function FridgeBuddy() {
         { id: 'allItems', label: 'Grocery store' },
         { id: 'fridge', label: 'Fridge' },
         { id: 'recipes', label: 'Recipes' },
-        { id: 'meals', label: 'Meals' }
+        { id: 'meals', label: 'Meals' },
+        { id: 'money', label: 'Money' }
     ];
 
     const isThemeActive = (optionId) => {
@@ -33,23 +34,36 @@ function FridgeBuddy() {
         return fb.theme === optionId;
     };
 
+    const hasSceneBackground = fb.theme === 'retro-space' || fb.theme === 'farmers-market' || fb.theme === 'neon-kitchen';
+
     return (
         <>
             {fb.theme === 'retro-space' && (
                 <>
-                    <div className="theme-bg-scene" aria-hidden="true" />
-                    <div className="theme-bg-overlay" aria-hidden="true" />
+                    <div className="theme-bg-scene--retro-space" aria-hidden="true" />
+                    <div className="theme-bg-overlay--retro-space" aria-hidden="true" />
+                </>
+            )}
+            {fb.theme === 'farmers-market' && (
+                <>
+                    <div className="theme-bg-scene--farmers-market" aria-hidden="true" />
+                    <div className="theme-bg-overlay--farmers-market" aria-hidden="true" />
+                </>
+            )}
+            {fb.theme === 'neon-kitchen' && (
+                <>
+                    <div className="theme-bg-scene--neon-kitchen" aria-hidden="true" />
+                    <div className="theme-bg-overlay--neon-kitchen" aria-hidden="true" />
                 </>
             )}
         <div className="app-shell" style={{
             fontFamily: 'inherit',
             color: 'var(--text-primary)',
             minHeight: '100vh',
-            background: fb.theme === 'retro-space' ? 'transparent' : 'var(--surface-0)',
+            background: hasSceneBackground ? 'transparent' : 'var(--surface-0)',
             padding: '1rem'
         }}>
             <div style={{
-                maxWidth: fb.activeTab === 'home' ? '500px' : 'none',
                 width: '100%',
                 margin: '0 auto'
             }}>
@@ -145,7 +159,6 @@ function FridgeBuddy() {
 
                 {fb.activeTab === 'home' && (
                     <HomeTab
-                        lowSeasoningItems={fb.lowSeasoningItems}
                         expiringItems={fb.expiringItems}
                         expiredItems={fb.expiredItems}
                         leftoverItems={fb.leftoverItems}
@@ -154,9 +167,22 @@ function FridgeBuddy() {
                         items={fb.items}
                         recipes={fb.recipes}
                         catalogItems={fb.catalogItems}
+                        manualGroceryListItems={fb.manualGroceryListItems}
+                        suggestedGroceryListItems={fb.suggestedGroceryListItems}
+                        groceryListDraftItems={fb.groceryListDraftItems}
                         openViewRecipeModal={fb.openViewRecipeModal}
                         agentPromptCopied={fb.agentPromptCopied}
                         copyAgentPrompt={fb.copyAgentPrompt}
+                        addGroceryListItemRow={fb.addGroceryListItemRow}
+                        updateGroceryListDraftItem={fb.updateGroceryListDraftItem}
+                        removeGroceryListDraftItem={fb.removeGroceryListDraftItem}
+                        addManualGroceryListItems={fb.addManualGroceryListItems}
+                        removeGroceryListItem={fb.removeGroceryListItem}
+                        addSuggestedItemToGroceryList={fb.addSuggestedItemToGroceryList}
+                        isOnManualGroceryList={fb.isOnManualGroceryList}
+                        groceryListRecipeId={fb.groceryListRecipeId}
+                        setGroceryListRecipeId={fb.setGroceryListRecipeId}
+                        addRecipeIngredientsToGroceryList={fb.addRecipeIngredientsToGroceryList}
                     />
                 )}
 
@@ -175,7 +201,6 @@ function FridgeBuddy() {
                         isSeasoningCatalogItem={fb.isSeasoningCatalogItem}
                         addFromCatalogRow={fb.addFromCatalogRow}
                         openEditCatalogModal={fb.openEditCatalogModal}
-                        adjustCatalogItemCalories={fb.adjustCatalogItemCalories}
                     />
                 )}
 
@@ -190,8 +215,13 @@ function FridgeBuddy() {
                             fridgeSort={fb.fridgeSort}
                             setFridgeSort={fb.setFridgeSort}
                             isSeasoningFridgeItem={fb.isSeasoningFridgeItem}
+                            usesFridgeCapacityTracking={fb.usesFridgeCapacityTracking}
+                            canToggleFridgeTrackingMode={fb.canToggleFridgeTrackingMode}
+                            setFridgeItemTrackingMode={fb.setFridgeItemTrackingMode}
                             isLeftoverFridgeItem={fb.isLeftoverFridgeItem}
                             removeItem={fb.removeItem}
+                            lowerFridgeItemSeasoningStatus={fb.lowerFridgeItemSeasoningStatus}
+                            openEmptyFridgeConfirm={fb.openEmptyFridgeConfirm}
                             openEditFridgeItemModal={fb.openEditFridgeItemModal}
                             openAddLeftoverModal={fb.openAddLeftoverModal}
                             setActiveTab={fb.setActiveTab}
@@ -223,7 +253,6 @@ function FridgeBuddy() {
                         toggleRecipeShowQuantities={fb.toggleRecipeShowQuantities}
                         openEditRecipeModal={fb.openEditRecipeModal}
                         updateRecipeCalories={fb.updateRecipeCalories}
-                        isSeasoningFridgeItem={fb.isSeasoningFridgeItem}
                         recipeImportPaste={fb.recipeImportPaste}
                         setRecipeImportPaste={fb.setRecipeImportPaste}
                         recipeImportPreview={fb.recipeImportPreview}
@@ -275,12 +304,46 @@ function FridgeBuddy() {
                         clearMealImport={fb.clearMealImport}
                     />
                 )}
+
+                {fb.activeTab === 'money' && (
+                    <MoneyTab
+                        expenses={fb.expenses}
+                        expenseCategories={fb.expenseCategories}
+                        expenseTitle={fb.expenseTitle}
+                        setExpenseTitle={fb.setExpenseTitle}
+                        expenseDate={fb.expenseDate}
+                        setExpenseDate={fb.setExpenseDate}
+                        expenseCategory={fb.expenseCategory}
+                        setExpenseCategory={fb.setExpenseCategory}
+                        expensePrice={fb.expensePrice}
+                        setExpensePrice={fb.setExpensePrice}
+                        expenseDraftItems={fb.expenseDraftItems}
+                        expenseImportPaste={fb.expenseImportPaste}
+                        setExpenseImportPaste={fb.setExpenseImportPaste}
+                        expenseImportPreview={fb.expenseImportPreview}
+                        expenseImportError={fb.expenseImportError}
+                        expenseImportSuccess={fb.expenseImportSuccess}
+                        expenseChartFilter={fb.expenseChartFilter}
+                        setExpenseChartFilter={fb.setExpenseChartFilter}
+                        addExpense={fb.addExpense}
+                        addExpenseItemRow={fb.addExpenseItemRow}
+                        updateExpenseDraftItem={fb.updateExpenseDraftItem}
+                        removeExpenseDraftItem={fb.removeExpenseDraftItem}
+                        previewExpenseImport={fb.previewExpenseImport}
+                        confirmExpenseImport={fb.confirmExpenseImport}
+                        clearExpenseImport={fb.clearExpenseImport}
+                        removeExpense={fb.removeExpense}
+                        openAddExpenseCategoryModal={fb.openAddExpenseCategoryModal}
+                        openDeleteExpenseCategoryModal={fb.openDeleteExpenseCategoryModal}
+                    />
+                )}
             </div>
 
             {fb.editingFridgeItem && (
                 <EditFridgeItemModal
                     editingFridgeItem={fb.editingFridgeItem}
                     isSeasoningFridgeItem={fb.isSeasoningFridgeItem}
+                    usesFridgeCapacityTracking={fb.usesFridgeCapacityTracking}
                     isLeftoverFridgeItem={fb.isLeftoverFridgeItem}
                     editFridgeQuantity={fb.editFridgeQuantity}
                     setEditFridgeQuantity={fb.setEditFridgeQuantity}
@@ -294,6 +357,11 @@ function FridgeBuddy() {
                     editFridgeLeftoverDays={fb.editFridgeLeftoverDays}
                     setEditFridgeLeftoverDays={fb.setEditFridgeLeftoverDays}
                     adjustEditFridgeLeftoverDays={fb.adjustEditFridgeLeftoverDays}
+                    editFridgeExpirationValue={fb.editFridgeExpirationValue}
+                    setEditFridgeExpirationValue={fb.setEditFridgeExpirationValue}
+                    editFridgeExpirationUnit={fb.editFridgeExpirationUnit}
+                    setEditFridgeExpirationUnit={fb.setEditFridgeExpirationUnit}
+                    adjustEditFridgeExpirationValue={fb.adjustEditFridgeExpirationValue}
                     closeEditFridgeItemModal={fb.closeEditFridgeItemModal}
                     saveFridgeItemEdit={fb.saveFridgeItemEdit}
                 />
@@ -311,6 +379,27 @@ function FridgeBuddy() {
                 />
             )}
 
+            {fb.deleteExpenseCategoryModalOpen && (
+                <DeleteExpenseCategoryModal
+                    customExpenseCategories={fb.customExpenseCategories}
+                    deleteExpenseCategoryId={fb.deleteExpenseCategoryId}
+                    setDeleteExpenseCategoryId={fb.setDeleteExpenseCategoryId}
+                    deleteExpenseCategoryError={fb.deleteExpenseCategoryError}
+                    closeDeleteExpenseCategoryModal={fb.closeDeleteExpenseCategoryModal}
+                    deleteExpenseCategory={fb.deleteExpenseCategory}
+                />
+            )}
+
+            {fb.addExpenseCategoryModalOpen && (
+                <AddExpenseCategoryModal
+                    newExpenseCategoryName={fb.newExpenseCategoryName}
+                    setNewExpenseCategoryName={fb.setNewExpenseCategoryName}
+                    expenseCategoryError={fb.expenseCategoryError}
+                    closeAddExpenseCategoryModal={fb.closeAddExpenseCategoryModal}
+                    addExpenseCategory={fb.addExpenseCategory}
+                />
+            )}
+
             {fb.addCatalogModalOpen && (
                 <AddCatalogModal
                     catalogName={fb.catalogName}
@@ -321,6 +410,9 @@ function FridgeBuddy() {
                     setCatalogDefaultUnit={fb.setCatalogDefaultUnit}
                     catalogExpirationDays={fb.catalogExpirationDays}
                     setCatalogExpirationDays={fb.setCatalogExpirationDays}
+                    catalogCalories={fb.catalogCalories}
+                    setCatalogCalories={fb.setCatalogCalories}
+                    adjustCatalogCalories={fb.adjustCatalogCalories}
                     adjustCatalogExpirationDays={fb.adjustCatalogExpirationDays}
                     closeAddCatalogModal={fb.closeAddCatalogModal}
                     addCatalogItem={fb.addCatalogItem}
@@ -334,6 +426,12 @@ function FridgeBuddy() {
                     editCatalogCategory={fb.editCatalogCategory}
                     setEditCatalogCategory={fb.setEditCatalogCategory}
                     editCatalogExpirationDays={fb.editCatalogExpirationDays}
+                    setEditCatalogExpirationDays={fb.setEditCatalogExpirationDays}
+                    editCatalogCalories={fb.editCatalogCalories}
+                    setEditCatalogCalories={fb.setEditCatalogCalories}
+                    adjustEditCatalogCalories={fb.adjustEditCatalogCalories}
+                    editCatalogDefaultUnit={fb.editCatalogDefaultUnit}
+                    setEditCatalogDefaultUnit={fb.setEditCatalogDefaultUnit}
                     editCatalogDefaultStatus={fb.editCatalogDefaultStatus}
                     setEditCatalogDefaultStatus={fb.setEditCatalogDefaultStatus}
                     adjustEditExpirationDays={fb.adjustEditExpirationDays}
@@ -382,12 +480,19 @@ function FridgeBuddy() {
                 />
             )}
 
+            {fb.emptyFridgeConfirmOpen && (
+                <EmptyFridgeConfirmModal
+                    itemCount={fb.items.length}
+                    onCancel={fb.cancelEmptyFridge}
+                    onConfirm={fb.confirmEmptyFridge}
+                />
+            )}
+
             {fb.viewingRecipeId !== null && (
                 <RecipeViewModal
                     recipe={fb.viewingRecipe}
                     catalogItems={fb.catalogItems}
                     items={fb.items}
-                    isSeasoningFridgeItem={fb.isSeasoningFridgeItem}
                     toggleRecipeShowQuantities={fb.toggleRecipeShowQuantities}
                     closeViewRecipeModal={fb.closeViewRecipeModal}
                 />

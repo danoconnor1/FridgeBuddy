@@ -1,4 +1,4 @@
-function RecipeIngredientList({ ingredients, showQuantities, fridgeItems, isSeasoningFridgeItem }) {
+function RecipeIngredientList({ ingredients, showQuantities, fridgeItems, catalogItems }) {
     const {
         getIngredientFridgeAvailability,
         formatRecipeIngredientWithFridge,
@@ -19,7 +19,7 @@ function RecipeIngredientList({ ingredients, showQuantities, fridgeItems, isSeas
                     ingredient,
                     fridgeItems,
                     getDaysUntilExpiry,
-                    isSeasoningFridgeItem
+                    catalogItems
                 );
                 return (
                     <li

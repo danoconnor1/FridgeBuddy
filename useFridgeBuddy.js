@@ -1,17 +1,24 @@
 function useFridgeBuddy() {
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useMemo } = React;
     const FB = window.FB;
     const {
         CATEGORIES, loadCatalogItems, formatCategory, isSeasoningCategory,
         getDefaultCatalogQuantity, adjustSeasoningStatus, addExpirationFromToday,
-        emptyIngredient, getDaysUntilExpiry, classifyRecipesForHome, formatFridgeExistingAmount,
+        emptyIngredient, toDraftIngredient, getDaysUntilExpiry, classifyRecipesForHome, formatFridgeExistingAmount,
+        formatFridgeItemLabel,
         getFridgeExistingExpirySummary,
         adjustDays, buildFridgeItemGroups, groupItemsByCategory,
-        isSeasoningFridgeItem: isSeasoningFridgeItemLib, getDefaultCatalogUnit,
+        isSeasoningFridgeItem: isSeasoningFridgeItemLib, usesFridgeCapacityTracking: usesFridgeCapacityTrackingLib,
+        canToggleFridgeTrackingMode: canToggleFridgeTrackingModeLib, getDefaultCatalogUnit,
         serializeDraftIngredients, parseIngredientQuantity, roundIngredientQuantity,
         buildClaudeAgentPrompt, parseHaulImportText, resolveHaulImportItems,
         parseRecipeImportText, resolveRecipeImportRecipes,
         parseMealImportText, resolveMealImportMeals,
+        parseExpenseImportText, resolveExpenseImportExpenses,
+        emptyExpenseItem, serializeExpenseDraftItems, normalizeStoredExpense,
+        loadCustomExpenseCategories, saveCustomExpenseCategories, buildCustomExpenseCategory,
+        getTodayIsoDate,
+        EXPENSE_CATEGORIES,
         mergeIngredients, deductMealFromFridge,
         estimateCaloriesFromIngredients, parseCalories, resolveCalories, adjustCalories,
         getRecipeDisplayCalories
@@ -30,14 +37,22 @@ function useFridgeBuddy() {
         const saved = localStorage.getItem('fridgeMeals');
         return saved ? JSON.parse(saved) : [];
     });
+    const [expenses, setExpenses] = useState(() => {
+        const saved = localStorage.getItem('fridgeExpenses');
+        if (!saved) return [];
+        return JSON.parse(saved).map(normalizeStoredExpense);
+    });
     const [catalogName, setCatalogName] = useState('');
     const [catalogCategory, setCatalogCategory] = useState('meat');
     const [catalogDefaultUnit, setCatalogDefaultUnit] = useState('piece');
     const [catalogExpirationDays, setCatalogExpirationDays] = useState(1);
+    const [catalogCalories, setCatalogCalories] = useState('');
     const [editingCatalogItemId, setEditingCatalogItemId] = useState(null);
     const [editCatalogName, setEditCatalogName] = useState('');
     const [editCatalogCategory, setEditCatalogCategory] = useState('');
     const [editCatalogExpirationDays, setEditCatalogExpirationDays] = useState('');
+    const [editCatalogCalories, setEditCatalogCalories] = useState('');
+    const [editCatalogDefaultUnit, setEditCatalogDefaultUnit] = useState('piece');
     const [editCatalogDefaultStatus, setEditCatalogDefaultStatus] = useState('full');
     const [catalogDrafts, setCatalogDrafts] = useState({});
     const [addedToFridgeItemId, setAddedToFridgeItemId] = useState(null);
@@ -50,7 +65,7 @@ function useFridgeBuddy() {
     const [editDraftIngredients, setEditDraftIngredients] = useState([]);
     const [editRecipeCalories, setEditRecipeCalories] = useState('');
     const [editRecipeCaloriesTouched, setEditRecipeCaloriesTouched] = useState(false);
-    const VALID_TABS = new Set(['home', 'allItems', 'fridge', 'recipes', 'meals']);
+    const VALID_TABS = new Set(['home', 'allItems', 'fridge', 'recipes', 'meals', 'money']);
     const [activeTab, setActiveTab] = useState(() => {
         const saved = localStorage.getItem('fridgeActiveTab');
         return saved && VALID_TABS.has(saved) ? saved : 'home';
@@ -60,11 +75,35 @@ function useFridgeBuddy() {
     const [fridgeSort, setFridgeSort] = useState('category');
     const [viewingRecipeId, setViewingRecipeId] = useState(null);
     const [duplicateFridgeConfirm, setDuplicateFridgeConfirm] = useState(null);
+    const [emptyFridgeConfirmOpen, setEmptyFridgeConfirmOpen] = useState(false);
     const [haulImportPaste, setHaulImportPaste] = useState('');
     const [haulImportPreview, setHaulImportPreview] = useState(null);
     const [haulImportError, setHaulImportError] = useState('');
     const [haulImportSuccess, setHaulImportSuccess] = useState(false);
     const [agentPromptCopied, setAgentPromptCopied] = useState(false);
+    const [manualGroceryListItems, setManualGroceryListItems] = useState(() => {
+        const saved = localStorage.getItem('fridgeGroceryList');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [dismissedGroceryListIds, setDismissedGroceryListIds] = useState(() => {
+        const saved = localStorage.getItem('fridgeDismissedGroceryList');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [sessionRandomGroceryItems, setSessionRandomGroceryItems] = useState(() => {
+        const catalog = loadCatalogItems();
+        const manual = (() => {
+            try {
+                const saved = localStorage.getItem('fridgeGroceryList');
+                return saved ? JSON.parse(saved) : [];
+            } catch {
+                return [];
+            }
+        })();
+        const excludedNames = manual.map(item => item.name);
+        return FB.generateSessionRandomGroceryItems(catalog, excludedNames, 3, Date.now());
+    });
+    const [groceryListDraftItems, setGroceryListDraftItems] = useState([]);
+    const [groceryListRecipeId, setGroceryListRecipeId] = useState('');
     const [theme, setTheme] = useState(() =>
         FB.normalizeFridgeTheme(
             document.documentElement.getAttribute('data-theme') || localStorage.getItem('fridgeTheme')
@@ -87,6 +126,23 @@ function useFridgeBuddy() {
     const [mealImportSuccess, setMealImportSuccess] = useState(false);
     const [mealImportRemoveFromFridge, setMealImportRemoveFromFridge] = useState(true);
     const [mealImportAddToRecipes, setMealImportAddToRecipes] = useState(false);
+    const [expenseTitle, setExpenseTitle] = useState('');
+    const [expenseDate, setExpenseDate] = useState(() => getTodayIsoDate());
+    const [expenseCategory, setExpenseCategory] = useState('');
+    const [expensePrice, setExpensePrice] = useState('');
+    const [expenseDraftItems, setExpenseDraftItems] = useState([]);
+    const [customExpenseCategories, setCustomExpenseCategories] = useState(() => loadCustomExpenseCategories());
+    const [addExpenseCategoryModalOpen, setAddExpenseCategoryModalOpen] = useState(false);
+    const [deleteExpenseCategoryModalOpen, setDeleteExpenseCategoryModalOpen] = useState(false);
+    const [newExpenseCategoryName, setNewExpenseCategoryName] = useState('');
+    const [deleteExpenseCategoryId, setDeleteExpenseCategoryId] = useState('');
+    const [expenseCategoryError, setExpenseCategoryError] = useState('');
+    const [deleteExpenseCategoryError, setDeleteExpenseCategoryError] = useState('');
+    const [expenseImportPaste, setExpenseImportPaste] = useState('');
+    const [expenseImportPreview, setExpenseImportPreview] = useState(null);
+    const [expenseImportError, setExpenseImportError] = useState('');
+    const [expenseImportSuccess, setExpenseImportSuccess] = useState(false);
+    const [expenseChartFilter, setExpenseChartFilter] = useState('month');
     const [addLeftoverModalOpen, setAddLeftoverModalOpen] = useState(false);
     const [leftoverName, setLeftoverName] = useState('');
     const [leftoverExpirationDays, setLeftoverExpirationDays] = useState(3);
@@ -96,9 +152,13 @@ function useFridgeBuddy() {
     const [editFridgeSeasoningStatus, setEditFridgeSeasoningStatus] = useState('full');
     const [editFridgeLeftoverName, setEditFridgeLeftoverName] = useState('');
     const [editFridgeLeftoverDays, setEditFridgeLeftoverDays] = useState(3);
+    const [editFridgeExpirationValue, setEditFridgeExpirationValue] = useState('');
+    const [editFridgeExpirationUnit, setEditFridgeExpirationUnit] = useState('days');
 
     const isSeasoningCatalogItem = (item) => isSeasoningCategory(item?.category);
     const isSeasoningFridgeItem = (item) => isSeasoningFridgeItemLib(item, catalogItems);
+    const usesFridgeCapacityTracking = (item) => usesFridgeCapacityTrackingLib(item, catalogItems);
+    const canToggleFridgeTrackingMode = (item) => canToggleFridgeTrackingModeLib(item, catalogItems);
     const isLeftoverFridgeItem = (item) => FB.isLeftoverFridgeItem(item);
     const getCatalogItem = (catalogItemId) => catalogItems.find(item => item.id === catalogItemId);
     const getFridgeItemCategory = (item) => {
@@ -153,6 +213,9 @@ function useFridgeBuddy() {
                 ...updates
             }
         }));
+        if (updates.unit && editingCatalogItemId === item.id) {
+            setEditCatalogDefaultUnit(updates.unit);
+        }
     };
 
     const adjustCatalogDraftField = (item, field, delta) => {
@@ -187,6 +250,12 @@ function useFridgeBuddy() {
         localStorage.setItem('fridgeMeals', JSON.stringify(meals));
     }, [meals]);
     useEffect(() => {
+        localStorage.setItem('fridgeExpenses', JSON.stringify(expenses));
+    }, [expenses]);
+    useEffect(() => {
+        saveCustomExpenseCategories(customExpenseCategories);
+    }, [customExpenseCategories]);
+    useEffect(() => {
         if (!addedToFridgeItemId) return;
         const timer = setTimeout(() => setAddedToFridgeItemId(null), 2500);
         return () => clearTimeout(timer);
@@ -216,6 +285,17 @@ function useFridgeBuddy() {
         const timer = setTimeout(() => setMealImportSuccess(false), 2500);
         return () => clearTimeout(timer);
     }, [mealImportSuccess]);
+    useEffect(() => {
+        if (!expenseImportSuccess) return;
+        const timer = setTimeout(() => setExpenseImportSuccess(false), 2500);
+        return () => clearTimeout(timer);
+    }, [expenseImportSuccess]);
+    useEffect(() => {
+        localStorage.setItem('fridgeGroceryList', JSON.stringify(manualGroceryListItems));
+    }, [manualGroceryListItems]);
+    useEffect(() => {
+        localStorage.setItem('fridgeDismissedGroceryList', JSON.stringify(dismissedGroceryListIds));
+    }, [dismissedGroceryListIds]);
     useEffect(() => {
         localStorage.setItem('fridgeActiveTab', activeTab);
     }, [activeTab]);
@@ -247,6 +327,8 @@ function useFridgeBuddy() {
             newItem.defaultUnit = catalogDefaultUnit;
             newItem.expirationDays = Math.max(1, Number(catalogExpirationDays) || 1);
             newItem.defaultQuantity = 1;
+            const calories = parseCalories(catalogCalories);
+            if (calories != null) newItem.caloriesPerDefault = calories;
         }
         setCatalogItems([...catalogItems, newItem]);
         closeAddCatalogModal();
@@ -258,6 +340,7 @@ function useFridgeBuddy() {
         setCatalogCategory('meat');
         setCatalogDefaultUnit('piece');
         setCatalogExpirationDays(1);
+        setCatalogCalories('');
         setAddCatalogModalOpen(true);
     };
 
@@ -267,6 +350,7 @@ function useFridgeBuddy() {
         setCatalogCategory('meat');
         setCatalogDefaultUnit('piece');
         setCatalogExpirationDays(1);
+        setCatalogCalories('');
     };
 
     const removeCatalogItem = (id) => {
@@ -279,10 +363,13 @@ function useFridgeBuddy() {
     };
 
     const openEditCatalogModal = (item) => {
+        const draft = catalogDrafts[item.id];
         setEditingCatalogItemId(item.id);
         setEditCatalogName(item.name);
         setEditCatalogCategory(item.category || '');
         setEditCatalogExpirationDays(String(Math.max(1, item.expirationDays || 1)));
+        setEditCatalogCalories(item.caloriesPerDefault != null ? String(item.caloriesPerDefault) : '');
+        setEditCatalogDefaultUnit(draft?.unit || getDefaultCatalogUnit(item));
         setEditCatalogDefaultStatus(item.defaultStatus || 'full');
     };
 
@@ -291,11 +378,14 @@ function useFridgeBuddy() {
         setEditCatalogName('');
         setEditCatalogCategory('');
         setEditCatalogExpirationDays('');
+        setEditCatalogCalories('');
+        setEditCatalogDefaultUnit('piece');
         setEditCatalogDefaultStatus('full');
     };
 
     const saveCatalogItemEdit = () => {
         if (!editingCatalogItemId || !editCatalogName.trim() || !editCatalogCategory) return;
+        const savedDefaultUnit = editCatalogDefaultUnit || 'piece';
         setCatalogItems(catalogItems.map(item => {
             if (item.id !== editingCatalogItemId) return item;
             const updated = {
@@ -309,18 +399,27 @@ function useFridgeBuddy() {
                 delete updated.expirationDays;
                 delete updated.caloriesPerDefault;
             } else {
-                updated.defaultUnit = item.defaultUnit || 'oz';
-                updated.expirationDays = Number(editCatalogExpirationDays);
+                updated.defaultUnit = savedDefaultUnit;
+                updated.expirationDays = Math.max(1, Number(editCatalogExpirationDays) || 1);
                 updated.defaultQuantity = item.defaultQuantity ?? 1;
+                const calories = parseCalories(editCatalogCalories);
+                if (calories != null) {
+                    updated.caloriesPerDefault = calories;
+                } else {
+                    delete updated.caloriesPerDefault;
+                }
                 delete updated.defaultStatus;
             }
             return updated;
         }));
         closeEditCatalogModal();
         setCatalogDrafts(prev => {
-            const next = { ...prev };
-            delete next[editingCatalogItemId];
-            return next;
+            const existing = prev[editingCatalogItemId];
+            if (!existing) return prev;
+            return {
+                ...prev,
+                [editingCatalogItemId]: { ...existing, unit: savedDefaultUnit }
+            };
         });
     };
 
@@ -375,7 +474,7 @@ function useFridgeBuddy() {
             setDuplicateFridgeConfirm({
                 catalogItem: item,
                 existingAmount,
-                expirySummary: getFridgeExistingExpirySummary(item.id, items, catalogItems, isSeasoningFridgeItem)
+                expirySummary: getFridgeExistingExpirySummary(item.id, items, catalogItems)
             });
             return;
         }
@@ -576,6 +675,167 @@ function useFridgeBuddy() {
     };
 
     const cancelImportUnmatchedModal = () => setImportUnmatchedConfirm(null);
+
+    const addExpenseItemRow = () => {
+        setExpenseDraftItems(prev => [...prev, emptyExpenseItem()]);
+    };
+
+    const updateExpenseDraftItem = (index, field, value) => {
+        setExpenseDraftItems(prev => prev.map((item, i) => (
+            i === index ? { ...item, [field]: value } : item
+        )));
+    };
+
+    const removeExpenseDraftItem = (index) => {
+        setExpenseDraftItems(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const addExpense = () => {
+        const items = serializeExpenseDraftItems(expenseDraftItems);
+        const category = FB.normalizeExpenseCategory(expenseCategory);
+        const price = FB.normalizeExpensePrice(expensePrice);
+        if (!expenseTitle.trim() || !category) return;
+        if (items.length === 0 && price == null) return;
+
+        const expense = {
+            id: Date.now(),
+            title: expenseTitle.trim(),
+            date: FB.normalizeExpenseDate(expenseDate),
+            category,
+            items
+        };
+        if (items.length === 0) expense.price = price;
+
+        setExpenses(prev => [...prev, expense]);
+        setExpenseTitle('');
+        setExpenseDate(getTodayIsoDate());
+        setExpenseCategory('');
+        setExpensePrice('');
+        setExpenseDraftItems([]);
+    };
+
+    const removeExpense = (expenseId) => {
+        setExpenses(prev => prev.filter(expense => expense.id !== expenseId));
+    };
+
+    const previewExpenseImport = () => {
+        const parsed = parseExpenseImportText(expenseImportPaste);
+        if (parsed.error) {
+            setExpenseImportError(parsed.error);
+            setExpenseImportPreview(null);
+            return;
+        }
+        setExpenseImportError('');
+        setExpenseImportPreview(resolveExpenseImportExpenses(parsed.expenses));
+    };
+
+    const clearExpenseImport = () => {
+        setExpenseImportPaste('');
+        setExpenseImportPreview(null);
+        setExpenseImportError('');
+    };
+
+    const executeExpenseImport = (preview) => {
+        let nextId = Date.now();
+        const newExpenses = [];
+
+        preview.forEach(expensePreview => {
+            if (expensePreview.status === 'invalid') return;
+            const items = expensePreview.items
+                .filter(row => row.status === 'ready')
+                .map(row => ({
+                    name: row.name,
+                    price: row.price
+                }));
+            if (items.length === 0 && expensePreview.price == null) return;
+            const expense = {
+                id: nextId++,
+                title: expensePreview.title,
+                date: expensePreview.date,
+                category: expensePreview.category,
+                items
+            };
+            if (items.length === 0) expense.price = expensePreview.price;
+            newExpenses.push(expense);
+        });
+
+        if (newExpenses.length === 0) return;
+        setExpenses(prev => [...prev, ...newExpenses]);
+        clearExpenseImport();
+        setExpenseImportSuccess(true);
+    };
+
+    const confirmExpenseImport = () => {
+        if (!expenseImportPreview?.length) return;
+        const hasImportable = expenseImportPreview.some(expense =>
+            expense.status !== 'invalid' &&
+            (expense.price != null || expense.items.some(row => row.status === 'ready'))
+        );
+        if (!hasImportable) return;
+        executeExpenseImport(expenseImportPreview);
+    };
+
+    const openAddExpenseCategoryModal = () => {
+        setNewExpenseCategoryName('');
+        setExpenseCategoryError('');
+        setAddExpenseCategoryModalOpen(true);
+    };
+
+    const closeAddExpenseCategoryModal = () => {
+        setAddExpenseCategoryModalOpen(false);
+        setNewExpenseCategoryName('');
+        setExpenseCategoryError('');
+    };
+
+    const addExpenseCategory = () => {
+        const result = buildCustomExpenseCategory(newExpenseCategoryName, customExpenseCategories);
+        if (result.error) {
+            setExpenseCategoryError(result.error);
+            return;
+        }
+        setCustomExpenseCategories(prev => [...prev, result.category]);
+        setExpenseCategory(result.category.id);
+        closeAddExpenseCategoryModal();
+    };
+
+    const openDeleteExpenseCategoryModal = () => {
+        setDeleteExpenseCategoryId('');
+        setDeleteExpenseCategoryError('');
+        setDeleteExpenseCategoryModalOpen(true);
+    };
+
+    const closeDeleteExpenseCategoryModal = () => {
+        setDeleteExpenseCategoryModalOpen(false);
+        setDeleteExpenseCategoryId('');
+        setDeleteExpenseCategoryError('');
+    };
+
+    const deleteExpenseCategory = () => {
+        const categoryId = deleteExpenseCategoryId;
+        if (!categoryId) {
+            setDeleteExpenseCategoryError('Select a category to delete');
+            return;
+        }
+        if (FB.isBuiltInExpenseCategory(categoryId)) {
+            setDeleteExpenseCategoryError('Built-in categories cannot be deleted');
+            return;
+        }
+        if (!customExpenseCategories.some(entry => entry.id === categoryId)) {
+            setDeleteExpenseCategoryError('Category not found');
+            return;
+        }
+        setCustomExpenseCategories(prev => prev.filter(entry => entry.id !== categoryId));
+        setExpenses(prev => prev.map(expense => (
+            expense.category === categoryId ? { ...expense, category: 'miscellaneous' } : expense
+        )));
+        if (expenseCategory === categoryId) setExpenseCategory('');
+        closeDeleteExpenseCategoryModal();
+    };
+
+    const expenseCategories = React.useMemo(
+        () => [...EXPENSE_CATEGORIES, ...customExpenseCategories],
+        [customExpenseCategories]
+    );
 
     const previewRecipeImport = () => {
         const parsed = parseRecipeImportText(recipeImportPaste);
@@ -929,6 +1189,23 @@ function useFridgeBuddy() {
 
     const removeItem = (id) => setItems(items.filter(item => item.id !== id));
 
+    const lowerFridgeItemSeasoningStatus = (itemId) => {
+        setItems(prev => prev.map(item => {
+            if (item.id !== itemId) return item;
+            return { ...item, seasoningStatus: FB.lowerSeasoningStatus(item.seasoningStatus) };
+        }));
+    };
+
+    const openEmptyFridgeConfirm = () => setEmptyFridgeConfirmOpen(true);
+    const cancelEmptyFridge = () => setEmptyFridgeConfirmOpen(false);
+    const confirmEmptyFridge = () => {
+        setItems([]);
+        setFridgeSearch('');
+        setDuplicateFridgeConfirm(null);
+        closeEditFridgeItemModal();
+        setEmptyFridgeConfirmOpen(false);
+    };
+
     const openAddLeftoverModal = () => {
         setLeftoverName('');
         setLeftoverExpirationDays(3);
@@ -956,6 +1233,27 @@ function useFridgeBuddy() {
         closeAddLeftoverModal();
     };
 
+    const setFridgeItemTrackingMode = (itemId, mode) => {
+        setItems(prev => prev.map(item => {
+            if (item.id !== itemId) return item;
+            if (!canToggleFridgeTrackingMode(item)) return item;
+            const catalogItem = catalogItems.find(entry => entry.id === item.catalogItemId);
+            if (mode === 'capacity') {
+                return {
+                    ...item,
+                    trackingMode: 'capacity',
+                    seasoningStatus: item.seasoningStatus || 'half'
+                };
+            }
+            return {
+                ...item,
+                trackingMode: 'amount',
+                quantity: item.quantity ?? getDefaultCatalogQuantity(catalogItem) ?? 1,
+                unit: item.unit || catalogItem?.defaultUnit || 'piece'
+            };
+        }));
+    };
+
     const openEditFridgeItemModal = (item) => {
         setEditFridgeItemId(item.id);
         if (isLeftoverFridgeItem(item)) {
@@ -963,12 +1261,20 @@ function useFridgeBuddy() {
             setEditFridgeLeftoverDays(Math.max(1, getDaysUntilExpiry(item.expiry)));
             return;
         }
-        if (isSeasoningFridgeItem(item)) {
+        if (usesFridgeCapacityTracking(item)) {
             setEditFridgeSeasoningStatus(item.seasoningStatus || 'full');
+            if (!isSeasoningFridgeItem(item)) {
+                const daysUntilExpiry = item.expiry ? getDaysUntilExpiry(item.expiry) : 1;
+                setEditFridgeExpirationValue(String(Math.max(1, Number.isFinite(daysUntilExpiry) ? daysUntilExpiry : 1)));
+                setEditFridgeExpirationUnit('days');
+            }
             return;
         }
         setEditFridgeQuantity(String(item.quantity != null && item.quantity !== '' ? item.quantity : 1));
         setEditFridgeUnit(item.unit || 'piece');
+        const daysUntilExpiry = item.expiry ? getDaysUntilExpiry(item.expiry) : 1;
+        setEditFridgeExpirationValue(String(Math.max(1, Number.isFinite(daysUntilExpiry) ? daysUntilExpiry : 1)));
+        setEditFridgeExpirationUnit('days');
     };
 
     const closeEditFridgeItemModal = () => {
@@ -978,6 +1284,8 @@ function useFridgeBuddy() {
         setEditFridgeSeasoningStatus('full');
         setEditFridgeLeftoverName('');
         setEditFridgeLeftoverDays(3);
+        setEditFridgeExpirationValue('');
+        setEditFridgeExpirationUnit('days');
     };
 
     const adjustEditFridgeQuantity = (delta) => {
@@ -992,6 +1300,10 @@ function useFridgeBuddy() {
         setEditFridgeLeftoverDays(prev => adjustDays(prev === '' ? 1 : prev, delta));
     };
 
+    const adjustEditFridgeExpirationValue = (delta) => {
+        setEditFridgeExpirationValue(prev => String(adjustDays(prev === '' ? 1 : prev, delta)));
+    };
+
     const saveFridgeItemEdit = () => {
         if (editFridgeItemId == null) return;
         setItems(prev => prev.map(item => {
@@ -1004,13 +1316,29 @@ function useFridgeBuddy() {
                     expiry: addExpirationFromToday(Math.max(1, Number(editFridgeLeftoverDays) || 1), 'days')
                 };
             }
-            if (isSeasoningFridgeItem(item)) {
-                return { ...item, seasoningStatus: editFridgeSeasoningStatus };
+            if (usesFridgeCapacityTracking(item)) {
+                if (isSeasoningFridgeItem(item)) {
+                    return { ...item, seasoningStatus: editFridgeSeasoningStatus };
+                }
+                return {
+                    ...item,
+                    trackingMode: 'capacity',
+                    seasoningStatus: editFridgeSeasoningStatus,
+                    expiry: addExpirationFromToday(
+                        Math.max(1, Number(editFridgeExpirationValue) || 1),
+                        editFridgeExpirationUnit
+                    )
+                };
             }
             return {
                 ...item,
+                trackingMode: 'amount',
                 quantity: roundIngredientQuantity(editFridgeQuantity),
-                unit: editFridgeUnit || 'piece'
+                unit: editFridgeUnit || 'piece',
+                expiry: addExpirationFromToday(
+                    Math.max(1, Number(editFridgeExpirationValue) || 1),
+                    editFridgeExpirationUnit
+                )
             };
         }));
         closeEditFridgeItemModal();
@@ -1020,16 +1348,16 @@ function useFridgeBuddy() {
         setCatalogExpirationDays(prev => adjustDays(prev === '' ? 1 : prev, delta));
     };
 
-    const adjustEditExpirationDays = (delta) => {
-        setEditCatalogExpirationDays(prev => adjustDays(prev, delta));
+    const adjustCatalogCalories = (delta) => {
+        setCatalogCalories(prev => String(adjustCalories(parseCalories(prev) ?? 0, delta)));
     };
 
-    const adjustCatalogItemCalories = (catalogItemId, delta) => {
-        setCatalogItems(prev => prev.map(item => {
-            if (item.id !== catalogItemId) return item;
-            const current = item.caloriesPerDefault ?? 0;
-            return { ...item, caloriesPerDefault: adjustCalories(current, delta) };
-        }));
+    const adjustEditExpirationDays = (delta) => {
+        setEditCatalogExpirationDays(prev => adjustDays(prev === '' ? 1 : prev, delta));
+    };
+
+    const adjustEditCatalogCalories = (delta) => {
+        setEditCatalogCalories(prev => String(adjustCalories(parseCalories(prev) ?? 0, delta)));
     };
 
     const adjustEditRecipeCalories = (delta) => {
@@ -1099,12 +1427,7 @@ function useFridgeBuddy() {
         setEditRecipeName(recipe.name);
         setEditRecipeCalories(displayCalories != null ? String(displayCalories) : '');
         setEditRecipeCaloriesTouched(parseCalories(recipe.calories) != null);
-        setEditDraftIngredients(recipe.ingredients.map(ingredient => ({
-            catalogItemId: ingredient.catalogItemId ? String(ingredient.catalogItemId) : '',
-            name: ingredient.name || '',
-            quantity: ingredient.quantity ?? 1,
-            unit: ingredient.unit || 'piece'
-        })));
+        setEditDraftIngredients(recipe.ingredients.map(ingredient => toDraftIngredient(ingredient, catalogItems)));
     };
 
     const closeEditRecipeModal = () => {
@@ -1155,7 +1478,7 @@ function useFridgeBuddy() {
         recipes,
         items,
         getDaysUntilExpiry,
-        isSeasoningFridgeItem
+        catalogItems
     );
 
     const expiringItems = items.filter(item => {
@@ -1174,9 +1497,183 @@ function useFridgeBuddy() {
         .sort((a, b) => getDaysUntilExpiry(a.expiry) - getDaysUntilExpiry(b.expiry));
 
     const lowSeasoningItems = items.filter(item =>
-        isSeasoningFridgeItem(item) &&
-        (item.seasoningStatus === 'running-low' || item.seasoningStatus === 'almost-empty')
+        usesFridgeCapacityTracking(item) &&
+        window.FB.normalizeSeasoningStatus(item.seasoningStatus) === 'almost-empty'
     ).sort((a, b) => FB.getSeasoningStatusSortOrder(a.seasoningStatus) - FB.getSeasoningStatusSortOrder(b.seasoningStatus));
+
+    const fridgeGrocerySuggestions = useMemo(
+        () => FB.buildFridgeGrocerySuggestions(items, catalogItems, dismissedGroceryListIds),
+        [items, catalogItems, dismissedGroceryListIds]
+    );
+
+    const suggestedGroceryListItems = useMemo(
+        () => [...fridgeGrocerySuggestions, ...sessionRandomGroceryItems],
+        [fridgeGrocerySuggestions, sessionRandomGroceryItems]
+    );
+
+    const emptyGroceryListDraftItem = () => ({ catalogItemId: '' });
+
+    const addGroceryListItemRow = () => {
+        setGroceryListDraftItems(prev => [...prev, emptyGroceryListDraftItem()]);
+    };
+
+    const updateGroceryListDraftItem = (index, field, value) => {
+        setGroceryListDraftItems(prev => prev.map((item, i) => (
+            i === index ? { ...item, [field]: value } : item
+        )));
+    };
+
+    const removeGroceryListDraftItem = (index) => {
+        setGroceryListDraftItems(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const addManualGroceryListItems = () => {
+        const draftEntries = groceryListDraftItems
+            .map(item => {
+                const catalogItem = catalogItems.find(entry => String(entry.id) === String(item.catalogItemId));
+                if (!catalogItem) return null;
+                return catalogItem;
+            })
+            .filter(Boolean);
+        if (draftEntries.length === 0) return;
+
+        const existingCatalogIds = new Set([
+            ...manualGroceryListItems.map(item => String(item.catalogItemId)),
+            ...suggestedGroceryListItems
+                .filter(item => item.catalogItemId != null)
+                .map(item => String(item.catalogItemId))
+        ]);
+        const existingNames = new Set([
+            ...manualGroceryListItems.map(item => item.name.toLowerCase()),
+            ...suggestedGroceryListItems.map(item => item.name.toLowerCase())
+        ]);
+        let nextId = Date.now();
+        const newItems = draftEntries
+            .filter(catalogItem => (
+                !existingCatalogIds.has(String(catalogItem.id))
+                && !existingNames.has(catalogItem.name.toLowerCase())
+            ))
+            .map(catalogItem => {
+                existingCatalogIds.add(String(catalogItem.id));
+                return {
+                    id: nextId++,
+                    catalogItemId: catalogItem.id,
+                    name: catalogItem.name,
+                    source: 'manual',
+                    detail: 'added by you',
+                    detailTone: 'success'
+                };
+            });
+
+        if (newItems.length === 0) return;
+        setManualGroceryListItems(prev => [...prev, ...newItems]);
+        setGroceryListDraftItems([]);
+    };
+
+    const removeGroceryListItem = (item) => {
+        if (item.source === 'manual') {
+            setManualGroceryListItems(prev => prev.filter(entry => entry.id !== item.id));
+            return;
+        }
+        if (item.source === 'random') {
+            setSessionRandomGroceryItems(prev => prev.filter(entry => entry.id !== item.id));
+            return;
+        }
+        setDismissedGroceryListIds(prev => (
+            prev.includes(item.id) ? prev : [...prev, item.id]
+        ));
+    };
+
+    const isOnManualGroceryList = (item) => manualGroceryListItems.some(entry => {
+        if (item.catalogItemId != null && entry.catalogItemId != null) {
+            return String(entry.catalogItemId) === String(item.catalogItemId);
+        }
+        return entry.name.toLowerCase() === item.name.toLowerCase();
+    });
+
+    const addSuggestedItemToGroceryList = (item) => {
+        if (isOnManualGroceryList(item)) return;
+
+        let catalogItemId = item.catalogItemId;
+        let name = item.name;
+
+        if (!catalogItemId && item.fridgeItemId) {
+            const fridgeItem = items.find(entry => entry.id === item.fridgeItemId);
+            catalogItemId = fridgeItem?.catalogItemId;
+            name = fridgeItem?.name || name;
+        }
+
+        if (!catalogItemId) {
+            const catalogMatch = catalogItems.find(entry => entry.name.toLowerCase() === name.toLowerCase());
+            catalogItemId = catalogMatch?.id;
+            name = catalogMatch?.name || name;
+        }
+
+        if (!catalogItemId) return;
+
+        setManualGroceryListItems(prev => [...prev, {
+            id: Date.now(),
+            catalogItemId,
+            name,
+            source: 'manual',
+            detail: 'added by you',
+            detailTone: 'success'
+        }]);
+    };
+
+    const appendManualGroceryListEntries = (entries) => {
+        if (!entries.length) return 0;
+        const existingCatalogIds = new Set(
+            manualGroceryListItems
+                .filter(item => item.catalogItemId != null)
+                .map(item => String(item.catalogItemId))
+        );
+        const existingNames = new Set(
+            manualGroceryListItems.map(item => item.name.toLowerCase())
+        );
+        let nextId = Date.now();
+        const newItems = entries
+            .filter(entry => (
+                !existingCatalogIds.has(String(entry.catalogItemId))
+                && !existingNames.has(entry.name.toLowerCase())
+            ))
+            .map(entry => {
+                existingCatalogIds.add(String(entry.catalogItemId));
+                existingNames.add(entry.name.toLowerCase());
+                return { id: nextId++, ...entry };
+            });
+        if (newItems.length === 0) return 0;
+        setManualGroceryListItems(prev => [...prev, ...newItems]);
+        return newItems.length;
+    };
+
+    const addRecipeIngredientsToGroceryList = () => {
+        if (!groceryListRecipeId) return;
+        const recipe = recipes.find(entry => String(entry.id) === String(groceryListRecipeId));
+        if (!recipe) return;
+
+        const missingIngredients = FB.getRecipeIngredientsNotInFridge(
+            recipe,
+            items,
+            getDaysUntilExpiry,
+            catalogItems
+        );
+        const entries = missingIngredients
+            .map(ingredient => {
+                const resolved = FB.resolveGroceryListCatalogEntry(ingredient, catalogItems);
+                if (!resolved) return null;
+                return {
+                    catalogItemId: resolved.catalogItemId,
+                    name: resolved.name,
+                    source: 'manual',
+                    detail: `from ${recipe.name}`,
+                    detailTone: 'success'
+                };
+            })
+            .filter(Boolean);
+
+        appendManualGroceryListEntries(entries);
+    };
 
     return {
         catalogItems, items, recipes, activeTab, setActiveTab,
@@ -1188,10 +1685,13 @@ function useFridgeBuddy() {
         catalogCategory, setCatalogCategory,
         catalogDefaultUnit, setCatalogDefaultUnit,
         catalogExpirationDays, setCatalogExpirationDays,
+        catalogCalories, setCatalogCalories, adjustCatalogCalories,
         editingCatalogItemId,
         editCatalogName, setEditCatalogName,
         editCatalogCategory, setEditCatalogCategory,
-        editCatalogExpirationDays,
+        editCatalogExpirationDays, setEditCatalogExpirationDays,
+        editCatalogCalories, setEditCatalogCalories, adjustEditCatalogCalories,
+        editCatalogDefaultUnit, setEditCatalogDefaultUnit,
         editCatalogDefaultStatus, setEditCatalogDefaultStatus,
         recipeName, setRecipeName,
         draftIngredients, setDraftIngredients,
@@ -1204,12 +1704,18 @@ function useFridgeBuddy() {
         },
         groupedCatalogItems, filteredFridgeItems, fridgeItemGroups,
         expiringItems, expiredItems, leftoverItems, lowSeasoningItems,
+        suggestedGroceryListItems, manualGroceryListItems, groceryListDraftItems,
         readyToMakeRecipes, almostThereRecipes,
         viewingRecipeId, viewingRecipe,
         duplicateFridgeConfirm,
+        emptyFridgeConfirmOpen, cancelEmptyFridge, confirmEmptyFridge,
         importUnmatchedConfirm,
         addedToFridgeItemId,
         agentPromptCopied, copyAgentPrompt,
+        addGroceryListItemRow, updateGroceryListDraftItem, removeGroceryListDraftItem,
+        addManualGroceryListItems, removeGroceryListItem, addSuggestedItemToGroceryList,
+        isOnManualGroceryList, groceryListRecipeId, setGroceryListRecipeId,
+        addRecipeIngredientsToGroceryList,
         haulImportPaste, setHaulImportPaste,
         haulImportPreview, haulImportError,
         haulImportSuccess,
@@ -1231,14 +1737,38 @@ function useFridgeBuddy() {
         mealImportRemoveFromFridge, setMealImportRemoveFromFridge,
         mealImportAddToRecipes, setMealImportAddToRecipes,
         previewMealImport, confirmMealImport, clearMealImport,
+        expenses, expenseTitle, setExpenseTitle,
+        expenseDate, setExpenseDate,
+        expenseCategory, setExpenseCategory,
+        expensePrice, setExpensePrice,
+        expenseCategories,
+        expenseDraftItems, setExpenseDraftItems,
+        customExpenseCategories,
+        addExpenseCategoryModalOpen,
+        deleteExpenseCategoryModalOpen,
+        newExpenseCategoryName, setNewExpenseCategoryName,
+        deleteExpenseCategoryId, setDeleteExpenseCategoryId,
+        expenseCategoryError,
+        deleteExpenseCategoryError,
+        openAddExpenseCategoryModal, closeAddExpenseCategoryModal, addExpenseCategory,
+        openDeleteExpenseCategoryModal, closeDeleteExpenseCategoryModal, deleteExpenseCategory,
+        expenseImportPaste, setExpenseImportPaste,
+        expenseImportPreview, expenseImportError,
+        expenseImportSuccess,
+        expenseChartFilter, setExpenseChartFilter,
+        addExpense, addExpenseItemRow, updateExpenseDraftItem, removeExpenseDraftItem,
+        previewExpenseImport, confirmExpenseImport, clearExpenseImport,
+        removeExpense,
         addMealManual, addMealIngredientRow, addMealFromRecipes, setMealRecipeSelection, removeMeal, removeMealIngredient,
         updateMealCalories,
         getCatalogDraft, updateCatalogDraft, adjustCatalogDraftField,
-        isSeasoningCatalogItem, isSeasoningFridgeItem,
+        isSeasoningCatalogItem, isSeasoningFridgeItem, usesFridgeCapacityTracking,
+        canToggleFridgeTrackingMode, setFridgeItemTrackingMode,
         openAddCatalogModal, closeAddCatalogModal, addCatalogItem,
         openEditCatalogModal, closeEditCatalogModal, saveCatalogItemEdit, deleteCatalogItemFromModal,
         addFromCatalogRow, confirmDuplicateFridgeAdd, cancelDuplicateFridgeAdd,
-        removeItem,
+        removeItem, lowerFridgeItemSeasoningStatus,
+        openEmptyFridgeConfirm,
         openAddLeftoverModal, closeAddLeftoverModal, addLeftover,
         addLeftoverModalOpen, leftoverName, setLeftoverName,
         leftoverExpirationDays, setLeftoverExpirationDays, adjustLeftoverExpirationDays,
@@ -1248,10 +1778,13 @@ function useFridgeBuddy() {
         editFridgeSeasoningStatus, adjustEditFridgeSeasoningStatus,
         editFridgeLeftoverName, setEditFridgeLeftoverName,
         editFridgeLeftoverDays, setEditFridgeLeftoverDays, adjustEditFridgeLeftoverDays,
+        editFridgeExpirationValue, setEditFridgeExpirationValue,
+        editFridgeExpirationUnit, setEditFridgeExpirationUnit,
+        adjustEditFridgeExpirationValue,
         openEditFridgeItemModal, closeEditFridgeItemModal, saveFridgeItemEdit,
         isLeftoverFridgeItem,
         adjustCatalogExpirationDays, adjustEditExpirationDays,
-        adjustCatalogItemCalories, adjustEditRecipeCalories,
+        adjustEditCatalogCalories, adjustEditRecipeCalories,
         addRecipe, updateRecipeCalories, addIngredientRow, addIngredientRowToList,
         updateIngredientInList, adjustIngredientQuantityInList, removeIngredientRowFromList,
         openEditRecipeModal, closeEditRecipeModal, saveRecipeEdit, deleteRecipeFromModal,

@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 520" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b8d4e8"/>
+      <stop offset="55%" stop-color="#e8ece4"/>
+      <stop offset="100%" stop-color="#efe6d8"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dcc9ad"/>
+      <stop offset="100%" stop-color="#c4a882"/>
+    </linearGradient>
+    <pattern id="brick" width="36" height="18" patternUnits="userSpaceOnUse">
+      <rect width="36" height="18" fill="#c9a882"/>
+      <rect width="17" height="8" x="1" y="1" fill="#b89272" rx="1"/>
+      <rect width="17" height="8" x="19" y="10" fill="#b89272" rx="1"/>
+    </pattern>
+    <pattern id="stripe" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="16" fill="#f5e6a8"/>
+      <rect width="8" height="16" fill="#fff8e8"/>
+    </pattern>
+    <pattern id="wood" width="40" height="8" patternUnits="userSpaceOnUse">
+      <rect width="40" height="8" fill="#8b5a3c"/>
+      <rect width="40" height="2" y="6" fill="#6b4423" opacity="0.35"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="520" fill="url(#sky)"/>
+
+  <!-- distant buildings - offset, not mirrored -->
+  <rect x="980" y="175" width="90" height="95" fill="#d4a574" opacity="0.55" rx="2"/>
+  <rect x="1080" y="160" width="70" height="110" fill="#c9922a" opacity="0.45" rx="2"/>
+  <rect x="1160" y="185" width="110" height="85" fill="#8b5a3c" opacity="0.4" rx="2"/>
+  <rect x="1285" y="170" width="85" height="100" fill="#3d8f7e" opacity="0.35" rx="2"/>
+  <rect x="220" y="190" width="75" height="80" fill="#d4a574" opacity="0.4" rx="2"/>
+  <rect x="310" y="205" width="55" height="65" fill="#a67c52" opacity="0.35" rx="2"/>
+
+  <!-- trees at varied spots -->
+  <ellipse cx="145" cy="235" rx="95" ry="58" fill="#7aab62" opacity="0.42"/>
+  <ellipse cx="1510" cy="248" rx="110" ry="62" fill="#6a9a58" opacity="0.38"/>
+  <ellipse cx="720" cy="255" rx="70" ry="40" fill="#8fbf78" opacity="0.22"/>
+
+  <!-- ground -->
+  <rect y="385" width="1600" height="135" fill="url(#ground)"/>
+  <rect y="405" width="1600" height="115" fill="url(#brick)" opacity="0.55"/>
+
+  <!-- wheelbarrow 1 - tomatoes, left foreground -->
+  <g transform="translate(55, 335) rotate(-6)">
+    <circle cx="42" cy="72" r="20" fill="#3d2818" stroke="#2a1a10" stroke-width="3"/>
+    <circle cx="42" cy="72" r="9" fill="#6b4423"/>
+    <path d="M62,62 L148,52 L142,22 L58,32 Z" fill="#9a7048" stroke="#6b4423" stroke-width="2"/>
+    <path d="M62,62 L42,72" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/>
+    <path d="M145,24 L172,4" stroke="#6b4423" stroke-width="6" stroke-linecap="round"/>
+    <path d="M135,26 L162,8" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="88" cy="38" r="13" fill="#d4453a"/>
+    <circle cx="112" cy="42" r="11" fill="#c43028"/>
+    <circle cx="98" cy="48" r="9" fill="#e8782a"/>
+  </g>
+
+  <!-- umbrella stall - yellow, left of center -->
+  <g transform="translate(210, 248) rotate(2)">
+    <ellipse cx="95" cy="18" rx="105" ry="28" fill="#f0d878" stroke="#c9922a" stroke-width="3"/>
+    <ellipse cx="95" cy="18" rx="105" ry="28" fill="none" stroke="#fff" stroke-width="2" opacity="0.3"/>
+    <rect x="88" y="18" width="14" height="95" fill="#6b4423"/>
+    <rect x="25" y="108" width="140" height="12" fill="#8b5a3c" rx="2"/>
+    <rect x="18" y="118" width="154" height="58" fill="#a67c52" rx="3"/>
+    <rect x="28" y="128" width="134" height="10" fill="#8b5a3c"/>
+    <circle cx="55" cy="118" r="12" fill="#5a9e4b"/>
+    <circle cx="85" cy="122" r="10" fill="#e8782a"/>
+    <circle cx="115" cy="116" r="11" fill="#d4453a"/>
+    <rect x="138" y="108" width="16" height="26" rx="7" fill="#7b4b8a"/>
+    <rect x="35" y="148" width="120" height="22" fill="#6b4423" rx="2"/>
+    <circle cx="58" cy="159" r="7" fill="#e8b923"/>
+    <circle cx="88" cy="161" r="6" fill="#5a9e4b"/>
+    <circle cx="118" cy="158" r="7" fill="#d4453a"/>
+  </g>
+
+  <!-- red truck stall - off-center -->
+  <g transform="translate(430, 268) rotate(-1)">
+    <rect x="0" y="55" width="165" height="48" fill="#b83830" rx="4"/>
+    <rect x="8" y="48" width="95" height="42" fill="#c43028" rx="3"/>
+    <rect x="108" y="58" width="52" height="38" fill="#8b2942" rx="2"/>
+    <rect x="115" y="66" width="38" height="22" fill="#6b4423" opacity="0.5" rx="1"/>
+    <circle cx="38" cy="108" r="16" fill="#2a1a10"/>
+    <circle cx="38" cy="108" r="7" fill="#4a3020"/>
+    <circle cx="128" cy="108" r="16" fill="#2a1a10"/>
+    <circle cx="128" cy="108" r="7" fill="#4a3020"/>
+    <rect x="12" y="28" width="78" height="28" fill="#7a5235" rx="2"/>
+    <circle cx="32" cy="42" r="9" fill="#e8782a"/>
+    <circle cx="52" cy="44" r="8" fill="#d4453a"/>
+    <circle cx="72" cy="40" r="8" fill="#e8b923"/>
+    <ellipse cx="145" cy="42" rx="14" ry="11" fill="#5a9e4b"/>
+    <rect x="5" y="118" width="155" height="14" fill="#6b4423" opacity="0.6"/>
+  </g>
+
+  <!-- crate pile on ground - center -->
+  <g transform="translate(640, 355) rotate(3)">
+    <rect x="0" y="35" width="72" height="52" fill="#7a5235" rx="2"/>
+    <rect x="18" y="18" width="68" height="48" fill="#8b5a3c" rx="2"/>
+    <rect x="38" y="0" width="62" height="44" fill="#9a7048" rx="2"/>
+    <circle cx="28" cy="58" r="11" fill="#e8782a"/>
+    <circle cx="52" cy="52" r="10" fill="#d4453a"/>
+    <circle cx="72" cy="38" r="12" fill="#e8782a"/>
+    <circle cx="88" cy="22" r="9" fill="#c9922a"/>
+    <ellipse cx="55" cy="18" rx="22" ry="14" fill="#5a9e4b"/>
+    <ellipse cx="55" cy="18" rx="10" ry="6" fill="#7aab62"/>
+  </g>
+
+  <!-- tall wooden stall with teal awning - right of center, tallest -->
+  <g transform="translate(770, 195) rotate(-2)">
+    <rect x="0" y="95" width="185" height="145" fill="#5c3d28" rx="3"/>
+    <rect x="10" y="105" width="165" height="125" fill="url(#wood)"/>
+    <path d="M-8,95 L92,8 L192,95 Z" fill="#3d8f7e" stroke="#2a6b5e" stroke-width="4"/>
+    <rect x="70" y="155" width="45" height="75" fill="#3d2818" rx="2"/>
+    <rect x="22" y="140" width="48" height="55" fill="#8b5a3c" rx="2"/>
+    <rect x="115" y="138" width="52" height="58" fill="#7a5235" rx="2"/>
+    <rect x="28" y="152" width="36" height="8" fill="#6b4423"/>
+    <circle cx="38" cy="144" r="8" fill="#d4453a"/>
+    <circle cx="52" cy="146" r="7" fill="#5a9e4b"/>
+    <rect x="125" y="150" width="32" height="8" fill="#6b4423"/>
+    <circle cx="135" cy="142" r="8" fill="#e8b923"/>
+    <circle cx="150" cy="144" r="7" fill="#e8782a"/>
+    <rect x="15" y="218" width="155" height="18" fill="#6b4423"/>
+    <ellipse cx="45" cy="208" rx="14" ry="12" fill="#e8782a"/>
+    <ellipse cx="92" cy="212" rx="12" ry="10" fill="#d4453a"/>
+    <ellipse cx="138" cy="206" rx="13" ry="11" fill="#5a9e4b"/>
+  </g>
+
+  <!-- sunflower bucket -->
+  <g transform="translate(1010, 340) rotate(5)">
+    <path d="M15,70 L55,70 L48,35 L22,35 Z" fill="#6b4423"/>
+    <rect x="18" y="68" width="34" height="8" fill="#4a3020"/>
+    <circle cx="32" cy="28" r="16" fill="#f5c842"/>
+    <circle cx="32" cy="28" r="7" fill="#6b4423"/>
+    <ellipse cx="32" cy="12" rx="8" ry="5" fill="#5a9e4b"/>
+    <circle cx="48" cy="48" r="14" fill="#f5c842"/>
+    <circle cx="48" cy="48" r="6" fill="#6b4423"/>
+  </g>
+
+  <!-- wheelbarrow 2 - greens, right side -->
+  <g transform="translate(1120, 348) rotate(8)">
+    <circle cx="38" cy="68" r="18" fill="#3d2818" stroke="#2a1a10" stroke-width="3"/>
+    <circle cx="38" cy="68" r="8" fill="#6b4423"/>
+    <path d="M58,58 L132,48 L128,24 L54,34 Z" fill="#8b5a3c" stroke="#6b4423" stroke-width="2"/>
+    <path d="M58,58 L38,68" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/>
+    <path d="M128,26 L152,8" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/>
+    <path d="M120,28 L145,12" stroke="#6b4423" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="82" cy="38" rx="18" ry="10" fill="#5a9e4b"/>
+    <ellipse cx="105" cy="42" rx="14" ry="8" fill="#7aab62"/>
+    <circle cx="95" cy="34" r="8" fill="#e8782a"/>
+  </g>
+
+  <!-- low striped awning stall - far right, shorter -->
+  <g transform="translate(1285, 285) rotate(-4)">
+    <path d="M0,55 L75,12 L155,58 Z" fill="url(#stripe)" stroke="#6b4423" stroke-width="3"/>
+    <rect x="18" y="58" width="118" height="72" fill="#9a7048" rx="2"/>
+    <rect x="28" y="68" width="98" height="10" fill="#8b5a3c"/>
+    <circle cx="48" cy="58" r="10" fill="#d4453a"/>
+    <circle cx="72" cy="62" r="9" fill="#e8782a"/>
+    <circle cx="96" cy="56" r="10" fill="#e8b923"/>
+    <circle cx="118" cy="60" r="8" fill="#5a9e4b"/>
+    <rect x="35" y="88" width="85" height="32" fill="#6b4423" rx="2"/>
+    <ellipse cx="55" cy="102" rx="12" ry="8" fill="#7b4b8a"/>
+    <circle cx="82" cy="104" r="8" fill="#d4453a"/>
+    <circle cx="105" cy="100" r="7" fill="#e8782a"/>
+  </g>
+
+  <!-- wicker basket on ground - mid right -->
+  <g transform="translate(920, 395) rotate(-8)">
+    <ellipse cx="35" cy="28" rx="32" ry="14" fill="#a67c52"/>
+    <path d="M8,28 Q35,8 62,28 L58,48 Q35,58 12,48 Z" fill="#8b5a3c" stroke="#6b4423" stroke-width="2"/>
+    <circle cx="25" cy="22" r="8" fill="#d4453a"/>
+    <circle cx="42" cy="20" r="7" fill="#e8782a"/>
+    <circle cx="48" cy="28" r="6" fill="#e8b923"/>
+  </g>
+
+  <!-- loose pumpkins foreground left -->
+  <g transform="translate(380, 410)">
+    <ellipse cx="0" cy="0" rx="20" ry="17" fill="#e8782a"/>
+    <ellipse cx="38" cy="6" rx="16" ry="14" fill="#d96a24"/>
+    <ellipse cx="22" cy="-8" rx="8" ry="5" fill="#5a9e4b"/>
+  </g>
+
+  <!-- loose produce foreground center-right -->
+  <g transform="translate(580, 418) rotate(12)">
+    <circle cx="0" cy="0" r="11" fill="#d4453a"/>
+    <circle cx="22" cy="4" r="9" fill="#e8782a"/>
+    <rect x="38" y="-6" width="12" height="22" rx="5" fill="#7b4b8a"/>
+  </g>
+
+  <!-- hanging vines - asymmetric -->
+  <path d="M0,0 Q60,90 25,180 Q5,260 0,320" fill="none" stroke="#5a9e4b" stroke-width="7" opacity="0.45"/>
+  <path d="M1600,20 Q1540,110 1575,200 Q1590,290 1600,350" fill="none" stroke="#6aab58" stroke-width="6" opacity="0.4"/>
+  <ellipse cx="90" cy="48" rx="42" ry="26" fill="#7aab62" opacity="0.65"/>
+  <ellipse cx="1520" cy="72" rx="48" ry="28" fill="#6a9a58" opacity="0.55"/>
+  <ellipse cx="520" cy="88" rx="28" ry="16" fill="#8fbf78" opacity="0.35"/>
+</svg>

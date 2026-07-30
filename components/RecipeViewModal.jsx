@@ -1,4 +1,4 @@
-function RecipeViewModal({ recipe, catalogItems, items, isSeasoningFridgeItem, toggleRecipeShowQuantities, closeViewRecipeModal }) {
+function RecipeViewModal({ recipe, catalogItems, items, toggleRecipeShowQuantities, closeViewRecipeModal }) {
     const { RecipeCard } = window.FBComponents;
     const { modalOverlay, modalCard } = window.FB_STYLES;
 
@@ -14,7 +14,6 @@ function RecipeViewModal({ recipe, catalogItems, items, isSeasoningFridgeItem, t
                     recipe={recipe}
                     catalogItems={catalogItems}
                     items={items}
-                    isSeasoningFridgeItem={isSeasoningFridgeItem}
                     toggleRecipeShowQuantities={toggleRecipeShowQuantities}
                 />
             </div>

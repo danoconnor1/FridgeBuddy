@@ -1,15 +1,16 @@
 function FridgeTab({
     items, catalogItems, filteredFridgeItems, fridgeItemGroups, fridgeSearch, setFridgeSearch,
-    fridgeSort, setFridgeSort, isSeasoningFridgeItem, isLeftoverFridgeItem,
-    removeItem, openEditFridgeItemModal, openAddLeftoverModal, setActiveTab,
+    fridgeSort, setFridgeSort, isSeasoningFridgeItem, usesFridgeCapacityTracking,
+    canToggleFridgeTrackingMode, setFridgeItemTrackingMode, isLeftoverFridgeItem,
+    removeItem, lowerFridgeItemSeasoningStatus, openEmptyFridgeConfirm, openEditFridgeItemModal, openAddLeftoverModal, setActiveTab,
     haulImportPaste, setHaulImportPaste,
     haulImportPreview, haulImportError,
     haulImportSuccess,
     previewHaulImport, confirmHaulImport, clearHaulImport
 }) {
     const {
-        formatExpiresIn, formatSeasoningStatus, getDaysUntilExpiry,
-        getSeasoningStatusColor, getItemQuantityDisplay,
+        formatExpiresIn, formatSeasoningStatus, getDaysUntilExpiry, normalizeSeasoningStatus,
+        getSeasoningStatusColor, getItemQuantityDisplay, getFridgeTrackingMode,
         estimateFridgeItemCalories, formatCalories, isFoodCategory
     } = window.FB;
     const { ImportHaulSection } = window.FBComponents;
@@ -20,27 +21,47 @@ function FridgeTab({
     };
 
     const renderFridgeItemCard = (item) => {
-        const isSeasoning = isSeasoningFridgeItem(item);
+        const isCatalogSeasoning = isSeasoningFridgeItem(item);
         const isLeftover = isLeftoverFridgeItem(item);
+        const usesCapacity = usesFridgeCapacityTracking(item);
+        const canToggle = canToggleFridgeTrackingMode(item);
+        const trackingMode = getFridgeTrackingMode(item, catalogItems);
         const itemCategory = getItemCategory(item);
-        const days = isSeasoning ? null : getDaysUntilExpiry(item.expiry);
-        let statusColor = isSeasoning
-            ? getSeasoningStatusColor(item.seasoningStatus)
-            : 'var(--fill-success)';
-        let statusText = isSeasoning
-            ? formatSeasoningStatus(item.seasoningStatus)
-            : (days > 3 ? 'Fresh' : days <= 0 ? 'Expired' : 'Expiring soon');
-        if (!isSeasoning) {
+        const days = isCatalogSeasoning ? null : getDaysUntilExpiry(item.expiry);
+        let statusColor = 'var(--fill-success)';
+        let statusText = 'Fresh';
+
+        if (isCatalogSeasoning) {
+            statusColor = getSeasoningStatusColor(item.seasoningStatus);
+            statusText = formatSeasoningStatus(item.seasoningStatus);
+        } else if (days != null) {
+            statusText = days > 3 ? 'Fresh' : days <= 0 ? 'Expired' : 'Expiring soon';
             if (days <= 0) statusColor = 'var(--fill-danger)';
             else if (days <= 3) statusColor = 'var(--fill-warning)';
         }
 
-        const itemCalories = !isSeasoning && !isLeftover ? estimateFridgeItemCalories(item, catalogItems) : null;
+        const capacityStatus = normalizeSeasoningStatus(item.seasoningStatus);
+        const itemCalories = !usesCapacity && !isLeftover ? estimateFridgeItemCalories(item, catalogItems) : null;
         const quantityLabel = isLeftover
             ? 'Leftover'
-            : isSeasoning
-                ? formatSeasoningStatus(item.seasoningStatus)
+            : usesCapacity
+                ? formatSeasoningStatus(capacityStatus)
                 : getItemQuantityDisplay(item);
+        const quantityColor = usesCapacity
+            ? getSeasoningStatusColor(capacityStatus)
+            : 'var(--text-secondary)';
+
+        const renderCapacityStatusControl = (className) => (
+            <button
+                type="button"
+                className={className}
+                onClick={() => lowerFridgeItemSeasoningStatus(item.id)}
+                style={{ color: quantityColor }}
+                aria-label={`Amount left for ${item.name}: ${quantityLabel}. Click to lower.`}
+            >
+                {quantityLabel}
+            </button>
+        );
 
         return (
             <div
@@ -48,24 +69,56 @@ function FridgeTab({
                 className="fridge-column-card"
                 data-category={isFoodCategory(itemCategory) ? itemCategory : undefined}
             >
-                <p className="fridge-column-card-name">{item.name}</p>
-                {!isSeasoning && (
+                <div className="fridge-column-card-header">
+                    <p className="fridge-column-card-name">{item.name}</p>
+                    {canToggle && (
+                        <div className="fridge-tracking-toggle" role="group" aria-label="Tracking mode">
+                            <button
+                                type="button"
+                                className={trackingMode === 'amount' ? 'active' : ''}
+                                onClick={() => setFridgeItemTrackingMode(item.id, 'amount')}
+                                aria-pressed={trackingMode === 'amount'}
+                            >
+                                Amt
+                            </button>
+                            <button
+                                type="button"
+                                className={trackingMode === 'capacity' ? 'active' : ''}
+                                onClick={() => setFridgeItemTrackingMode(item.id, 'capacity')}
+                                aria-pressed={trackingMode === 'capacity'}
+                            >
+                                %
+                            </button>
+                        </div>
+                    )}
+                </div>
+                {!isCatalogSeasoning && (
                     <p className="fridge-column-card-meta">{formatExpiresIn(item.expiry)}</p>
                 )}
-                {!isSeasoning && itemCalories != null && (
+                {!usesCapacity && itemCalories != null && (
                     <p className="fridge-column-card-meta">{formatCalories(itemCalories)} cal</p>
                 )}
                 <div className="fridge-column-card-status">
                     <i className="ti ti-circle-filled" style={{ fontSize: '7px', color: statusColor }} aria-hidden="true"></i>
-                    <span style={{ color: statusColor }}>{statusText}</span>
+                    {isCatalogSeasoning ? (
+                        renderCapacityStatusControl('fridge-column-status-btn fridge-column-status-btn--status-row')
+                    ) : (
+                        <span style={{ color: statusColor }}>{statusText}</span>
+                    )}
                 </div>
                 <div className="fridge-column-card-controls">
-                    <span
-                        className="fridge-column-qty-label"
-                        style={{ color: isSeasoning ? statusColor : 'var(--text-secondary)' }}
-                    >
-                        {quantityLabel}
-                    </span>
+                    {usesCapacity && !isCatalogSeasoning ? (
+                        renderCapacityStatusControl('fridge-column-status-btn')
+                    ) : !usesCapacity ? (
+                        <span
+                            className="fridge-column-qty-label"
+                            style={{ color: quantityColor }}
+                        >
+                            {quantityLabel}
+                        </span>
+                    ) : (
+                        <span className="fridge-column-qty-label" aria-hidden="true" />
+                    )}
                     <div className="fridge-column-card-actions">
                         <button
                             type="button"
@@ -151,7 +204,18 @@ function FridgeTab({
             </section>
 
             <section className="meals-section fridge-my-section">
-                <h2 className="meals-section-title">My fridge</h2>
+                <div className="fridge-my-header">
+                    <h2 className="meals-section-title">My fridge</h2>
+                    {items.length > 0 && (
+                        <button
+                            type="button"
+                            className="fridge-empty-btn"
+                            onClick={openEmptyFridgeConfirm}
+                        >
+                            Empty fridge
+                        </button>
+                    )}
+                </div>
 
                 {items.length > 0 && (
                     <div className="fridge-my-controls">

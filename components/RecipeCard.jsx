@@ -1,4 +1,4 @@
-function RecipeCard({ recipe, catalogItems, items, isSeasoningFridgeItem, toggleRecipeShowQuantities, onEdit, onUpdateCalories }) {
+function RecipeCard({ recipe, catalogItems, items, toggleRecipeShowQuantities, onEdit, onUpdateCalories }) {
     const { RecipeIngredientList, CaloriesField } = window.FBComponents;
     const displayCalories = window.FB.getRecipeDisplayCalories(recipe, catalogItems);
 
@@ -43,7 +43,7 @@ function RecipeCard({ recipe, catalogItems, items, isSeasoningFridgeItem, toggle
                     ingredients={recipe.ingredients}
                     showQuantities={recipe.showQuantities}
                     fridgeItems={items}
-                    isSeasoningFridgeItem={isSeasoningFridgeItem}
+                    catalogItems={catalogItems}
                 />
             </div>
             {onEdit && (

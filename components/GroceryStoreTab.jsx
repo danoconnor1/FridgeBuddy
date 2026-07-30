@@ -2,10 +2,9 @@ function GroceryStoreTab({
     catalogItems, groupedCatalogItems, groceryStoreSearch, setGroceryStoreSearch,
     catalogAddSuccess, openAddCatalogModal, addedToFridgeItemId,
     getCatalogDraft, updateCatalogDraft, adjustCatalogDraftField,
-    isSeasoningCatalogItem, addFromCatalogRow, openEditCatalogModal,
-    adjustCatalogItemCalories
+    isSeasoningCatalogItem, addFromCatalogRow, openEditCatalogModal
 }) {
-    const { UNITS, formatCategory, formatUnitLabel, SEASONING_STATUSES } = window.FB;
+    const { UNITS, formatCategory, formatUnitLabel, formatCalories, estimateCatalogDraftCalories, SEASONING_STATUSES } = window.FB;
     const { categoryHeading, smallStepBtn, tickerLabel, compactSelect } = window.FB_STYLES;
     const filteredCount = groupedCatalogItems.reduce((sum, g) => sum + g.items.length, 0);
 
@@ -53,6 +52,7 @@ function GroceryStoreTab({
                         {group.items.map(item => {
                             const draft = getCatalogDraft(item);
                             const isSeasoning = isSeasoningCatalogItem(item);
+                            const draftCalories = estimateCatalogDraftCalories(item, draft);
                             return (
                                 <div key={item.id} style={{
                                     background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '12px',
@@ -60,6 +60,11 @@ function GroceryStoreTab({
                                 }}>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <p style={{ fontSize: '14px', fontWeight: '500', margin: '0' }}>{item.name}</p>
+                                        {!isSeasoning && (
+                                            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
+                                                {draftCalories != null ? `${formatCalories(draftCalories)} cal` : '— cal'}
+                                            </p>
+                                        )}
                                     </div>
                                     <div style={{
                                         display: 'grid', gridTemplateColumns: '24px 22px auto auto 22px',
@@ -101,13 +106,6 @@ function GroceryStoreTab({
                                                     <option value="months">months</option>
                                                 </select>
                                                 <button type="button" onClick={(e) => { e.stopPropagation(); adjustCatalogDraftField(item, 'expirationValue', 1); }} style={smallStepBtn} aria-label="Increase expiration">+</button>
-                                                <span style={tickerLabel}>Cal</span>
-                                                <button type="button" onClick={(e) => { e.stopPropagation(); adjustCatalogItemCalories(item.id, -10); }} style={smallStepBtn} aria-label="Decrease calories per serving">−</button>
-                                                <span style={{ minWidth: '16px', textAlign: 'center', fontSize: '12px', fontWeight: '500' }}>
-                                                    {item.caloriesPerDefault != null ? window.FB.formatCalories(item.caloriesPerDefault) : '—'}
-                                                </span>
-                                                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>cal</span>
-                                                <button type="button" onClick={(e) => { e.stopPropagation(); adjustCatalogItemCalories(item.id, 10); }} style={smallStepBtn} aria-label="Increase calories per serving">+</button>
                                                 <span style={tickerLabel}>Qt</span>
                                                 <button type="button" onClick={(e) => { e.stopPropagation(); adjustCatalogDraftField(item, 'quantity', -1); }} style={smallStepBtn} aria-label="Decrease quantity">−</button>
                                                 <span style={{ minWidth: '16px', textAlign: 'center', fontSize: '12px', fontWeight: '500' }}>{draft.quantity}</span>

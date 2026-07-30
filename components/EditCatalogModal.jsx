@@ -1,9 +1,13 @@
 function EditCatalogModal({
     editCatalogName, setEditCatalogName, editCatalogCategory, setEditCatalogCategory,
-    editCatalogExpirationDays, editCatalogDefaultStatus, setEditCatalogDefaultStatus,
+    editCatalogExpirationDays, setEditCatalogExpirationDays,
+    editCatalogCalories, setEditCatalogCalories, adjustEditCatalogCalories,
+    editCatalogDefaultUnit, setEditCatalogDefaultUnit,
+    editCatalogDefaultStatus, setEditCatalogDefaultStatus,
     adjustEditExpirationDays, closeEditCatalogModal, saveCatalogItemEdit, deleteCatalogItemFromModal
 }) {
-    const { CATEGORIES, SEASONING_STATUSES, formatCategory, isSeasoningCategory } = window.FB;
+    const { CATEGORIES, UNITS, SEASONING_STATUSES, formatCategory, formatUnitLabel, isSeasoningCategory } = window.FB;
+    const { CaloriesField } = window.FBComponents;
     const { modalOverlay, modalCard, stepBtn } = window.FB_STYLES;
 
     return (
@@ -41,17 +45,45 @@ function EditCatalogModal({
                         </select>
                     </label>
                 ) : (
-                    <label style={{ display: 'block', marginBottom: '1rem' }}>
-                        <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Expiration</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <button type="button" onClick={() => adjustEditExpirationDays(-1)} style={stepBtn} aria-label="Decrease days until expiration">−</button>
-                            <span style={{ minWidth: '56px', textAlign: 'center', fontSize: '14px', fontWeight: '500', color: 'var(--text-primary)' }}>
-                                {editCatalogExpirationDays}
-                            </span>
-                            <button type="button" onClick={() => adjustEditExpirationDays(1)} style={stepBtn} aria-label="Increase days until expiration">+</button>
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '14px', flexShrink: 0 }}>days</span>
-                        </div>
-                    </label>
+                    <>
+                        <label style={{ display: 'block', marginBottom: '12px' }}>
+                            <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Default unit</span>
+                            <select value={editCatalogDefaultUnit} onChange={(e) => setEditCatalogDefaultUnit(e.target.value)} style={{ marginBottom: 0 }}>
+                                {UNITS.map(unit => (
+                                    <option key={unit.abbr} value={unit.abbr}>{formatUnitLabel(unit)}</option>
+                                ))}
+                            </select>
+                        </label>
+                        <label style={{ display: 'block', marginBottom: '12px' }}>
+                            <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Expiration</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button type="button" onClick={() => adjustEditExpirationDays(-1)} style={stepBtn} aria-label="Decrease days until expiration">−</button>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={editCatalogExpirationDays}
+                                    onChange={(e) => {
+                                        const raw = e.target.value;
+                                        if (raw === '') { setEditCatalogExpirationDays(''); return; }
+                                        const val = Number(raw);
+                                        if (!isNaN(val)) setEditCatalogExpirationDays(val);
+                                    }}
+                                    onBlur={() => setEditCatalogExpirationDays(prev => String(Math.max(1, Number(prev) || 1)))}
+                                    style={{ width: '64px', marginBottom: 0, textAlign: 'center', flexShrink: 0 }}
+                                    aria-label="Days until expiration"
+                                />
+                                <button type="button" onClick={() => adjustEditExpirationDays(1)} style={stepBtn} aria-label="Increase days until expiration">+</button>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>days</span>
+                            </div>
+                        </label>
+                        <CaloriesField
+                            label="Calories per default serving"
+                            value={editCatalogCalories}
+                            onChange={setEditCatalogCalories}
+                            onAdjust={adjustEditCatalogCalories}
+                            hint="Calories for the item's default quantity and unit"
+                        />
+                    </>
                 )}
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                     <button onClick={closeEditCatalogModal} style={{ flex: 1, padding: '10px', background: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px' }}>Cancel</button>

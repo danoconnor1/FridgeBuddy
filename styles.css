@@ -148,6 +148,31 @@
             margin-bottom: 0;
             overflow-x: hidden;
         }
+        .fridge-my-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .fridge-my-header .meals-section-title {
+            margin-bottom: 0;
+        }
+        .fridge-empty-btn {
+            padding: 6px 12px;
+            background: transparent;
+            color: var(--fill-danger);
+            border: 1px solid var(--fill-danger);
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 13px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .fridge-empty-btn:hover {
+            background: color-mix(in srgb, var(--fill-danger) 10%, transparent);
+        }
         .fridge-columns-scroll {
             overflow-x: auto;
             overflow-y: visible;
@@ -281,6 +306,39 @@
         .fridge-column-card:last-child {
             margin-bottom: 0;
         }
+        .fridge-column-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+        .fridge-column-card-header .fridge-column-card-name {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 0;
+        }
+        .fridge-tracking-toggle {
+            display: flex;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        .fridge-tracking-toggle button {
+            padding: 2px 5px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .fridge-tracking-toggle button.active {
+            background: var(--fill-accent);
+            color: var(--on-accent);
+        }
         .fridge-column-card-name {
             font-size: 13px;
             font-weight: 500;
@@ -382,7 +440,32 @@
             line-height: 1.2;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+        }
+        .fridge-column-status-btn {
+            flex: 1;
+            min-width: 0;
+            margin-bottom: 0;
+            padding: 2px 4px;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.2;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            background: transparent;
+            cursor: pointer;
+            text-align: left;
+        }
+        .fridge-column-status-btn:hover,
+        .fridge-column-status-btn:focus {
+            border-color: var(--border);
+            background-color: var(--surface-1);
+            outline: none;
+        }
+        .fridge-column-status-btn--status-row {
+            flex: 1;
+            min-width: 0;
+            padding-top: 0;
+            padding-bottom: 0;
         }
         .fridge-column-remove-btn {
             width: 28px;
@@ -445,13 +528,15 @@
         .meals-option-label {
             font-size: 12px;
             font-weight: 600;
-            color: #ffffff;
+            color: var(--text-primary);
             text-transform: uppercase;
             letter-spacing: 0.04em;
             margin: 0 0 0.75rem 0;
         }
-        [data-theme="classic-light"] .meals-option-label {
-            color: var(--text-primary);
+        [data-theme="classic-dark"] .meals-option-label,
+        [data-theme="neon-kitchen"] .meals-option-label,
+        [data-theme="retro-space"] .meals-option-label {
+            color: #ffffff;
         }
         @media (max-width: 900px) {
             .meals-add-columns,
@@ -504,6 +589,264 @@
         .home-agent-prompt-section {
             margin-bottom: 1.5rem;
         }
+        .home-agent-prompt-bar {
+            margin-bottom: 1.5rem;
+        }
+        .home-agent-prompt-bar .home-agent-prompt-desc {
+            font-size: 12px;
+            line-height: 1.45;
+            color: var(--text-secondary);
+            margin: 0.5rem 0 0 0;
+            max-width: 42rem;
+        }
+        .home-agent-prompt-bar .home-agent-prompt-copy-btn {
+            width: auto;
+        }
+        .home-dashboard-section {
+            margin-bottom: 0;
+        }
+        .home-dashboard-columns {
+            align-items: stretch;
+        }
+        .home-column-card {
+            min-height: 100%;
+        }
+        .home-column-empty {
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        .home-alert-group,
+        .home-suggestion-group {
+            margin-bottom: 1rem;
+        }
+        .home-alert-group:last-child,
+        .home-suggestion-group:last-child {
+            margin-bottom: 0;
+        }
+        .home-alert-group-label,
+        .home-suggestion-group-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            margin: 0 0 0.5rem 0;
+        }
+        .home-alert-list,
+        .home-suggestion-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .home-alert-item,
+        .home-suggestion-list-item {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--text-secondary);
+            margin-bottom: 0.45rem;
+        }
+        .home-alert-item:last-child,
+        .home-suggestion-list-item:last-child {
+            margin-bottom: 0;
+        }
+        .home-alert-item .ti-circle-filled,
+        .home-suggestion-list-item .ti-circle-filled {
+            font-size: 7px;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+        .home-alert-item--warning .ti-circle-filled {
+            color: var(--text-warning);
+        }
+        .home-alert-item--danger .ti-circle-filled {
+            color: var(--text-danger);
+        }
+        .home-alert-item strong,
+        .home-suggestion-list-item strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .home-suggestion-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 0.5rem;
+        }
+        .home-suggestion-row:last-child {
+            margin-bottom: 0;
+        }
+        .home-suggestion-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .home-suggestion-name {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+        .home-suggestion-meta {
+            display: block;
+            font-size: 11px;
+            color: var(--text-warning);
+            margin-top: 2px;
+        }
+        .home-suggestion-btn {
+            padding: 4px 10px;
+            background: transparent;
+            color: var(--fill-accent);
+            border: 1px solid var(--fill-accent);
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 12px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .home-grocery-list-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.75rem 0;
+        }
+        .home-grocery-list-divider {
+            border: none;
+            border-top: 1px dashed var(--border-strong);
+            margin: 1.25rem 0;
+        }
+        .home-grocery-list {
+            list-style: none;
+            margin: 0 0 1rem 0;
+            padding: 0;
+        }
+        .home-grocery-list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 6px 0;
+            border-top: 1px solid var(--border);
+        }
+        .home-grocery-list-item:first-child {
+            border-top: none;
+            padding-top: 0;
+        }
+        .home-grocery-list-item-info {
+            min-width: 0;
+            flex: 1;
+        }
+        .home-grocery-list-item-name {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+        .home-grocery-list-item-meta {
+            display: block;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        .home-grocery-list-item-meta--danger {
+            color: var(--text-danger);
+        }
+        .home-grocery-list-item-meta--warning {
+            color: var(--text-warning);
+        }
+        .home-grocery-list-item-meta--success {
+            color: var(--text-success);
+        }
+        .home-grocery-list-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .home-grocery-list-input {
+            flex: 1;
+            min-width: 0;
+            font-size: 12px;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface-0);
+            color: var(--text-primary);
+        }
+        .home-grocery-list-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .home-grocery-list-add,
+        .home-grocery-list-remove {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: none;
+            border-radius: var(--radius);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .home-grocery-list-add {
+            background: var(--fill-success);
+        }
+        .home-grocery-list-add:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .home-grocery-list-remove {
+            background: var(--fill-danger);
+        }
+        .home-grocery-recipe-add {
+            margin-top: 1rem;
+        }
+        .home-grocery-recipe-add-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin: 0 0 8px 0;
+        }
+        .home-grocery-recipe-add-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .home-grocery-recipe-select {
+            flex: 1;
+            min-width: 0;
+            font-size: 12px;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface-0);
+            color: var(--text-primary);
+        }
+        .home-grocery-recipe-add-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--fill-accent);
+            color: var(--on-accent);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .home-grocery-recipe-add-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         .home-agent-prompt-desc {
             font-size: 13px;
             line-height: 1.45;
@@ -511,12 +854,11 @@
             margin: 0 0 0.75rem 0;
         }
         .home-agent-prompt-copy-btn {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            width: 100%;
-            padding: 10px 12px;
+            padding: 10px 14px;
             background: var(--fill-accent);
             color: var(--on-accent);
             border: none;
@@ -657,8 +999,8 @@
             --text-secondary: #a5a5c8;
             --text-muted: #6b6b8d;
             --surface-0: #0f0f1a;
-            --surface-1: #1a1a2e;
-            --surface-2: #252542;
+            --surface-1: rgba(26, 26, 46, 0.88);
+            --surface-2: rgba(37, 37, 66, 0.9);
             --border: rgba(167, 139, 250, 0.2);
             --border-strong: rgba(167, 139, 250, 0.45);
             --fill-accent: #9333ea;
@@ -691,20 +1033,41 @@
             --cat-leftovers: #A78BFA;
         }
 
-        html[data-theme="neon-kitchen"]::before {
-            content: '';
+        html[data-theme="neon-kitchen"],
+        html[data-theme="neon-kitchen"] body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .theme-bg-scene--neon-kitchen {
             position: fixed;
             inset: 0;
-            background-image:
-                radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.12) 0%, transparent 45%),
-                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 45%);
+            background: url('assets/neon-kitchen-scene.png') center center / cover no-repeat;
             pointer-events: none;
             z-index: 0;
         }
 
-        html[data-theme="neon-kitchen"],
-        html[data-theme="neon-kitchen"] body {
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        .theme-bg-overlay--neon-kitchen {
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(
+                    to right,
+                    rgba(15, 15, 26, 0.08) 0%,
+                    rgba(15, 15, 26, 0.68) 14%,
+                    rgba(15, 15, 26, 0.8) 50%,
+                    rgba(15, 15, 26, 0.68) 86%,
+                    rgba(15, 15, 26, 0.08) 100%
+                ),
+                linear-gradient(
+                    to bottom,
+                    rgba(15, 15, 26, 0.9) 0%,
+                    rgba(15, 15, 26, 0.76) 22%,
+                    rgba(15, 15, 26, 0.58) 48%,
+                    rgba(15, 15, 26, 0.38) 72%,
+                    rgba(15, 15, 26, 0.28) 100%
+                );
+            pointer-events: none;
+            z-index: 0;
         }
 
         [data-theme="neon-kitchen"] input[type="text"]:focus,
@@ -716,6 +1079,17 @@
             box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
         }
 
+        [data-theme="neon-kitchen"] input[type="date"],
+        [data-theme="classic-dark"] input[type="date"] {
+            color-scheme: dark;
+        }
+
+        [data-theme="neon-kitchen"] input[type="date"]::-webkit-calendar-picker-indicator,
+        [data-theme="classic-dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(1.15);
+            cursor: pointer;
+        }
+
         [data-theme="neon-kitchen"] .app-header-icon {
             background: var(--accent-gradient);
             -webkit-background-clip: text;
@@ -725,12 +1099,24 @@
             color: transparent;
         }
 
+        [data-theme="neon-kitchen"] .app-header {
+            background: rgba(26, 26, 46, 0.82);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(167, 139, 250, 0.35);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(167, 139, 250, 0.35);
+            box-shadow: 0 4px 24px rgba(124, 58, 237, 0.15);
+        }
+
         [data-theme="neon-kitchen"] .app-tabs {
             padding: 4px;
-            background: var(--surface-1);
+            background: rgba(26, 26, 46, 0.78);
+            backdrop-filter: blur(10px);
             border-radius: 999px;
-            border: 1px solid var(--border);
-            border-bottom: none;
+            border: 1px solid rgba(167, 139, 250, 0.35);
+            border-bottom: 1px solid rgba(167, 139, 250, 0.35);
             margin-bottom: 2rem;
         }
 
@@ -749,6 +1135,21 @@
 
         [data-theme="neon-kitchen"] .app-tab:not(.active):hover {
             color: #c4b5fd;
+        }
+
+        [data-theme="neon-kitchen"] .fridge-column,
+        [data-theme="neon-kitchen"] .meals-add-column-card {
+            backdrop-filter: blur(10px);
+        }
+
+        [data-theme="neon-kitchen"] .theme-toggle-btn {
+            border: 1px solid rgba(167, 139, 250, 0.35);
+        }
+
+        [data-theme="neon-kitchen"] .theme-menu {
+            background: rgba(26, 26, 46, 0.98);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(167, 139, 250, 0.35);
         }
 
         /* ——— Retro Space theme ——— */
@@ -807,7 +1208,7 @@
             z-index: 0;
         }
 
-        .theme-bg-scene {
+        .theme-bg-scene--retro-space {
             position: fixed;
             inset: 0;
             background: url('assets/retro-space-landscape.png') center bottom / cover no-repeat;
@@ -815,7 +1216,7 @@
             z-index: 0;
         }
 
-        .theme-bg-overlay {
+        .theme-bg-overlay--retro-space {
             position: fixed;
             inset: 0;
             background: linear-gradient(
@@ -896,6 +1297,184 @@
         [data-theme="retro-space"] .theme-toggle-btn {
             border-radius: 50%;
             border: 2px solid rgba(106, 171, 191, 0.45);
+        }
+
+        /* ——— Farmer's Market theme ——— */
+        [data-theme="farmers-market"] {
+            --text-primary: #2c2419;
+            --text-secondary: #5c4a38;
+            --text-muted: #8a7560;
+            --surface-0: #f7f0e4;
+            --surface-1: rgba(255, 250, 242, 0.92);
+            --surface-2: rgba(237, 227, 210, 0.92);
+            --border: rgba(107, 68, 35, 0.14);
+            --border-strong: rgba(45, 90, 82, 0.28);
+            --fill-accent: #3d8f7e;
+            --on-accent: #fffaf2;
+            --fill-success: #5a9e4b;
+            --fill-lime: #5a9e4b;
+            --text-success: #5a9e4b;
+            --fill-warning: #d4922a;
+            --text-warning: #d4922a;
+            --bg-warning: rgba(212, 146, 42, 0.12);
+            --border-warning: rgba(212, 146, 42, 0.35);
+            --fill-danger: #c43d35;
+            --text-danger: #c43d35;
+            --bg-danger: rgba(196, 61, 53, 0.12);
+            --border-danger: rgba(196, 61, 53, 0.35);
+            --radius: 10px;
+            --cat-meat: #c43d35;
+            --cat-seafood: #3d8f7e;
+            --cat-dairy: #8ab4d4;
+            --cat-cheese: #e8782a;
+            --cat-eggs: #e8b923;
+            --cat-vegetables: #5a9e4b;
+            --cat-fruit: #d4453a;
+            --cat-grains: #c9922a;
+            --cat-condiments: #7b4b8a;
+            --cat-seasoning: #b8895a;
+            --cat-drink: #6aabbf;
+            --cat-other: #8a7560;
+            --cat-leftovers: #9a7048;
+        }
+
+        html[data-theme="farmers-market"],
+        html[data-theme="farmers-market"] body {
+            font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .theme-bg-scene--farmers-market {
+            position: fixed;
+            inset: 0;
+            background-color: #c9dce8;
+            background-image: url('assets/farmers-market-panorama.svg');
+            background-repeat: no-repeat;
+            background-position: center bottom;
+            background-size: min(1600px, 100%) auto;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @media (min-width: 1600px) {
+            .theme-bg-scene--farmers-market {
+                background-size: 100% auto;
+            }
+        }
+
+        .theme-bg-overlay--farmers-market {
+            position: fixed;
+            inset: 0;
+            background:
+                linear-gradient(
+                    to right,
+                    rgba(255, 250, 242, 0.02) 0%,
+                    rgba(255, 250, 242, 0.62) 14%,
+                    rgba(255, 250, 242, 0.76) 50%,
+                    rgba(255, 250, 242, 0.62) 86%,
+                    rgba(255, 250, 242, 0.02) 100%
+                ),
+                linear-gradient(
+                    to bottom,
+                    rgba(255, 250, 242, 0.9) 0%,
+                    rgba(255, 250, 242, 0.78) 18%,
+                    rgba(255, 250, 242, 0.58) 42%,
+                    rgba(255, 250, 242, 0.28) 68%,
+                    rgba(255, 250, 242, 0.08) 100%
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        [data-theme="farmers-market"] input[type="text"]:focus,
+        [data-theme="farmers-market"] input[type="date"]:focus,
+        [data-theme="farmers-market"] input[type="number"]:focus,
+        [data-theme="farmers-market"] textarea:focus,
+        [data-theme="farmers-market"] select:focus {
+            border-color: #3d8f7e;
+            box-shadow: 0 0 0 3px rgba(61, 143, 126, 0.18);
+        }
+
+        [data-theme="farmers-market"] .app-header-icon {
+            color: #3d8f7e;
+        }
+
+        [data-theme="farmers-market"] .app-header-title {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #2a6b5e;
+        }
+
+        [data-theme="farmers-market"] .app-header {
+            background: rgba(255, 250, 242, 0.92);
+            backdrop-filter: blur(12px);
+            border: 2px solid #b8895a;
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #b8895a;
+        }
+
+        [data-theme="farmers-market"] .app-tabs {
+            padding: 5px;
+            background: rgba(255, 250, 242, 0.82);
+            backdrop-filter: blur(10px);
+            border-radius: 999px;
+            border: 2px solid var(--border);
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        [data-theme="farmers-market"] .app-tab {
+            border-radius: 999px;
+            border-bottom: none !important;
+            font-size: 13px;
+        }
+
+        [data-theme="farmers-market"] .app-tab.active {
+            background: #3d8f7e;
+            color: #fffaf2;
+            font-weight: 600;
+        }
+
+        [data-theme="farmers-market"] .app-tab:not(.active):hover {
+            color: #e8782a;
+        }
+
+        [data-theme="farmers-market"] .fridge-column,
+        [data-theme="farmers-market"] .meals-add-column-card,
+        [data-theme="farmers-market"] .fridge-column-card {
+            backdrop-filter: blur(10px);
+        }
+
+        [data-theme="farmers-market"] .fridge-column {
+            border: 2px solid rgba(184, 137, 90, 0.55);
+        }
+
+        [data-theme="farmers-market"] .theme-toggle-btn {
+            border: 2px solid rgba(184, 137, 90, 0.65);
+            border-radius: var(--radius);
+        }
+
+        [data-theme="farmers-market"] .theme-menu {
+            background: rgba(255, 250, 242, 0.98);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(184, 137, 90, 0.55);
+        }
+
+        [data-theme="farmers-market"] .import-preview-btn:not(:disabled) {
+            background: #e8782a;
+            color: #fffaf2;
+            border: 2px solid #c8651a;
+        }
+
+        [data-theme="farmers-market"] .import-preview-btn:not(:disabled):hover {
+            filter: brightness(1.06);
+        }
+
+        [data-theme="farmers-market"] .import-preview-btn:disabled {
+            background: rgba(237, 227, 210, 0.92);
+            border: 1px solid var(--border);
         }
 
         /* ——— App shell (all themes) ——— */
@@ -1113,4 +1692,260 @@
             background: rgba(46, 66, 96, 0.6);
             color: var(--text-muted);
             border-color: var(--border-strong);
+        }
+
+        .expense-manual-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .expense-title-input,
+        .expense-date-input {
+            font-size: 13px;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface-0);
+            color: var(--text-primary);
+        }
+        .expense-title-input {
+            flex: 1;
+            min-width: 140px;
+        }
+        .expense-date-input {
+            flex-shrink: 0;
+        }
+        .expense-manual-meta {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .expense-category-input {
+            flex: 1;
+            min-width: 140px;
+            font-size: 13px;
+        }
+        .expense-price-field {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface-0);
+            overflow: hidden;
+            min-width: 0;
+        }
+        .expense-price-field--wide {
+            flex: 1;
+            min-width: 120px;
+        }
+        .expense-price-prefix {
+            padding: 8px 0 8px 10px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .expense-price-field .expense-item-price,
+        .expense-price-field .expense-total-price-input {
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            padding-left: 4px;
+            width: 100%;
+            min-width: 0;
+        }
+        .expense-total-price-input {
+            font-size: 13px;
+            padding: 8px 10px 8px 4px;
+            color: var(--text-primary);
+        }
+        .expense-category-action {
+            margin-top: -1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .expense-add-category-btn,
+        .expense-delete-category-btn {
+            padding: 8px 14px;
+            border: 1px dashed var(--border-strong);
+            border-radius: var(--radius);
+            background: transparent;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .expense-add-category-btn {
+            color: var(--text-secondary);
+        }
+        .expense-delete-category-btn {
+            color: var(--text-danger);
+            border-color: rgba(220, 38, 38, 0.35);
+        }
+        .expense-add-category-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--fill-accent);
+        }
+        .expense-delete-category-btn:hover {
+            border-color: var(--fill-danger);
+        }
+
+        .expense-item-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(100px, 0.8fr) 28px;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .expense-item-name {
+            font-size: 12px;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface-0);
+            color: var(--text-primary);
+            min-width: 0;
+        }
+        .expense-item-row .expense-price-field {
+            font-size: 12px;
+        }
+        .expense-item-row .expense-price-prefix {
+            padding: 6px 0 6px 8px;
+            font-size: 12px;
+        }
+        .expense-item-row .expense-item-price {
+            font-size: 12px;
+            padding: 6px 8px 6px 2px;
+            text-align: right;
+        }
+        .expense-item-remove {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--fill-danger);
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        @media (max-width: 720px) {
+            .expense-item-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            .expense-item-name {
+                grid-column: 1 / -1;
+            }
+            .expense-item-remove {
+                justify-self: end;
+            }
+        }
+
+        .expense-chart-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 1rem;
+        }
+        .expense-chart-filter {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            line-height: 1.2;
+        }
+        .expense-chart-filter:hover {
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+        }
+        .expense-chart-filter.active {
+            background: var(--fill-accent);
+            border-color: var(--fill-accent);
+            color: var(--on-accent);
+        }
+
+        .expense-chart-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .expense-chart-svg {
+            width: 180px;
+            height: 180px;
+            flex-shrink: 0;
+        }
+        .expense-chart-empty {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .expense-chart-legend {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            flex: 1;
+            min-width: min(100%, 240px);
+        }
+        .expense-chart-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            line-height: 1.3;
+        }
+        .expense-chart-legend-swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .expense-chart-legend-label {
+            flex: 1;
+            min-width: 0;
+            color: var(--text-primary);
+        }
+        .expense-chart-legend-value {
+            color: var(--text-secondary);
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .expense-card-items {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .expense-card-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 4px 0;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+        }
+        .expense-card-item:first-child {
+            border-top: none;
+            padding-top: 0;
+        }
+        .expense-card-item-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            min-width: 0;
+        }
+        .expense-card-item-price {
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            flex-shrink: 0;
         }

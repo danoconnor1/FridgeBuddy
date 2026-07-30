@@ -1,11 +1,14 @@
 function EditFridgeItemModal({
     editingFridgeItem,
-    isSeasoningFridgeItem, isLeftoverFridgeItem,
+    isSeasoningFridgeItem, usesFridgeCapacityTracking, isLeftoverFridgeItem,
     editFridgeQuantity, setEditFridgeQuantity,
     editFridgeUnit, setEditFridgeUnit, adjustEditFridgeQuantity,
     editFridgeSeasoningStatus, adjustEditFridgeSeasoningStatus,
     editFridgeLeftoverName, setEditFridgeLeftoverName,
     editFridgeLeftoverDays, setEditFridgeLeftoverDays, adjustEditFridgeLeftoverDays,
+    editFridgeExpirationValue, setEditFridgeExpirationValue,
+    editFridgeExpirationUnit, setEditFridgeExpirationUnit,
+    adjustEditFridgeExpirationValue,
     closeEditFridgeItemModal, saveFridgeItemEdit
 }) {
     const {
@@ -17,7 +20,8 @@ function EditFridgeItemModal({
     if (!editingFridgeItem) return null;
 
     const isLeftover = isLeftoverFridgeItem(editingFridgeItem);
-    const isSeasoning = isSeasoningFridgeItem(editingFridgeItem);
+    const isCatalogSeasoning = isSeasoningFridgeItem(editingFridgeItem);
+    const usesCapacity = usesFridgeCapacityTracking(editingFridgeItem);
     const itemQuantity = parseIngredientQuantity(editFridgeQuantity);
     const seasoningColor = getSeasoningStatusColor(editFridgeSeasoningStatus);
 
@@ -62,29 +66,63 @@ function EditFridgeItemModal({
                             </div>
                         </label>
                     </>
-                ) : isSeasoning ? (
-                    <label style={{ display: 'block', marginBottom: '1rem' }}>
-                        <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Amount left</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <button
-                                type="button"
-                                onClick={() => adjustEditFridgeSeasoningStatus(-1)}
-                                disabled={editFridgeSeasoningStatus === 'almost-empty'}
-                                style={stepBtn}
-                                aria-label="Decrease amount left"
-                            >−</button>
-                            <span style={{ minWidth: '100px', textAlign: 'center', fontSize: '14px', fontWeight: '500', color: seasoningColor }}>
-                                {formatSeasoningStatus(editFridgeSeasoningStatus)}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={() => adjustEditFridgeSeasoningStatus(1)}
-                                disabled={editFridgeSeasoningStatus === 'full'}
-                                style={stepBtn}
-                                aria-label="Increase amount left"
-                            >+</button>
-                        </div>
-                    </label>
+                ) : usesCapacity ? (
+                    <>
+                        <label style={{ display: 'block', marginBottom: isCatalogSeasoning ? '1rem' : '12px' }}>
+                            <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Amount left</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => adjustEditFridgeSeasoningStatus(-1)}
+                                    disabled={editFridgeSeasoningStatus === 'almost-empty'}
+                                    style={stepBtn}
+                                    aria-label="Decrease amount left"
+                                >−</button>
+                                <span style={{ minWidth: '100px', textAlign: 'center', fontSize: '14px', fontWeight: '500', color: seasoningColor }}>
+                                    {formatSeasoningStatus(editFridgeSeasoningStatus)}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => adjustEditFridgeSeasoningStatus(1)}
+                                    disabled={editFridgeSeasoningStatus === 'full'}
+                                    style={stepBtn}
+                                    aria-label="Increase amount left"
+                                >+</button>
+                            </div>
+                        </label>
+                        {!isCatalogSeasoning && (
+                            <label style={{ display: 'block', marginBottom: '1rem' }}>
+                                <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Expiration</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <button type="button" onClick={() => adjustEditFridgeExpirationValue(-1)} style={stepBtn} aria-label="Decrease expiration">−</button>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={editFridgeExpirationValue}
+                                        onChange={(e) => {
+                                            const raw = e.target.value;
+                                            if (raw === '') { setEditFridgeExpirationValue(''); return; }
+                                            const val = Number(raw);
+                                            if (!isNaN(val)) setEditFridgeExpirationValue(raw);
+                                        }}
+                                        onBlur={() => setEditFridgeExpirationValue(prev => String(Math.max(1, Number(prev) || 1)))}
+                                        style={{ width: '64px', marginBottom: 0, textAlign: 'center', flexShrink: 0 }}
+                                        aria-label="Expiration value"
+                                    />
+                                    <select
+                                        value={editFridgeExpirationUnit}
+                                        onChange={(e) => setEditFridgeExpirationUnit(e.target.value)}
+                                        style={{ ...compactSelect, width: '88px', marginBottom: 0, flexShrink: 0 }}
+                                        aria-label="Expiration unit"
+                                    >
+                                        <option value="days">days</option>
+                                        <option value="months">months</option>
+                                    </select>
+                                    <button type="button" onClick={() => adjustEditFridgeExpirationValue(1)} style={stepBtn} aria-label="Increase expiration">+</button>
+                                </div>
+                            </label>
+                        )}
+                    </>
                 ) : (
                     <>
                         <label style={{ display: 'block', marginBottom: '12px' }}>
@@ -114,7 +152,7 @@ function EditFridgeItemModal({
                                 <button type="button" onClick={() => adjustEditFridgeQuantity(1)} style={stepBtn} aria-label="Increase quantity">+</button>
                             </div>
                         </label>
-                        <label style={{ display: 'block', marginBottom: '1rem' }}>
+                        <label style={{ display: 'block', marginBottom: '12px' }}>
                             <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Unit</span>
                             <select
                                 value={editFridgeUnit}
@@ -126,6 +164,36 @@ function EditFridgeItemModal({
                                     <option key={unit.abbr} value={unit.abbr}>{formatUnitLabel(unit)}</option>
                                 ))}
                             </select>
+                        </label>
+                        <label style={{ display: 'block', marginBottom: '1rem' }}>
+                            <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Expiration</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button type="button" onClick={() => adjustEditFridgeExpirationValue(-1)} style={stepBtn} aria-label="Decrease expiration">−</button>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={editFridgeExpirationValue}
+                                    onChange={(e) => {
+                                        const raw = e.target.value;
+                                        if (raw === '') { setEditFridgeExpirationValue(''); return; }
+                                        const val = Number(raw);
+                                        if (!isNaN(val)) setEditFridgeExpirationValue(raw);
+                                    }}
+                                    onBlur={() => setEditFridgeExpirationValue(prev => String(Math.max(1, Number(prev) || 1)))}
+                                    style={{ width: '64px', marginBottom: 0, textAlign: 'center', flexShrink: 0 }}
+                                    aria-label="Expiration value"
+                                />
+                                <select
+                                    value={editFridgeExpirationUnit}
+                                    onChange={(e) => setEditFridgeExpirationUnit(e.target.value)}
+                                    style={{ ...compactSelect, width: '88px', marginBottom: 0, flexShrink: 0 }}
+                                    aria-label="Expiration unit"
+                                >
+                                    <option value="days">days</option>
+                                    <option value="months">months</option>
+                                </select>
+                                <button type="button" onClick={() => adjustEditFridgeExpirationValue(1)} style={stepBtn} aria-label="Increase expiration">+</button>
+                            </div>
                         </label>
                     </>
                 )}

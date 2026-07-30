@@ -12,7 +12,8 @@
         { abbr: 'qt', name: 'Quart', terms: ['qt', 'quart', 'quarts'] },
         { abbr: 'gal', name: 'Gallon', terms: ['gal', 'gallon', 'gallons'] },
         { abbr: 'piece', name: 'Piece', terms: ['piece', 'pieces', 'pc', 'pcs'] },
-        { abbr: 'eggs', name: 'eggs', terms: ['egg', 'eggs'] },
+        { abbr: 'slice', name: 'Slice', terms: ['slice', 'slices'] },
+        { abbr: 'eggs', name: 'eggs', terms: ['egg', 'eggs', 'dozen', 'dozens', 'dz'] },
         { abbr: 'head', name: 'Head', terms: ['head', 'heads'] },
         { abbr: 'can', name: 'Can', terms: ['can', 'cans'] },
         { abbr: 'clove', name: 'Clove', terms: ['clove', 'cloves'] }
@@ -20,46 +21,95 @@
 
     const SEASONING_STATUSES = [
         { value: 'full', label: 'Full' },
-        { value: 'healthy', label: 'Healthy' },
-        { value: 'running-low', label: 'Running low' },
+        { value: 'plenty-left', label: 'Plenty left' },
+        { value: 'half', label: 'Half' },
+        { value: 'below-half', label: 'Below half' },
         { value: 'almost-empty', label: 'Almost empty' }
     ];
 
-    const SEASONING_STATUS_ORDER = ['almost-empty', 'running-low', 'healthy', 'full'];
+    const SEASONING_STATUS_ORDER = ['almost-empty', 'below-half', 'half', 'plenty-left', 'full'];
 
     const DEFAULT_CATALOG = [
-        { name: 'Chicken breast', category: 'meat', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 440, expirationDays: 2 },
-        { name: 'Ground beef', category: 'meat', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 1100, expirationDays: 2 },
-        { name: 'Bacon', category: 'meat', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 2300, expirationDays: 10 },
-        { name: 'Salmon', category: 'seafood', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 860, expirationDays: 2 },
+        { name: 'Ground beef', category: 'meat', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 1500, expirationDays: 2 },
+        { name: 'Bacon', category: 'meat', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 2440, expirationDays: 10 },
+        { name: 'Chicken', category: 'meat', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 1080, expirationDays: 2 },
+        { name: 'Salmon', category: 'seafood', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 940, expirationDays: 2 },
+        { name: 'Shrimp', category: 'seafood', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 450, expirationDays: 2 },
         { name: 'Milk', category: 'dairy', defaultUnit: 'gal', defaultQuantity: 1, caloriesPerDefault: 2400, expirationDays: 10 },
-        { name: 'Yogurt', category: 'dairy', defaultUnit: 'cup', defaultQuantity: 1, caloriesPerDefault: 175, expirationDays: 12 },
-        { name: 'Butter', category: 'dairy', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 3200, expirationDays: 35 },
-        { name: 'Sour cream', category: 'dairy', defaultUnit: 'cup', defaultQuantity: 1, caloriesPerDefault: 480, expirationDays: 12 },
-        { name: 'Cheese', category: 'cheese', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 1800, expirationDays: 18 },
-        { name: 'Eggs', category: 'eggs', defaultUnit: 'eggs', defaultQuantity: 12, caloriesPerDefault: 720, expirationDays: 30 },
-        { name: 'Bread', category: 'grains', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 90, expirationDays: 6 },
-        { name: 'Lettuce', category: 'vegetables', defaultUnit: 'head', defaultQuantity: 1, caloriesPerDefault: 75, expirationDays: 6 },
-        { name: 'Spinach', category: 'vegetables', defaultUnit: 'oz', defaultQuantity: 1, caloriesPerDefault: 7, expirationDays: 4 },
-        { name: 'Broccoli', category: 'vegetables', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 55, expirationDays: 4 },
-        { name: 'Carrots', category: 'vegetables', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 175, expirationDays: 18 },
-        { name: 'Tomato', category: 'vegetables', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 25, expirationDays: 6 },
-        { name: 'Bell pepper', category: 'vegetables', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 37, expirationDays: 8 },
-        { name: 'Apple', category: 'fruit', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 95, expirationDays: 21 },
-        { name: 'Orange', category: 'fruit', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 62, expirationDays: 21 },
-        { name: 'Orange juice', category: 'drink', defaultUnit: 'gal', defaultQuantity: 1, caloriesPerDefault: 1890, expirationDays: 10 }
+        { name: 'Yogurt', category: 'dairy', defaultUnit: 'cup', defaultQuantity: 1, caloriesPerDefault: 100, expirationDays: 12 },
+        { name: 'Heavy whipping cream', category: 'dairy', defaultUnit: 'cup', defaultQuantity: 1, caloriesPerDefault: 820, expirationDays: 14 },
+        { name: 'Cheese', category: 'cheese', defaultUnit: 'cup', defaultQuantity: 1, caloriesPerDefault: 440, expirationDays: 18 },
+        { name: 'Eggs', category: 'eggs', defaultUnit: 'eggs', defaultQuantity: 12, caloriesPerDefault: 750, expirationDays: 30 },
+        { name: 'Lettuce', category: 'vegetables', defaultUnit: 'head', defaultQuantity: 1, caloriesPerDefault: 55, expirationDays: 6 },
+        { name: 'Spinach', category: 'vegetables', defaultUnit: 'head', defaultQuantity: 1, caloriesPerDefault: 100, expirationDays: 4 },
+        { name: 'Green onion', category: 'vegetables', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 5, expirationDays: 7 },
+        { name: 'Frozen peas and carrots', category: 'vegetables', defaultUnit: 'cup', defaultQuantity: 1, caloriesPerDefault: 75, expirationDays: 180 },
+        { name: 'Garlic', category: 'vegetables', defaultUnit: 'clove', defaultQuantity: 1, caloriesPerDefault: 5, expirationDays: 30 },
+        { name: 'Onion', category: 'vegetables', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 45, expirationDays: 21 },
+        { name: 'Bread', category: 'grains', defaultUnit: 'slice', defaultQuantity: 1, caloriesPerDefault: 75, expirationDays: 6 },
+        { name: 'Rice', category: 'grains', defaultUnit: 'cup', defaultQuantity: 1, caloriesPerDefault: 200, expirationDays: 365 },
+        { name: 'Tortilla', category: 'grains', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 175, expirationDays: 14 },
+        { name: 'Hard taco shell', category: 'grains', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 55, expirationDays: 90 },
+        { name: 'Pasta', category: 'grains', defaultUnit: 'oz', defaultQuantity: 1, caloriesPerDefault: 100, expirationDays: 365 },
+        { name: 'Olive oil', category: 'condiments', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 120, expirationDays: 365 },
+        { name: 'Canola oil', category: 'condiments', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 120, expirationDays: 365 },
+        { name: 'Sesame oil', category: 'condiments', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 120, expirationDays: 365 },
+        { name: 'Soy sauce', category: 'condiments', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 10, expirationDays: 365 },
+        { name: 'Taco seasoning', category: 'condiments', defaultUnit: 'oz', defaultQuantity: 1, caloriesPerDefault: 100, expirationDays: 365 },
+        { name: 'Salt', category: 'seasoning', defaultUnit: 'tsp', defaultQuantity: 1, defaultStatus: 'full' },
+        { name: 'Italian seasoning', category: 'seasoning', defaultUnit: 'tsp', defaultQuantity: 1, defaultStatus: 'full' }
     ];
 
     const DEFAULT_CATALOG_BY_NAME = new Map(
         DEFAULT_CATALOG.map(item => [item.name.toLowerCase(), item])
     );
 
-    const FRIDGE_THEMES = ['classic-light', 'classic-dark', 'neon-kitchen', 'retro-space'];
+    const FRIDGE_THEMES = ['classic-light', 'classic-dark', 'neon-kitchen', 'retro-space', 'farmers-market'];
 
     const FRIDGE_THEME_OPTIONS = [
         { id: 'classic-light', label: 'Classic', group: 'classic' },
         { id: 'neon-kitchen', label: 'Neon Kitchen', group: 'styled' },
-        { id: 'retro-space', label: 'Retro Space', group: 'styled' }
+        { id: 'retro-space', label: 'Retro Space', group: 'styled' },
+        { id: 'farmers-market', label: "Farmer's Market", group: 'styled' }
+    ];
+
+    const EXPENSE_CATEGORIES = [
+        { id: 'groceries', label: 'Groceries', description: 'food shopping' },
+        { id: 'dining', label: 'Dining', description: 'restaurants, coffee, takeout' },
+        { id: 'housing', label: 'Housing', description: 'rent, mortgage' },
+        { id: 'utilities', label: 'Utilities', description: 'electric, water, internet, phone' },
+        { id: 'transportation', label: 'Transportation', description: 'gas, car payment, insurance, transit' },
+        { id: 'healthcare', label: 'Healthcare', description: 'gym, doctor, medicine, dental' },
+        { id: 'entertainment', label: 'Entertainment', description: 'movies, games, hobbies, streaming' },
+        { id: 'shopping', label: 'Shopping', description: 'clothes, household items, personal care' },
+        { id: 'subscriptions', label: 'Subscriptions', description: 'apps, memberships, services' },
+        { id: 'travel', label: 'Travel', description: 'flights, hotels, vacation' },
+        { id: 'pets', label: 'Pets', description: 'food, vet, supplies' },
+        { id: 'gifts', label: 'Gifts', description: 'presents, donations' },
+        { id: 'insurance', label: 'Insurance', description: 'car, home, health' },
+        { id: 'miscellaneous', label: 'Miscellaneous', description: 'other/unclear' }
+    ];
+
+    const EXPENSE_CATEGORY_COLORS = {
+        groceries: '#4ADE80',
+        dining: '#FB7185',
+        housing: '#D4A574',
+        utilities: '#38BDF8',
+        transportation: '#FACC15',
+        healthcare: '#34D399',
+        entertainment: '#C084FC',
+        shopping: '#F472B6',
+        subscriptions: '#93C5FD',
+        travel: '#22D3EE',
+        pets: '#FB923C',
+        gifts: '#E879F9',
+        insurance: '#94A3B8',
+        miscellaneous: '#A78BFA'
+    };
+
+    const CUSTOM_EXPENSE_CATEGORY_COLORS = [
+        '#60A5FA', '#F87171', '#A3E635', '#EAB308', '#2DD4BF',
+        '#818CF8', '#FB7185', '#4ADE80', '#F472B6', '#38BDF8'
     ];
 
     window.FB = {
@@ -67,6 +117,7 @@
         UNITS,
         SEASONING_STATUSES,
         DEFAULT_CATALOG,
+        EXPENSE_CATEGORIES,
         FRIDGE_THEMES,
         FRIDGE_THEME_OPTIONS,
         normalizeFridgeTheme(saved) {
@@ -83,7 +134,8 @@
                 'classic-light': '#ffffff',
                 'classic-dark': '#1a1a1a',
                 'neon-kitchen': '#0f0f1a',
-                'retro-space': '#1a2840'
+                'retro-space': '#1a2840',
+                'farmers-market': '#c9dce8'
             })[theme] || '#ffffff';
         },
         isClassicFridgeTheme(theme) {
@@ -116,6 +168,9 @@
                 const normalized = window.FB.normalizeCatalogItem(item);
                 const defaults = DEFAULT_CATALOG_BY_NAME.get(normalized.name?.toLowerCase());
                 if (defaults) {
+                    if (normalized.defaultUnit == null && defaults.defaultUnit != null) {
+                        normalized.defaultUnit = defaults.defaultUnit;
+                    }
                     if (normalized.defaultQuantity == null && defaults.defaultQuantity != null) {
                         normalized.defaultQuantity = defaults.defaultQuantity;
                     }
@@ -161,17 +216,33 @@
         isLeftoverFridgeItem(item) {
             return item?.category === 'leftovers';
         },
+        normalizeSeasoningStatus(status) {
+            const legacy = {
+                healthy: 'plenty-left',
+                'running-low': 'below-half'
+            };
+            const normalized = legacy[status] || status || 'full';
+            return SEASONING_STATUS_ORDER.includes(normalized) ? normalized : 'full';
+        },
         formatSeasoningStatus(status) {
-            const match = SEASONING_STATUSES.find(entry => entry.value === status);
+            const normalized = window.FB.normalizeSeasoningStatus(status);
+            const match = SEASONING_STATUSES.find(entry => entry.value === normalized);
             return match ? match.label : 'Full';
         },
         getSeasoningStatusSortOrder(status) {
-            const order = { 'almost-empty': 0, 'running-low': 1, healthy: 2, full: 3 };
-            return order[status] ?? 3;
+            const normalized = window.FB.normalizeSeasoningStatus(status);
+            return SEASONING_STATUS_ORDER.indexOf(normalized);
         },
         adjustSeasoningStatus(status, delta) {
-            const current = SEASONING_STATUS_ORDER.indexOf(status || 'full');
+            const normalized = window.FB.normalizeSeasoningStatus(status);
+            const current = SEASONING_STATUS_ORDER.indexOf(normalized);
             const next = Math.max(0, Math.min(SEASONING_STATUS_ORDER.length - 1, current + delta));
+            return SEASONING_STATUS_ORDER[next];
+        },
+        lowerSeasoningStatus(status) {
+            const normalized = window.FB.normalizeSeasoningStatus(status);
+            const current = SEASONING_STATUS_ORDER.indexOf(normalized);
+            const next = (current - 1 + SEASONING_STATUS_ORDER.length) % SEASONING_STATUS_ORDER.length;
             return SEASONING_STATUS_ORDER[next];
         },
         formatUnitLabel(unit) {
@@ -274,6 +345,20 @@
 
             return Math.round(catalogItem.caloriesPerDefault * (qty / defaultQty));
         },
+        estimateCatalogDraftCalories(catalogItem, draft) {
+            if (!catalogItem || catalogItem.caloriesPerDefault == null) return null;
+            if (window.FB.isSeasoningCategory(catalogItem.category)) return null;
+
+            const unit = (draft?.unit || catalogItem.defaultUnit || 'piece').toLowerCase();
+            const catalogUnit = (catalogItem.defaultUnit || 'piece').toLowerCase();
+            if (unit !== catalogUnit) return null;
+
+            const qty = draft?.quantity ?? window.FB.getDefaultCatalogQuantity(catalogItem);
+            const defaultQty = window.FB.getDefaultCatalogQuantity(catalogItem);
+            if (!defaultQty || !qty) return null;
+
+            return Math.round(catalogItem.caloriesPerDefault * (qty / defaultQty));
+        },
         getRecipeDisplayCalories(recipe, catalogItems) {
             const parsed = window.FB.parseCalories(recipe?.calories);
             if (parsed != null) return parsed;
@@ -330,8 +415,11 @@
                     )
                 }));
         },
-        formatFridgeItemLabel(item) {
-            if (item.seasoningStatus != null) return item.name;
+        formatFridgeItemLabel(item, catalogItems) {
+            if (catalogItems && window.FB.usesFridgeCapacityTracking(item, catalogItems)) {
+                return item.name;
+            }
+            if (item.trackingMode === 'capacity') return item.name;
             if (item.quantity != null && item.quantity !== '' && item.unit) {
                 return `${item.quantity} ${item.unit} ${item.name}`;
             }
@@ -342,7 +430,7 @@
             if (matches.length === 0) return null;
 
             const catalogItem = catalogItems.find(c => c.id === catalogItemId);
-            const isSeasoning = matches.some(item => item.seasoningStatus != null)
+            const isSeasoning = matches.some(item => window.FB.usesFridgeCapacityTracking(item, catalogItems))
                 || window.FB.isSeasoningCategory(catalogItem?.category);
 
             if (isSeasoning) {
@@ -359,16 +447,16 @@
                 .map(([unit, qty]) => `${qty} ${unit}`)
                 .join(', ');
         },
-        getFridgeExistingExpirySummary(catalogItemId, fridgeItems, catalogItems, isSeasoningFridgeItem) {
+        getFridgeExistingExpirySummary(catalogItemId, fridgeItems, catalogItems) {
             const matches = fridgeItems.filter(item => item.catalogItemId === catalogItemId);
             if (matches.length === 0) return null;
 
             const catalogItem = catalogItems.find(c => c.id === catalogItemId);
-            const isSeasoning = matches.some(item => isSeasoningFridgeItem(item))
+            const isSeasoning = matches.some(item => window.FB.usesFridgeCapacityTracking(item, catalogItems))
                 || window.FB.isSeasoningCategory(catalogItem?.category);
 
             if (isSeasoning) {
-                const item = matches.find(entry => isSeasoningFridgeItem(entry)) || matches[0];
+                const item = matches.find(entry => window.FB.usesFridgeCapacityTracking(entry, catalogItems)) || matches[0];
                 const status = item.seasoningStatus || 'full';
                 return {
                     isSeasoning: true,
@@ -395,6 +483,20 @@
             };
         },
         emptyIngredient: () => ({ catalogItemId: '', quantity: 1, unit: 'piece' }),
+        toDraftIngredient(ingredient, catalogItems) {
+            const catalogItem = window.FB.findCatalogItemForIngredient(ingredient, catalogItems);
+            const catalogItemId = catalogItem
+                ? String(catalogItem.id)
+                : (ingredient.catalogItemId != null && ingredient.catalogItemId !== ''
+                    ? String(ingredient.catalogItemId)
+                    : '');
+            return {
+                catalogItemId,
+                name: catalogItem?.name || ingredient.name || '',
+                quantity: ingredient.quantity ?? 1,
+                unit: ingredient.unit || catalogItem?.defaultUnit || 'piece'
+            };
+        },
         getIngredientName(ingredient) {
             if (typeof ingredient === 'string') return ingredient.toLowerCase();
             return (ingredient.name || '').toLowerCase();
@@ -428,8 +530,8 @@
                 return itemName.includes(name) || name.includes(itemName);
             });
         },
-        isFridgeItemAvailable(item, getDaysUntilExpiry, isSeasoningFridgeItem) {
-            if (isSeasoningFridgeItem(item)) return true;
+        isFridgeItemAvailable(item, getDaysUntilExpiry, catalogItems) {
+            if (window.FB.isSeasoningFridgeItem(item, catalogItems)) return true;
             if (!item.expiry) return true;
             return getDaysUntilExpiry(item.expiry) >= 0;
         },
@@ -437,19 +539,21 @@
             if (item.quantity != null && item.quantity !== '') return Number(item.quantity);
             return 1;
         },
-        getIngredientFridgeAvailability(ingredient, fridgeItems, getDaysUntilExpiry, isSeasoningFridgeItem) {
+        getIngredientFridgeAvailability(ingredient, fridgeItems, getDaysUntilExpiry, catalogItems) {
             const matches = window.FB.getMatchingFridgeItems(ingredient, fridgeItems)
-                .filter(item => window.FB.isFridgeItemAvailable(item, getDaysUntilExpiry, isSeasoningFridgeItem));
+                .filter(item => window.FB.isFridgeItemAvailable(item, getDaysUntilExpiry, catalogItems));
 
             if (matches.length === 0) {
                 return { status: 'missing', inFridgeLabel: null };
             }
 
-            const seasoningMatches = matches.filter(isSeasoningFridgeItem);
-            if (seasoningMatches.length > 0) {
+            const capacityMatches = matches.filter(item => window.FB.usesFridgeCapacityTracking(item, catalogItems));
+            if (capacityMatches.length > 0) {
+                const status = window.FB.normalizeSeasoningStatus(capacityMatches[0].seasoningStatus);
+                const insufficient = status === 'almost-empty' || status === 'below-half';
                 return {
-                    status: 'enough',
-                    inFridgeLabel: window.FB.formatSeasoningStatus(seasoningMatches[0].seasoningStatus)
+                    status: insufficient ? 'insufficient' : 'enough',
+                    inFridgeLabel: window.FB.formatSeasoningStatus(status)
                 };
             }
 
@@ -496,19 +600,39 @@
             }
             return `${base} (Have ${availability.inFridgeLabel})`;
         },
-        countFailingIngredients(recipe, fridgeItems, getDaysUntilExpiry, isSeasoningFridgeItem) {
+        countFailingIngredients(recipe, fridgeItems, getDaysUntilExpiry, catalogItems) {
             if (!recipe.ingredients?.length) return Infinity;
             return recipe.ingredients.filter(ingredient => {
                 const availability = window.FB.getIngredientFridgeAvailability(
                     ingredient,
                     fridgeItems,
                     getDaysUntilExpiry,
-                    isSeasoningFridgeItem
+                    catalogItems
                 );
                 return availability.status !== 'enough';
             }).length;
         },
-        classifyRecipesForHome(recipes, fridgeItems, getDaysUntilExpiry, isSeasoningFridgeItem) {
+        getRecipeIngredientsNotInFridge(recipe, fridgeItems, getDaysUntilExpiry, catalogItems) {
+            if (!recipe?.ingredients?.length) return [];
+            return recipe.ingredients.filter(ingredient => {
+                const availability = window.FB.getIngredientFridgeAvailability(
+                    ingredient,
+                    fridgeItems,
+                    getDaysUntilExpiry,
+                    catalogItems
+                );
+                return availability.status !== 'enough';
+            });
+        },
+        resolveGroceryListCatalogEntry(ingredient, catalogItems) {
+            const catalogItem = window.FB.findCatalogItemForIngredient(ingredient, catalogItems);
+            if (!catalogItem) return null;
+            return {
+                catalogItemId: catalogItem.id,
+                name: catalogItem.name
+            };
+        },
+        classifyRecipesForHome(recipes, fridgeItems, getDaysUntilExpiry, catalogItems) {
             const readyToMake = [];
             const almostThere = [];
             recipes.forEach(recipe => {
@@ -517,7 +641,7 @@
                     recipe,
                     fridgeItems,
                     getDaysUntilExpiry,
-                    isSeasoningFridgeItem
+                    catalogItems
                 );
                 if (failing === 0) readyToMake.push(recipe);
                 else if (failing <= 2) almostThere.push(recipe);
@@ -570,9 +694,19 @@
                 .filter(group => group.items.length > 0);
         },
         isSeasoningFridgeItem(item, catalogItems) {
-            if (item.seasoningStatus != null) return true;
             const catalogItem = catalogItems.find(entry => entry.id === item.catalogItemId);
             return window.FB.isSeasoningCategory(catalogItem?.category);
+        },
+        usesFridgeCapacityTracking(item, catalogItems) {
+            if (window.FB.isSeasoningFridgeItem(item, catalogItems)) return true;
+            return item.trackingMode === 'capacity';
+        },
+        canToggleFridgeTrackingMode(item, catalogItems) {
+            if (window.FB.isLeftoverFridgeItem(item)) return false;
+            return !window.FB.isSeasoningFridgeItem(item, catalogItems);
+        },
+        getFridgeTrackingMode(item, catalogItems) {
+            return window.FB.usesFridgeCapacityTracking(item, catalogItems) ? 'capacity' : 'amount';
         },
         getDefaultCatalogUnit(item) {
             return window.FB.isSeasoningCategory(item.category) ? 'piece' : (item.defaultUnit || 'oz');
@@ -585,15 +719,16 @@
             return item.unit ? `${qty} ${item.unit}` : String(qty);
         },
         getSeasoningStatusColor(status) {
-            if (status === 'almost-empty') return 'var(--fill-danger)';
-            if (status === 'running-low') return 'var(--fill-warning)';
+            const normalized = window.FB.normalizeSeasoningStatus(status);
+            if (normalized === 'almost-empty' || normalized === 'below-half') return 'var(--fill-danger)';
+            if (normalized === 'half') return 'var(--fill-warning)';
             return 'var(--fill-success)';
         },
         getFridgeExpirationBucket(item, catalogItems) {
             if (window.FB.isSeasoningFridgeItem(item, catalogItems)) {
-                const status = item.seasoningStatus || 'full';
+                const status = window.FB.normalizeSeasoningStatus(item.seasoningStatus);
                 if (status === 'almost-empty') return 'expired';
-                if (status === 'running-low') return 'expiring-soon';
+                if (status === 'below-half' || status === 'half') return 'expiring-soon';
                 return 'fresh';
             }
             const days = window.FB.getDaysUntilExpiry(item.expiry);
@@ -606,6 +741,123 @@
                 return window.FB.getSeasoningStatusSortOrder(a.seasoningStatus) - window.FB.getSeasoningStatusSortOrder(b.seasoningStatus);
             }
             return window.FB.getDaysUntilExpiry(a.expiry) - window.FB.getDaysUntilExpiry(b.expiry);
+        },
+        isFridgeItemExpiringSoon(fridgeItem, catalogItems) {
+            if (window.FB.isSeasoningFridgeItem(fridgeItem, catalogItems)) return false;
+            if (window.FB.isLeftoverFridgeItem(fridgeItem)) return false;
+            const days = window.FB.getDaysUntilExpiry(fridgeItem.expiry);
+            return days <= 3 && days >= 0;
+        },
+        isFridgeItemRunningLow(fridgeItem, catalogItems) {
+            if (window.FB.isLeftoverFridgeItem(fridgeItem)) return false;
+            if (window.FB.usesFridgeCapacityTracking(fridgeItem, catalogItems)) {
+                return window.FB.normalizeSeasoningStatus(fridgeItem.seasoningStatus) === 'almost-empty';
+            }
+            const catalogItem = catalogItems.find(entry => entry.id === fridgeItem.catalogItemId);
+            if (!catalogItem) return false;
+            const fridgeUnit = (fridgeItem.unit || catalogItem.defaultUnit || 'piece').toLowerCase();
+            const catalogUnit = (catalogItem.defaultUnit || 'piece').toLowerCase();
+            if (fridgeUnit !== catalogUnit) return false;
+            const qty = window.FB.getFridgeItemQuantityValue(fridgeItem);
+            const defaultQty = window.FB.getDefaultCatalogQuantity(catalogItem);
+            if (!defaultQty) return false;
+            return qty / defaultQty < 0.2;
+        },
+        formatGroceryListRemainingAmount(fridgeItem, catalogItems) {
+            const catalogItem = catalogItems.find(entry => entry.id === fridgeItem.catalogItemId);
+            const unit = fridgeItem.unit || catalogItem?.defaultUnit || 'piece';
+            const qty = window.FB.getFridgeItemQuantityValue(fridgeItem);
+            const formattedQty = Number.isInteger(qty) ? String(qty) : String(parseFloat(qty.toFixed(2)));
+            return `${formattedQty} ${unit} remaining`;
+        },
+        getGroceryListFridgeItemDetail(fridgeItem, catalogItems, kind) {
+            if (kind === 'expiring') {
+                const days = window.FB.getDaysUntilExpiry(fridgeItem.expiry);
+                if (days === 0) return 'expiring today';
+                if (days === 1) return 'expiring in 1 day';
+                return `expiring in ${days} days`;
+            }
+            if (kind === 'low') {
+                if (window.FB.usesFridgeCapacityTracking(fridgeItem, catalogItems)) {
+                    return window.FB.formatSeasoningStatus(fridgeItem.seasoningStatus).toLowerCase();
+                }
+                return window.FB.formatGroceryListRemainingAmount(fridgeItem, catalogItems);
+            }
+            return '';
+        },
+        hashSeed(value) {
+            const input = String(value);
+            let hash = 0;
+            for (let i = 0; i < input.length; i += 1) {
+                hash = ((hash << 5) - hash) + input.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash;
+        },
+        mulberry32(seed) {
+            let state = seed;
+            return () => {
+                state |= 0;
+                state = state + 0x6D2B79F5 | 0;
+                let t = Math.imul(state ^ state >>> 15, 1 | state);
+                t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            };
+        },
+        pickRandomEntries(items, count, seed) {
+            const rng = window.FB.mulberry32(seed);
+            const pool = [...items];
+            const picks = [];
+            while (picks.length < count && pool.length > 0) {
+                const index = Math.floor(rng() * pool.length);
+                picks.push(pool.splice(index, 1)[0]);
+            }
+            return picks;
+        },
+        buildFridgeGrocerySuggestions(fridgeItems, catalogItems, dismissedGroceryListIds = []) {
+            const dismissed = new Set(dismissedGroceryListIds);
+            const entries = [];
+
+            fridgeItems.forEach(fridgeItem => {
+                const entryId = `fridge-${fridgeItem.id}`;
+                if (dismissed.has(entryId)) return;
+
+                const details = [];
+                if (window.FB.isFridgeItemExpiringSoon(fridgeItem, catalogItems)) {
+                    details.push(window.FB.getGroceryListFridgeItemDetail(fridgeItem, catalogItems, 'expiring'));
+                }
+                if (window.FB.isFridgeItemRunningLow(fridgeItem, catalogItems)) {
+                    details.push(window.FB.getGroceryListFridgeItemDetail(fridgeItem, catalogItems, 'low'));
+                }
+                if (details.length === 0) return;
+
+                entries.push({
+                    id: entryId,
+                    name: fridgeItem.name,
+                    detail: details.join(' · '),
+                    detailTone: 'warning',
+                    source: 'fridge',
+                    fridgeItemId: fridgeItem.id
+                });
+            });
+
+            return entries;
+        },
+        generateSessionRandomGroceryItems(catalogItems, excludedNames = [], count = 3, seed = Date.now()) {
+            const excluded = new Set(excludedNames.map(name => name.toLowerCase()));
+            const candidates = catalogItems.filter(entry => !excluded.has(entry.name.toLowerCase()));
+            const randomPicks = window.FB.pickRandomEntries(candidates, count, window.FB.hashSeed(String(seed)));
+            return randomPicks.map(catalogItem => ({
+                id: `catalog-${catalogItem.id}`,
+                name: catalogItem.name,
+                detail: '(not in fridge)',
+                detailTone: 'danger',
+                source: 'random',
+                catalogItemId: catalogItem.id
+            }));
+        },
+        buildSuggestedGroceryListItems(fridgeItems, catalogItems, manualGroceryListItems = [], dismissedGroceryListIds = []) {
+            return window.FB.buildFridgeGrocerySuggestions(fridgeItems, catalogItems, dismissedGroceryListIds);
         },
         buildFridgeItemGroups(filteredItems, fridgeSort, catalogItems, getFridgeItemCategory) {
             const compare = (a, b) => window.FB.compareFridgeItemsByUrgency(a, b, catalogItems);
@@ -779,6 +1031,270 @@
                 };
             });
         },
+        getTodayIsoDate() {
+            return new Date().toISOString().split('T')[0];
+        },
+        formatExpenseCategory(categoryId) {
+            const match = window.FB.getExpenseCategories().find(entry => entry.id === categoryId);
+            return match ? match.label : categoryId;
+        },
+        normalizeExpenseCategory(raw) {
+            if (raw == null || raw === '') return null;
+            const query = String(raw).trim().toLowerCase();
+            const categories = window.FB.getExpenseCategories();
+            const byId = categories.find(entry => entry.id === query);
+            if (byId) return byId.id;
+            const byLabel = categories.find(entry => entry.label.toLowerCase() === query);
+            if (byLabel) return byLabel.id;
+            return null;
+        },
+        loadCustomExpenseCategories() {
+            try {
+                const saved = localStorage.getItem('fridgeCustomExpenseCategories');
+                if (!saved) return [];
+                const parsed = JSON.parse(saved);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        },
+        saveCustomExpenseCategories(categories) {
+            localStorage.setItem('fridgeCustomExpenseCategories', JSON.stringify(categories));
+        },
+        getExpenseCategories() {
+            return [...EXPENSE_CATEGORIES, ...window.FB.loadCustomExpenseCategories()];
+        },
+        isBuiltInExpenseCategory(categoryId) {
+            return EXPENSE_CATEGORIES.some(entry => entry.id === categoryId);
+        },
+        slugifyExpenseCategoryId(label) {
+            const slug = String(label || '').trim().toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            return slug || 'category';
+        },
+        buildCustomExpenseCategory(label, customCategories = null) {
+            const trimmed = String(label || '').trim();
+            if (!trimmed) return { error: 'Category name is required' };
+            const existing = customCategories
+                ? [...EXPENSE_CATEGORIES, ...customCategories]
+                : window.FB.getExpenseCategories();
+            if (existing.some(entry => entry.label.toLowerCase() === trimmed.toLowerCase())) {
+                return { error: 'Category already exists' };
+            }
+            const baseId = window.FB.slugifyExpenseCategoryId(trimmed);
+            let id = baseId;
+            let suffix = 2;
+            while (existing.some(entry => entry.id === id)) {
+                id = `${baseId}-${suffix}`;
+                suffix += 1;
+            }
+            return {
+                category: {
+                    id,
+                    label: trimmed,
+                    description: 'custom category',
+                    custom: true
+                }
+            };
+        },
+        getExpenseCategoryColor(categoryId) {
+            if (EXPENSE_CATEGORY_COLORS[categoryId]) return EXPENSE_CATEGORY_COLORS[categoryId];
+            let hash = 0;
+            for (let i = 0; i < categoryId.length; i += 1) {
+                hash = categoryId.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return CUSTOM_EXPENSE_CATEGORY_COLORS[Math.abs(hash) % CUSTOM_EXPENSE_CATEGORY_COLORS.length];
+        },
+        normalizeExpensePrice(value) {
+            const parsed = Number(value);
+            if (Number.isNaN(parsed) || parsed <= 0) return null;
+            return Math.round(parsed * 100) / 100;
+        },
+        normalizeExpenseDate(value) {
+            if (value == null || value === '') return window.FB.getTodayIsoDate();
+            const trimmed = String(value).trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+            const parsed = new Date(trimmed);
+            if (Number.isNaN(parsed.getTime())) return window.FB.getTodayIsoDate();
+            return parsed.toISOString().split('T')[0];
+        },
+        formatExpensePrice(value) {
+            const amount = window.FB.normalizeExpensePrice(value);
+            if (amount == null) return '$0.00';
+            return `$${amount.toFixed(2)}`;
+        },
+        getExpenseTotal(expense) {
+            const items = expense.items || [];
+            if (items.length > 0) {
+                return items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+            }
+            return Number(expense.price) || 0;
+        },
+        emptyExpenseItem() {
+            return { name: '', price: '' };
+        },
+        serializeExpenseDraftItems(items) {
+            return items
+                .map(item => {
+                    const name = (item.name || '').trim();
+                    const price = window.FB.normalizeExpensePrice(item.price);
+                    if (!name || price == null) return null;
+                    return { name, price };
+                })
+                .filter(Boolean);
+        },
+        normalizeStoredExpense(expense) {
+            let date = expense.date;
+            if (!date && Array.isArray(expense.items)) {
+                const datedItem = expense.items.find(item => item.date);
+                if (datedItem) date = datedItem.date;
+            }
+            let category = expense.category;
+            if (!category && Array.isArray(expense.items)) {
+                const categorizedItem = expense.items.find(item => item.category);
+                if (categorizedItem) category = categorizedItem.category;
+            }
+            category = window.FB.normalizeExpenseCategory(category) || 'miscellaneous';
+            const items = (expense.items || []).map(item => ({
+                name: item.name,
+                price: item.price
+            }));
+            const hasItemPrices = items.length > 0;
+            const price = hasItemPrices
+                ? undefined
+                : window.FB.normalizeExpensePrice(expense.price);
+            return {
+                ...expense,
+                date: window.FB.normalizeExpenseDate(date),
+                category,
+                price,
+                items
+            };
+        },
+        parseExpenseImportText(text) {
+            const result = window.FB.parseClaudeJsonText(text);
+            if (result.error) return result;
+            let expenses = Array.isArray(result.parsed) ? result.parsed : result.parsed.expenses;
+            if (!expenses && result.parsed.title && (
+                result.parsed.price != null || Array.isArray(result.parsed.items)
+            )) {
+                expenses = [result.parsed];
+            }
+            if (!Array.isArray(expenses) || expenses.length === 0) {
+                return { error: 'JSON must contain an "expenses" array with at least one entry.' };
+            }
+            return { expenses };
+        },
+        resolveExpenseImportExpenses(rawExpenses) {
+            return rawExpenses.map((raw, expenseIndex) => {
+                const title = (raw.title || '').trim();
+                if (!title) {
+                    return {
+                        expenseIndex,
+                        title: '',
+                        items: [],
+                        status: 'invalid',
+                        error: 'Missing expense title'
+                    };
+                }
+                const category = window.FB.normalizeExpenseCategory(raw.category);
+                if (!category) {
+                    return {
+                        expenseIndex,
+                        title,
+                        items: [],
+                        status: 'invalid',
+                        error: `Unknown category "${raw.category || ''}"`
+                    };
+                }
+                const date = window.FB.normalizeExpenseDate(raw.date);
+                const expensePrice = window.FB.normalizeExpensePrice(raw.price);
+                const rawItems = Array.isArray(raw.items) ? raw.items : [];
+                const items = rawItems.map((rawItem, itemIndex) => {
+                    const name = (rawItem.name || '').trim();
+                    const price = window.FB.normalizeExpensePrice(rawItem.price);
+                    if (!name) {
+                        return { itemIndex, name: '', price, status: 'invalid', error: 'Missing item name' };
+                    }
+                    if (price == null) {
+                        return { itemIndex, name, price: rawItem.price, status: 'invalid', error: 'Invalid price' };
+                    }
+                    return { itemIndex, name, price, status: 'ready' };
+                });
+                const readyItems = items.filter(row => row.status === 'ready');
+                if (readyItems.length === 0 && expensePrice == null) {
+                    return {
+                        expenseIndex,
+                        title,
+                        date,
+                        category,
+                        price: null,
+                        items,
+                        status: 'invalid',
+                        error: 'Expense needs a price or at least one item'
+                    };
+                }
+                const hasInvalid = items.some(row => row.status === 'invalid');
+                return {
+                    expenseIndex,
+                    title,
+                    date,
+                    category,
+                    price: readyItems.length === 0 ? expensePrice : undefined,
+                    items,
+                    status: hasInvalid ? 'partial' : 'ready'
+                };
+            });
+        },
+        expenseInFilter(expense, filter, today = new Date()) {
+            const anchor = new Date(today);
+            anchor.setHours(0, 0, 0, 0);
+            const expenseDate = new Date(`${window.FB.normalizeExpenseDate(expense.date)}T00:00:00`);
+            if (Number.isNaN(expenseDate.getTime())) return false;
+            if (filter === 'all') return true;
+            if (filter === 'month') {
+                return expenseDate.getFullYear() === anchor.getFullYear()
+                    && expenseDate.getMonth() === anchor.getMonth();
+            }
+            if (filter === '30days') {
+                const cutoff = new Date(anchor);
+                cutoff.setDate(cutoff.getDate() - 30);
+                return expenseDate >= cutoff && expenseDate <= anchor;
+            }
+            return true;
+        },
+        aggregateExpensesByCategory(expenses, filter) {
+            const today = new Date();
+            const categories = window.FB.getExpenseCategories();
+            const totals = new Map(categories.map(entry => [entry.id, 0]));
+
+            expenses.forEach(expense => {
+                if (!window.FB.expenseInFilter(expense, filter, today)) return;
+                const category = window.FB.normalizeExpenseCategory(expense.category);
+                if (!category) return;
+                totals.set(category, (totals.get(category) || 0) + window.FB.getExpenseTotal(expense));
+            });
+
+            const grandTotal = [...totals.values()].reduce((sum, value) => sum + value, 0);
+            return categories
+                .map(entry => ({
+                    category: entry.id,
+                    label: entry.label,
+                    total: Math.round((totals.get(entry.id) || 0) * 100) / 100,
+                    color: window.FB.getExpenseCategoryColor(entry.id)
+                }))
+                .filter(row => row.total > 0)
+                .map(row => ({
+                    ...row,
+                    percent: grandTotal > 0 ? (row.total / grandTotal) * 100 : 0
+                }));
+        },
+        formatExpenseCategoryLinesForPrompt() {
+            return window.FB.getExpenseCategories()
+                .map(entry => `- ${entry.id}: ${entry.label} (${entry.description})`)
+                .join('\n');
+        },
         buildClaudeImportPrompt(catalogItems) {
             return window.FB.buildClaudeAgentPrompt(catalogItems);
         },
@@ -800,8 +1316,9 @@
         buildClaudeAgentPrompt(catalogItems) {
             const unitList = window.FB.getUnitAbbrs().join(', ');
             const catalogLines = window.FB.formatClaudeCatalogLines(catalogItems);
+            const expenseCategoryLines = window.FB.formatExpenseCategoryLinesForPrompt();
 
-            return `You are the Fridge Buddy assistant. I use Fridge Buddy to track groceries, fridge inventory, recipes, and meals.
+            return `You are the Fridge Buddy assistant. I use Fridge Buddy to track groceries, fridge inventory, recipes, meals, and expenses.
 
 Paste this entire prompt into your AI agent once (for example Claude project instructions). Re-copy it from the Home tab when my grocery catalog changes.
 
@@ -838,6 +1355,21 @@ When I send a message, infer what I want and respond with ONLY valid JSON (no ma
   ]
 }
 
+4) Expense → log spending:
+{
+  "expenses": [
+    {
+      "title": "Whole Foods",
+      "date": "2026-07-30",
+      "category": "groceries",
+      "price": 85.50,
+      "items": [
+        { "name": "Milk", "price": 4.99 }
+      ]
+    }
+  ]
+}
+
 Rules for all responses:
 - Match names to MY GROCERY CATALOG below when possible. Use the exact catalog name and include catalogItemId when matched.
 - quantity must be a positive number.
@@ -845,13 +1377,17 @@ Rules for all responses:
 - For recipes: include one object per recipe; each recipe needs a name and at least one ingredient.
 - For meals: include one object per meal; each meal needs a name and at least one ingredient; quantities reflect what was consumed.
 - For hauls: only include items I explicitly mention buying.
+- For expenses: include one object per receipt or purchase; each expense needs a title, category (expense category id), date (YYYY-MM-DD or omit for today), and either a top-level price in dollars OR an optional items array with name and price per line; all prices are USD.
 - If something is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, other).
-- Unmatched items can be added to the grocery store when I confirm the import in Fridge Buddy.
+- Unmatched grocery items can be added to the grocery store when I confirm the import in Fridge Buddy.
+
+EXPENSE CATEGORIES:
+${expenseCategoryLines}
 
 MY GROCERY CATALOG:
 ${catalogLines}
 
-After this context is loaded, I will describe a grocery haul, recipe, or meal in plain English. Reply with JSON only, using the matching shape above.`;
+After this context is loaded, I will describe a grocery haul, recipe, meal, or expense in plain English (or share receipt details from a screenshot I sent separately). Reply with JSON only, using the matching shape above.`;
         },
         buildClaudeRecipeImportPrompt(catalogItems) {
             const unitList = window.FB.getUnitAbbrs().join(', ');
@@ -928,7 +1464,7 @@ After I paste this context, I will send my recipe in plain English. Reply with J
                 const matches = items.filter(item => item.catalogItemId === ingredient.catalogItemId);
                 if (matches.length === 0) return;
 
-                if (window.FB.isSeasoningFridgeItem(matches[0], catalogItems)) {
+                if (window.FB.usesFridgeCapacityTracking(matches[0], catalogItems)) {
                     const targetId = matches[0].id;
                     items = items.map(item => item.id === targetId
                         ? { ...item, seasoningStatus: window.FB.adjustSeasoningStatus(item.seasoningStatus, -1) }

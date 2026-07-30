@@ -1,9 +1,11 @@
 function AddCatalogModal({
     catalogName, setCatalogName, catalogCategory, setCatalogCategory,
     catalogDefaultUnit, setCatalogDefaultUnit, catalogExpirationDays, setCatalogExpirationDays,
+    catalogCalories, setCatalogCalories, adjustCatalogCalories,
     adjustCatalogExpirationDays, closeAddCatalogModal, addCatalogItem
 }) {
     const { CATEGORIES, UNITS, formatCategory, formatUnitLabel, isSeasoningCategory } = window.FB;
+    const { CaloriesField } = window.FBComponents;
     const { modalOverlay, modalCard, stepBtn } = window.FB_STYLES;
 
     return (
@@ -41,28 +43,37 @@ function AddCatalogModal({
                     </label>
                 )}
                 {!isSeasoningCategory(catalogCategory) && (
-                    <label style={{ display: 'block', marginBottom: '1rem' }}>
-                        <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Days until expiration</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <button type="button" onClick={() => adjustCatalogExpirationDays(-1)} style={stepBtn} aria-label="Decrease days until expiration">−</button>
-                            <input
-                                type="number"
-                                min="1"
-                                value={catalogExpirationDays}
-                                onChange={(e) => {
-                                    const raw = e.target.value;
-                                    if (raw === '') { setCatalogExpirationDays(''); return; }
-                                    const val = Number(raw);
-                                    if (!isNaN(val)) setCatalogExpirationDays(val);
-                                }}
-                                onBlur={() => setCatalogExpirationDays(prev => Math.max(1, Number(prev) || 1))}
-                                style={{ width: '64px', marginBottom: 0, textAlign: 'center', flexShrink: 0 }}
-                                aria-label="Days until expiration"
-                            />
-                            <button type="button" onClick={() => adjustCatalogExpirationDays(1)} style={stepBtn} aria-label="Increase days until expiration">+</button>
-                            <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>days</span>
-                        </div>
-                    </label>
+                    <>
+                        <label style={{ display: 'block', marginBottom: '12px' }}>
+                            <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Days until expiration</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button type="button" onClick={() => adjustCatalogExpirationDays(-1)} style={stepBtn} aria-label="Decrease days until expiration">−</button>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={catalogExpirationDays}
+                                    onChange={(e) => {
+                                        const raw = e.target.value;
+                                        if (raw === '') { setCatalogExpirationDays(''); return; }
+                                        const val = Number(raw);
+                                        if (!isNaN(val)) setCatalogExpirationDays(val);
+                                    }}
+                                    onBlur={() => setCatalogExpirationDays(prev => Math.max(1, Number(prev) || 1))}
+                                    style={{ width: '64px', marginBottom: 0, textAlign: 'center', flexShrink: 0 }}
+                                    aria-label="Days until expiration"
+                                />
+                                <button type="button" onClick={() => adjustCatalogExpirationDays(1)} style={stepBtn} aria-label="Increase days until expiration">+</button>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>days</span>
+                            </div>
+                        </label>
+                        <CaloriesField
+                            label="Calories per default serving"
+                            value={catalogCalories}
+                            onChange={setCatalogCalories}
+                            onAdjust={adjustCatalogCalories}
+                            hint="Calories for the item's default quantity and unit"
+                        />
+                    </>
                 )}
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={closeAddCatalogModal} style={{ flex: 1, padding: '10px', background: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px' }}>Cancel</button>

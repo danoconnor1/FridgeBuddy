@@ -9,6 +9,10 @@ function RecipeIngredientEditor({ ingredients, setIngredients, catalogItems, upd
             <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', margin: '0 0 8px 0' }}>Ingredients</p>
             {ingredients.map((ingredient, index) => {
                 const itemQuantity = parseIngredientQuantity(ingredient.quantity);
+                const selectedCatalogItemId = ingredient.catalogItemId != null && ingredient.catalogItemId !== ''
+                    ? String(ingredient.catalogItemId)
+                    : '';
+                const selectedCatalogItem = catalogItems.find(item => String(item.id) === selectedCatalogItemId);
                 return (
                     <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
                         <button
@@ -71,13 +75,16 @@ function RecipeIngredientEditor({ ingredients, setIngredients, catalogItems, upd
                             ))}
                         </select>
                         <select
-                            value={ingredient.catalogItemId}
+                            value={selectedCatalogItemId}
                             onChange={(e) => updateIngredientInList(setIngredients, index, 'catalogItemId', e.target.value)}
                             style={{ flex: 1, marginBottom: 0, minWidth: 0 }}
                         >
                             <option value="">Select item</option>
+                            {selectedCatalogItemId && !selectedCatalogItem && ingredient.name && (
+                                <option value={selectedCatalogItemId}>{ingredient.name}</option>
+                            )}
                             {catalogItems.map(item => (
-                                <option key={item.id} value={item.id}>
+                                <option key={item.id} value={String(item.id)}>
                                     {item.name}{item.category ? ` (${formatCategory(item.category)})` : ''}
                                 </option>
                             ))}

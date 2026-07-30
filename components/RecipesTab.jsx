@@ -3,7 +3,6 @@ function RecipesTab({
     draftIngredients, setDraftIngredients, addIngredientRow, addRecipe,
     updateIngredientInList, adjustIngredientQuantityInList, removeIngredientRowFromList,
     toggleRecipeShowQuantities, openEditRecipeModal, updateRecipeCalories,
-    isSeasoningFridgeItem,
     recipeImportPaste, setRecipeImportPaste,
     recipeImportPreview, recipeImportError,
     recipeImportSuccess,
@@ -91,7 +90,6 @@ function RecipesTab({
                                 recipe={recipe}
                                 catalogItems={catalogItems}
                                 items={items}
-                                isSeasoningFridgeItem={isSeasoningFridgeItem}
                                 toggleRecipeShowQuantities={toggleRecipeShowQuantities}
                                 onEdit={openEditRecipeModal}
                                 onUpdateCalories={updateRecipeCalories}

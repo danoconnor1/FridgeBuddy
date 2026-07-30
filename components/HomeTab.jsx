@@ -1,49 +1,22 @@
 function HomeTab({
-    lowSeasoningItems, expiringItems, expiredItems, leftoverItems,
+    expiringItems, expiredItems, leftoverItems,
     readyToMakeRecipes, almostThereRecipes, recipes, items, catalogItems,
-    openViewRecipeModal, agentPromptCopied, copyAgentPrompt
+    manualGroceryListItems, suggestedGroceryListItems,
+    groceryListDraftItems,
+    openViewRecipeModal, agentPromptCopied, copyAgentPrompt,
+    addGroceryListItemRow, updateGroceryListDraftItem, removeGroceryListDraftItem,
+    addManualGroceryListItems, removeGroceryListItem, addSuggestedItemToGroceryList,
+    isOnManualGroceryList,
+    groceryListRecipeId, setGroceryListRecipeId, addRecipeIngredientsToGroceryList
 }) {
-    const { formatFridgeItemLabel, formatSeasoningStatus, getDaysUntilExpiry, formatExpiresIn, getExpirationTextColor } = window.FB;
-
-    const renderRecipeRow = (recipe) => (
-        <div
-            key={recipe.id}
-            style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '10px 0',
-                borderBottom: '1px solid var(--border)'
-            }}
-        >
-            <span style={{ fontSize: '14px', fontWeight: '500', flex: 1, minWidth: 0 }}>
-                {recipe.name}
-            </span>
-            <button
-                type="button"
-                onClick={() => openViewRecipeModal(recipe.id)}
-                style={{
-                    padding: '6px 12px',
-                    background: 'transparent',
-                    color: 'var(--fill-accent)',
-                    border: '1px solid var(--fill-accent)',
-                    borderRadius: 'var(--radius)',
-                    fontWeight: '500',
-                    fontSize: '12px',
-                    flexShrink: 0,
-                    cursor: 'pointer'
-                }}
-            >
-                View recipe
-            </button>
-        </div>
-    );
-
-    const hasRecipeSections = readyToMakeRecipes.length > 0 || almostThereRecipes.length > 0;
+    const {
+        formatFridgeItemLabel, getDaysUntilExpiry,
+        formatExpiresIn, getExpirationTextColor, countFailingIngredients
+    } = window.FB;
+    const { GroceryListItemEditor } = window.FBComponents;
 
     const copyIcon = (
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, marginTop: '1px' }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h3m9 -9v-5a2 2 0 0 0 -2 -2h-2" />
             <path d="M13 17v-1a1 1 0 0 1 1 -1h1m3 0h1a1 1 0 0 1 1 1v1m0 3v1a1 1 0 0 1 -1 1h-1m-3 0h-1a1 1 0 0 1 -1 -1v-1" />
@@ -52,155 +25,315 @@ function HomeTab({
     );
 
     const checkIcon = (
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, marginTop: '1px' }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <path d="M5 12l5 5l10 -10" />
         </svg>
     );
 
-    return (
-        <div>
-            <section className="home-agent-prompt-section">
-                <h2 className="meals-section-title">Fridge Buddy Agent Prompt</h2>
-                <div className="meals-section-box">
-                    <p className="home-agent-prompt-desc">
-                        Copy this prompt into your AI agent once (for example Claude project instructions).
-                        Re-copy when you add items to your grocery store.
-                    </p>
+    const hasFridgeAlerts = expiringItems.length > 0 || expiredItems.length > 0;
+    const hasSuggestedMeals = leftoverItems.length > 0
+        || readyToMakeRecipes.length > 0
+        || almostThereRecipes.length > 0;
+    const canAddGroceryListItems = groceryListDraftItems.some(item => item.catalogItemId);
+
+    const groceryMetaClassName = (tone) => (
+        `home-grocery-list-item-meta${tone ? ` home-grocery-list-item-meta--${tone}` : ''}`
+    );
+
+    const renderManualGroceryListItem = (item) => (
+        <li key={item.id} className="home-grocery-list-item">
+            <div className="home-grocery-list-item-info">
+                <span className="home-grocery-list-item-name">{item.name}</span>
+                {item.detail && (
+                    <span className={groceryMetaClassName(item.detailTone || 'success')}>
+                        {item.detail}
+                    </span>
+                )}
+            </div>
+            <button
+                type="button"
+                onClick={() => removeGroceryListItem(item)}
+                className="home-grocery-list-remove"
+                aria-label={`Remove ${item.name}`}
+            >
+                −
+            </button>
+        </li>
+    );
+
+    const renderSuggestedGroceryListItem = (item) => {
+        const onList = isOnManualGroceryList(item);
+        return (
+            <li key={item.id} className="home-grocery-list-item">
+                <div className="home-grocery-list-item-info">
+                    <span className="home-grocery-list-item-name">{item.name}</span>
+                    {item.detail && (
+                        <span className={groceryMetaClassName(item.detailTone || 'warning')}>
+                            {item.detail}
+                        </span>
+                    )}
+                </div>
+                <div className="home-grocery-list-actions">
                     <button
                         type="button"
-                        onClick={copyAgentPrompt}
-                        className="home-agent-prompt-copy-btn"
-                        aria-label="Copy Fridge Buddy agent prompt"
+                        onClick={() => addSuggestedItemToGroceryList(item)}
+                        disabled={onList}
+                        className="home-grocery-list-add"
+                        aria-label={`Add ${item.name} to grocery list`}
                     >
-                        {agentPromptCopied ? checkIcon : copyIcon}
-                        <span>{agentPromptCopied ? 'Copied! Paste into your agent.' : 'Copy agent prompt'}</span>
+                        +
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => removeGroceryListItem(item)}
+                        className="home-grocery-list-remove"
+                        aria-label={`Remove ${item.name}`}
+                    >
+                        −
                     </button>
                 </div>
+            </li>
+        );
+    };
+
+    const renderRecipeSuggestion = (recipe, variant) => {
+        const shortBy = variant === 'almost'
+            ? countFailingIngredients(recipe, items, getDaysUntilExpiry, catalogItems)
+            : 0;
+
+        return (
+            <div key={recipe.id} className="home-suggestion-row">
+                <div className="home-suggestion-info">
+                    <span className="home-suggestion-name">{recipe.name}</span>
+                    {variant === 'almost' && (
+                        <span className="home-suggestion-meta">
+                            {shortBy} ingredient{shortBy !== 1 ? 's' : ''} short
+                        </span>
+                    )}
+                </div>
+                <button
+                    type="button"
+                    className="home-suggestion-btn"
+                    onClick={() => openViewRecipeModal(recipe.id)}
+                >
+                    View
+                </button>
+            </div>
+        );
+    };
+
+    return (
+        <div>
+            <div className="home-agent-prompt-bar">
+                <button
+                    type="button"
+                    onClick={copyAgentPrompt}
+                    className="home-agent-prompt-copy-btn"
+                    aria-label="Copy Fridge Buddy agent prompt"
+                >
+                    {agentPromptCopied ? checkIcon : copyIcon}
+                    <span>{agentPromptCopied ? 'Copied! Paste into your agent.' : 'Copy agent prompt'}</span>
+                </button>
+                <p className="home-agent-prompt-desc">
+                    Copy this prompt into your AI agent once (for example Claude project instructions).
+                    Re-copy when you add items to your grocery store. It covers grocery hauls, recipes, meals, and expenses.
+                </p>
+            </div>
+
+            <section className="meals-section home-dashboard-section">
+                <div className="meals-section-box">
+                    <div className="meals-add-columns home-dashboard-columns">
+                        <div className="meals-add-option">
+                            <p className="meals-option-label">Fridge items expiring soon</p>
+                            <div className="home-column-card">
+                                {!hasFridgeAlerts && (
+                                    <p className="home-column-empty">Nothing expiring soon.</p>
+                                )}
+
+                                {expiringItems.length > 0 && (
+                                    <div className="home-alert-group">
+                                        <p className="home-alert-group-label">Expiring soon</p>
+                                        <ul className="home-alert-list">
+                                            {expiringItems.map(item => {
+                                                const days = getDaysUntilExpiry(item.expiry);
+                                                return (
+                                                    <li key={item.id} className="home-alert-item home-alert-item--warning">
+                                                        <i className="ti ti-circle-filled" aria-hidden="true" />
+                                                        <span>
+                                                            <strong>{formatFridgeItemLabel(item, catalogItems)}</strong>
+                                                            {' — '}
+                                                            {days} day{days !== 1 ? 's' : ''} left
+                                                        </span>
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {expiredItems.length > 0 && (
+                                    <div className="home-alert-group">
+                                        <p className="home-alert-group-label">Expired</p>
+                                        <ul className="home-alert-list">
+                                            {expiredItems.map(item => {
+                                                const days = Math.abs(getDaysUntilExpiry(item.expiry));
+                                                return (
+                                                    <li key={item.id} className="home-alert-item home-alert-item--danger">
+                                                        <i className="ti ti-circle-filled" aria-hidden="true" />
+                                                        <span>
+                                                            {formatFridgeItemLabel(item, catalogItems)}
+                                                            {' — expired '}
+                                                            {days} day{days !== 1 ? 's' : ''} ago
+                                                        </span>
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="meals-add-option">
+                            <div className="home-column-card">
+                                <p className="home-grocery-list-section-title">My grocery list</p>
+                                {manualGroceryListItems.length === 0 ? (
+                                    <p className="home-column-empty">No items yet. Add from your grocery store below.</p>
+                                ) : (
+                                    <ul className="home-grocery-list">
+                                        {manualGroceryListItems.map(renderManualGroceryListItem)}
+                                    </ul>
+                                )}
+
+                                {catalogItems.length === 0 ? (
+                                    <p className="home-column-empty" style={{ marginTop: '0.75rem' }}>
+                                        Add items in the Grocery store first.
+                                    </p>
+                                ) : (
+                                    <>
+                                        <GroceryListItemEditor
+                                            items={groceryListDraftItems}
+                                            catalogItems={catalogItems}
+                                            updateGroceryListDraftItem={updateGroceryListDraftItem}
+                                            removeGroceryListDraftItem={removeGroceryListDraftItem}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={addGroceryListItemRow}
+                                            className="meals-dashed-btn"
+                                        >
+                                            Add item
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={addManualGroceryListItems}
+                                            disabled={!canAddGroceryListItems}
+                                            className="meals-add-btn"
+                                        >
+                                            Add to list
+                                        </button>
+
+                                        {recipes.length > 0 && (
+                                            <div className="home-grocery-recipe-add">
+                                                <p className="home-grocery-recipe-add-label">Add from recipe</p>
+                                                <div className="home-grocery-recipe-add-row">
+                                                    <select
+                                                        value={groceryListRecipeId}
+                                                        onChange={(e) => setGroceryListRecipeId(e.target.value)}
+                                                        className="home-grocery-recipe-select"
+                                                        aria-label="Recipe"
+                                                    >
+                                                        <option value="">Select recipe</option>
+                                                        {recipes.map(recipe => (
+                                                            <option key={recipe.id} value={String(recipe.id)}>
+                                                                {recipe.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <button
+                                                        type="button"
+                                                        onClick={addRecipeIngredientsToGroceryList}
+                                                        disabled={!groceryListRecipeId}
+                                                        className="home-grocery-recipe-add-btn"
+                                                    >
+                                                        Add
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+
+                                <div className="home-grocery-list-divider" aria-hidden="true" />
+
+                                <p className="home-grocery-list-section-title">Suggested items</p>
+                                {suggestedGroceryListItems.length === 0 ? (
+                                    <p className="home-column-empty">Nothing to suggest right now.</p>
+                                ) : (
+                                    <ul className="home-grocery-list">
+                                        {suggestedGroceryListItems.map(renderSuggestedGroceryListItem)}
+                                    </ul>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="meals-add-option">
+                            <p className="meals-option-label">Suggested meals</p>
+                            <div className="home-column-card">
+                                {!hasSuggestedMeals && recipes.length === 0 && items.length === 0 && catalogItems.length === 0 && (
+                                    <p className="home-column-empty">
+                                        Start by adding items in the Grocery store, then stock your fridge and add recipes.
+                                    </p>
+                                )}
+
+                                {!hasSuggestedMeals && (recipes.length > 0 || items.length > 0 || catalogItems.length > 0) && (
+                                    <p className="home-column-empty">
+                                        No leftovers or recipes ready yet. Stock up on a few more ingredients!
+                                    </p>
+                                )}
+
+                                {leftoverItems.length > 0 && (
+                                    <div className="home-suggestion-group">
+                                        <p className="home-suggestion-group-label">Leftovers</p>
+                                        <ul className="home-suggestion-list">
+                                            {leftoverItems.map(item => (
+                                                <li key={item.id} className="home-suggestion-list-item">
+                                                    <i
+                                                        className="ti ti-circle-filled"
+                                                        style={{ color: getExpirationTextColor(item.expiry) }}
+                                                        aria-hidden="true"
+                                                    />
+                                                    <span>
+                                                        <strong>{item.name}</strong>
+                                                        <span style={{ color: getExpirationTextColor(item.expiry) }}>
+                                                            {' — '}{formatExpiresIn(item.expiry)}
+                                                        </span>
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {readyToMakeRecipes.length > 0 && (
+                                    <div className="home-suggestion-group">
+                                        <p className="home-suggestion-group-label">Ready to make</p>
+                                        {readyToMakeRecipes.map(recipe => renderRecipeSuggestion(recipe, 'ready'))}
+                                    </div>
+                                )}
+
+                                {almostThereRecipes.length > 0 && (
+                                    <div className="home-suggestion-group">
+                                        <p className="home-suggestion-group-label">Nearly ready</p>
+                                        {almostThereRecipes.map(recipe => renderRecipeSuggestion(recipe, 'almost'))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
-
-            {lowSeasoningItems.length > 0 && (
-                <div style={{ background: 'var(--bg-warning)', border: '1px solid var(--border-warning)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-warning)', margin: '0 0 8px 0' }}>
-                        <i className="ti ti-alert-circle" style={{ verticalAlign: '-2px', marginRight: '6px' }} aria-hidden="true"></i>
-                        Seasonings running low
-                    </h3>
-                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                        {lowSeasoningItems.map(item => (
-                            <div key={item.id} style={{ margin: '6px 0' }}>
-                                <strong>{formatFridgeItemLabel(item)}</strong> - {formatSeasoningStatus(item.seasoningStatus)}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {expiringItems.length > 0 && (
-                <div style={{ background: 'var(--bg-warning)', border: '1px solid var(--border-warning)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-warning)', margin: '0 0 8px 0' }}>
-                        <i className="ti ti-alert-circle" style={{ verticalAlign: '-2px', marginRight: '6px' }} aria-hidden="true"></i>
-                        Items expiring soon
-                    </h3>
-                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                        {expiringItems.map(item => (
-                            <div key={item.id} style={{ margin: '6px 0' }}>
-                                <strong>{formatFridgeItemLabel(item)}</strong> - expires in {getDaysUntilExpiry(item.expiry)} day{getDaysUntilExpiry(item.expiry) !== 1 ? 's' : ''}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {expiredItems.length > 0 && (
-                <div style={{ background: 'var(--bg-danger)', border: '1px solid var(--border-danger)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-danger)', margin: '0 0 8px 0' }}>
-                        <i className="ti ti-trash" style={{ verticalAlign: '-2px', marginRight: '6px' }} aria-hidden="true"></i>
-                        Expired items
-                    </h3>
-                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                        {expiredItems.map(item => (
-                            <div key={item.id} style={{ margin: '6px 0' }}>
-                                {formatFridgeItemLabel(item)} - expired {Math.abs(getDaysUntilExpiry(item.expiry))} day{Math.abs(getDaysUntilExpiry(item.expiry)) !== 1 ? 's' : ''} ago
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {leftoverItems.length > 0 && (
-                <div style={{ background: 'var(--surface-1)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '500', margin: '0 0 8px 0' }}>
-                        <i className="ti ti-box" style={{ verticalAlign: '-2px', marginRight: '6px' }} aria-hidden="true"></i>
-                        Leftovers
-                    </h3>
-                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                        {leftoverItems.map(item => (
-                            <div key={item.id} style={{ margin: '6px 0', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                                <i className="ti ti-circle-filled" style={{ fontSize: '7px', color: getExpirationTextColor(item.expiry), flexShrink: 0 }} aria-hidden="true"></i>
-                                <span>
-                                    <strong style={{ color: 'var(--text-primary)' }}>{item.name}</strong>
-                                    <span style={{ color: getExpirationTextColor(item.expiry) }}> — {formatExpiresIn(item.expiry)}</span>
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {recipes.length > 0 && (
-                <div style={{ marginTop: '1.5rem' }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: '500', margin: '0 0 1rem 0' }}>
-                        <i className="ti ti-chef-hat" style={{ verticalAlign: '-2px', marginRight: '8px' }} aria-hidden="true"></i>
-                        Recipes
-                    </h2>
-
-                    {readyToMakeRecipes.length > 0 && (
-                        <div style={{ marginBottom: '1.5rem' }}>
-                            <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-success)', margin: '0 0 8px 0' }}>
-                                Ready to make
-                            </h3>
-                            <div style={window.FB_STYLES.card}>
-                                {readyToMakeRecipes.map(recipe => renderRecipeRow(recipe))}
-                            </div>
-                        </div>
-                    )}
-
-                    {almostThereRecipes.length > 0 && (
-                        <div style={{ marginBottom: '1.5rem' }}>
-                            <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-warning)', margin: '0 0 8px 0' }}>
-                                Almost there
-                            </h3>
-                            <div style={window.FB_STYLES.card}>
-                                {almostThereRecipes.map(recipe => renderRecipeRow(recipe))}
-                            </div>
-                        </div>
-                    )}
-
-                    {!hasRecipeSections && items.length > 0 && (
-                        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem 0' }}>
-                            <p>No recipes are close to ready yet. Stock up on a few more ingredients!</p>
-                        </div>
-                    )}
-
-                    {!hasRecipeSections && items.length === 0 && (
-                        <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem 0' }}>
-                            <p>Add items to your fridge to see which recipes you can make.</p>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {recipes.length === 0 && items.length === 0 && catalogItems.length === 0 && (
-                <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem 0' }}>
-                    <p>Start by adding items in the Grocery store, then add them to your fridge and favorite recipes.</p>
-                </div>
-            )}
-
-            {recipes.length === 0 && (items.length > 0 || catalogItems.length > 0) && (
-                <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '2rem 0' }}>
-                    <p>Add some recipes to get suggestions!</p>
-                </div>
-            )}
         </div>
     );
 }
