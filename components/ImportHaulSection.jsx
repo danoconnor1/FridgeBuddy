@@ -5,7 +5,6 @@ function ImportHaulSection({
     previewHaulImport, confirmHaulImport, clearHaulImport
 }) {
     const { formatUnitLabel } = window.FB;
-    const { categoryHeading } = window.FB_STYLES;
 
     const importableCount = haulImportPreview
         ? haulImportPreview.filter(row => row.status === 'ready' || row.status === 'unmatched').length
@@ -29,7 +28,7 @@ function ImportHaulSection({
                 Assuming agent prompt (home page) has been pasted, explain what you bought to your agent, then paste the response below.
             </p>
 
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+            <div className="import-paste-row">
                 <textarea
                     id="haul-import-paste"
                     value={haulImportPaste}
@@ -63,23 +62,23 @@ function ImportHaulSection({
 
             {haulImportPreview && (
                 <div className="meals-import-preview">
-                    <h5 style={{ ...categoryHeading, marginTop: 0, marginBottom: '0.4rem' }}>Preview</h5>
+                    <h5 className="import-preview-heading">Preview</h5>
                     {haulImportPreview.map(row => (
                         <div key={row.index} className="meals-preview-row">
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <p style={{ fontSize: '11px', fontWeight: '500', margin: 0 }}>{row.name}</p>
-                                <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0 }}>
+                                <p className="preview-row-name">{row.name}</p>
+                                <p className="preview-row-detail">
                                     {row.status !== 'invalid'
                                         ? `${row.quantity} ${formatUnitLabel(row.unit)}`
                                         : row.error}
                                 </p>
                                 {row.status === 'unmatched' && (
-                                    <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
+                                    <p className="preview-row-note">
                                         Will prompt to add to grocery store
                                     </p>
                                 )}
                             </div>
-                            <span style={{ fontSize: '10px', fontWeight: '500', color: statusColor(row.status), flexShrink: 0 }}>
+                            <span className="preview-row-status" style={{ color: statusColor(row.status) }}>
                                 {statusLabel(row)}
                             </span>
                         </div>

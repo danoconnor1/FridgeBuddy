@@ -1,12 +1,11 @@
 function RecipeIngredientEditor({ ingredients, setIngredients, catalogItems, updateIngredientInList, adjustIngredientQuantityInList, removeIngredientRowFromList }) {
     const { UNITS, formatCategory, formatUnitLabel, parseIngredientQuantity, MIN_INGREDIENT_QTY } = window.FB;
-    const { smallStepBtn, compactSelect } = window.FB_STYLES;
 
     if (ingredients.length === 0) return null;
 
     return (
-        <div style={{ marginBottom: '12px' }}>
-            <p style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', margin: '0 0 8px 0' }}>Ingredients</p>
+        <div className="ingredient-editor">
+            <p className="ingredient-editor-label">Ingredients</p>
             {ingredients.map((ingredient, index) => {
                 const itemQuantity = parseIngredientQuantity(ingredient.quantity);
                 const selectedCatalogItemId = ingredient.catalogItemId != null && ingredient.catalogItemId !== ''
@@ -14,16 +13,12 @@ function RecipeIngredientEditor({ ingredients, setIngredients, catalogItems, upd
                     : '';
                 const selectedCatalogItem = catalogItems.find(item => String(item.id) === selectedCatalogItemId);
                 return (
-                    <div key={index} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                    <div key={index} className="ingredient-editor-row">
                         <button
                             type="button"
                             onClick={() => adjustIngredientQuantityInList(setIngredients, index, -1)}
                             disabled={itemQuantity <= MIN_INGREDIENT_QTY}
-                            style={{
-                                ...smallStepBtn,
-                                opacity: itemQuantity <= MIN_INGREDIENT_QTY ? 0.4 : 1,
-                                cursor: itemQuantity <= MIN_INGREDIENT_QTY ? 'not-allowed' : 'pointer'
-                            }}
+                            className="fb-step-btn ingredient-editor-dec"
                             aria-label="Decrease quantity"
                         >
                             −
@@ -46,20 +41,13 @@ function RecipeIngredientEditor({ ingredients, setIngredients, catalogItems, upd
                                     window.FB.roundIngredientQuantity(ingredient.quantity)
                                 );
                             }}
-                            style={{
-                                width: '48px',
-                                marginBottom: 0,
-                                textAlign: 'center',
-                                flexShrink: 0,
-                                padding: '4px 6px',
-                                fontSize: '12px'
-                            }}
+                            className="ingredient-editor-qty-input"
                             aria-label="Ingredient quantity"
                         />
                         <button
                             type="button"
                             onClick={() => adjustIngredientQuantityInList(setIngredients, index, 1)}
-                            style={smallStepBtn}
+                            className="fb-step-btn ingredient-editor-inc"
                             aria-label="Increase quantity"
                         >
                             +
@@ -67,7 +55,7 @@ function RecipeIngredientEditor({ ingredients, setIngredients, catalogItems, upd
                         <select
                             value={ingredient.unit || 'piece'}
                             onChange={(e) => updateIngredientInList(setIngredients, index, 'unit', e.target.value)}
-                            style={{ ...compactSelect, width: '88px', flexShrink: 0 }}
+                            className="ingredient-editor-unit"
                             aria-label="Unit of measurement"
                         >
                             {UNITS.map(unit => (
@@ -77,7 +65,7 @@ function RecipeIngredientEditor({ ingredients, setIngredients, catalogItems, upd
                         <select
                             value={selectedCatalogItemId}
                             onChange={(e) => updateIngredientInList(setIngredients, index, 'catalogItemId', e.target.value)}
-                            style={{ flex: 1, marginBottom: 0, minWidth: 0 }}
+                            className="ingredient-editor-catalog"
                         >
                             <option value="">Select item</option>
                             {selectedCatalogItemId && !selectedCatalogItem && ingredient.name && (
@@ -92,21 +80,10 @@ function RecipeIngredientEditor({ ingredients, setIngredients, catalogItems, upd
                         <button
                             type="button"
                             onClick={() => removeIngredientRowFromList(setIngredients, index)}
-                            style={{
-                                width: '32px',
-                                height: '32px',
-                                background: 'var(--fill-danger)',
-                                border: 'none',
-                                borderRadius: 'var(--radius)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: 0,
-                                flexShrink: 0
-                            }}
+                            className="ingredient-editor-remove"
                             aria-label="Remove ingredient"
                         >
-                            <span style={{ color: '#ffffff', fontSize: '20px', fontWeight: '600', lineHeight: 1 }} aria-hidden="true">−</span>
+                            <span aria-hidden="true">−</span>
                         </button>
                     </div>
                 );

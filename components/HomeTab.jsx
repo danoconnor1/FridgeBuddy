@@ -6,12 +6,16 @@ function HomeTab({
     openViewRecipeModal, agentPromptCopied, copyAgentPrompt,
     addGroceryListItemRow, updateGroceryListDraftItem, removeGroceryListDraftItem,
     addManualGroceryListItems, removeGroceryListItem, addSuggestedItemToGroceryList,
+    updateGroceryListItem, adjustGroceryListItemQuantity,
+    addGroceryListItemToFridge, addAllGroceryListItemsToFridge,
     isOnManualGroceryList,
     groceryListRecipeId, setGroceryListRecipeId, addRecipeIngredientsToGroceryList
 }) {
     const {
         formatFridgeItemLabel, getDaysUntilExpiry,
-        formatExpiresIn, getExpirationTextColor, countFailingIngredients
+        formatExpiresIn, getExpirationTextColor, countFailingIngredients,
+        UNITS, formatUnitLabel, parseIngredientQuantity, roundIngredientQuantity,
+        MIN_INGREDIENT_QTY, isSeasoningCategory
     } = window.FB;
     const { GroceryListItemEditor } = window.FBComponents;
 
@@ -41,26 +45,98 @@ function HomeTab({
         `home-grocery-list-item-meta${tone ? ` home-grocery-list-item-meta--${tone}` : ''}`
     );
 
-    const renderManualGroceryListItem = (item) => (
-        <li key={item.id} className="home-grocery-list-item">
-            <div className="home-grocery-list-item-info">
-                <span className="home-grocery-list-item-name">{item.name}</span>
-                {item.detail && (
-                    <span className={groceryMetaClassName(item.detailTone || 'success')}>
-                        {item.detail}
-                    </span>
-                )}
-            </div>
-            <button
-                type="button"
-                onClick={() => removeGroceryListItem(item)}
-                className="home-grocery-list-remove"
-                aria-label={`Remove ${item.name}`}
-            >
-                −
-            </button>
-        </li>
-    );
+    const renderManualGroceryListItem = (item) => {
+        const catalogItem = catalogItems.find(
+            entry => String(entry.id) === String(item.catalogItemId)
+        );
+        const isSeasoning = catalogItem ? isSeasoningCategory(catalogItem.category) : false;
+        const itemQuantity = parseIngredientQuantity(item.quantity);
+        const itemUnit = item.unit || (catalogItem?.defaultUnit || 'piece');
+
+        return (
+            <li key={item.id} className="home-grocery-list-item home-grocery-list-item--manual">
+                <div className="home-grocery-list-item-info">
+                    <span className="home-grocery-list-item-name">{item.name}</span>
+                    {item.detail && (
+                        <span className={groceryMetaClassName(item.detailTone || 'success')}>
+                            {item.detail}
+                        </span>
+                    )}
+                </div>
+                <div className="home-grocery-list-qty-row">
+                    <button
+                        type="button"
+                        onClick={() => adjustGroceryListItemQuantity(item.id, -1)}
+                        disabled={itemQuantity <= MIN_INGREDIENT_QTY}
+                        className="home-grocery-list-qty-step"
+                        aria-label={`Decrease quantity for ${item.name}`}
+                    >
+                        −
+                    </button>
+                    <input
+                        type="text"
+                        inputMode="decimal"
+                        value={item.quantity === '' || item.quantity == null ? '' : item.quantity}
+                        onChange={(e) => {
+                            const raw = e.target.value;
+                            if (raw === '' || /^\d*\.?\d*$/.test(raw)) {
+                                updateGroceryListItem(item.id, 'quantity', raw);
+                            }
+                        }}
+                        onBlur={() => {
+                            updateGroceryListItem(
+                                item.id,
+                                'quantity',
+                                roundIngredientQuantity(item.quantity)
+                            );
+                        }}
+                        className="home-grocery-list-qty-input"
+                        aria-label={`Quantity for ${item.name}`}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => adjustGroceryListItemQuantity(item.id, 1)}
+                        className="home-grocery-list-qty-step"
+                        aria-label={`Increase quantity for ${item.name}`}
+                    >
+                        +
+                    </button>
+                    {isSeasoning ? (
+                        <span className="home-grocery-list-qty-unit-label">piece</span>
+                    ) : (
+                        <select
+                            value={itemUnit}
+                            onChange={(e) => updateGroceryListItem(item.id, 'unit', e.target.value)}
+                            className="home-grocery-list-qty-unit"
+                            aria-label={`Unit for ${item.name}`}
+                        >
+                            {UNITS.map(unit => (
+                                <option key={unit.abbr} value={unit.abbr}>{formatUnitLabel(unit)}</option>
+                            ))}
+                        </select>
+                    )}
+                </div>
+                <div className="home-grocery-list-actions">
+                    <button
+                        type="button"
+                        onClick={() => addGroceryListItemToFridge(item)}
+                        className="home-grocery-list-add"
+                        aria-label={`Add ${item.name} to fridge`}
+                    >
+                        +
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => removeGroceryListItem(item)}
+                        className="home-grocery-list-remove"
+                        aria-label={`Remove ${item.name}`}
+                    >
+                        −
+                    </button>
+                </div>
+            </li>
+        );
+    };
 
     const renderSuggestedGroceryListItem = (item) => {
         const onList = isOnManualGroceryList(item);
@@ -198,6 +274,15 @@ function HomeTab({
                         <div className="meals-add-option">
                             <div className="home-column-card">
                                 <p className="home-grocery-list-section-title">My grocery list</p>
+                                {manualGroceryListItems.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={addAllGroceryListItemsToFridge}
+                                        className="home-grocery-list-add-all-btn"
+                                    >
+                                        Add all to fridge
+                                    </button>
+                                )}
                                 {manualGroceryListItems.length === 0 ? (
                                     <p className="home-column-empty">No items yet. Add from your grocery store below.</p>
                                 ) : (

@@ -2,7 +2,7 @@ function RecipesTab({
     catalogItems, recipes, items, recipeName, setRecipeName,
     draftIngredients, setDraftIngredients, addIngredientRow, addRecipe,
     updateIngredientInList, adjustIngredientQuantityInList, removeIngredientRowFromList,
-    toggleRecipeShowQuantities, openEditRecipeModal, updateRecipeCalories,
+    toggleRecipeShowQuantities, openEditRecipeModal, updateRecipeCalories, openRecipeAddToFridgePreview,
     recipeImportPaste, setRecipeImportPaste,
     recipeImportPreview, recipeImportError,
     recipeImportSuccess,
@@ -85,7 +85,7 @@ function RecipesTab({
                     <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No recipes yet</p>
                 ) : (
                     recipes.map(recipe => (
-                        <div key={recipe.id} style={{ ...window.FB_STYLES.card, marginBottom: '12px' }}>
+                        <div key={recipe.id} className="fb-card">
                             <RecipeCard
                                 recipe={recipe}
                                 catalogItems={catalogItems}
@@ -93,6 +93,7 @@ function RecipesTab({
                                 toggleRecipeShowQuantities={toggleRecipeShowQuantities}
                                 onEdit={openEditRecipeModal}
                                 onUpdateCalories={updateRecipeCalories}
+                                onAddToFridge={openRecipeAddToFridgePreview}
                             />
                         </div>
                     ))

@@ -74,6 +74,8 @@ function useFridgeBuddy() {
     const [fridgeSearch, setFridgeSearch] = useState('');
     const [fridgeSort, setFridgeSort] = useState('category');
     const [viewingRecipeId, setViewingRecipeId] = useState(null);
+    const [recipeAddToFridgeRecipe, setRecipeAddToFridgeRecipe] = useState(null);
+    const [recipeAddToFridgeDraft, setRecipeAddToFridgeDraft] = useState([]);
     const [duplicateFridgeConfirm, setDuplicateFridgeConfirm] = useState(null);
     const [emptyFridgeConfirmOpen, setEmptyFridgeConfirmOpen] = useState(false);
     const [haulImportPaste, setHaulImportPaste] = useState('');
@@ -1474,6 +1476,49 @@ function useFridgeBuddy() {
         ? recipes.find(recipe => recipe.id === viewingRecipeId) || null
         : null;
 
+    const openRecipeAddToFridgePreview = (recipe) => {
+        if (!recipe?.ingredients?.length) return;
+        setRecipeAddToFridgeRecipe(recipe);
+        setRecipeAddToFridgeDraft(
+            recipe.ingredients.map(ingredient => toDraftIngredient(ingredient, catalogItems))
+        );
+    };
+
+    const closeRecipeAddToFridgePreview = () => {
+        setRecipeAddToFridgeRecipe(null);
+        setRecipeAddToFridgeDraft([]);
+    };
+
+    const updateRecipeAddToFridgeDraftItem = (index, field, value) => {
+        setRecipeAddToFridgeDraft(prev => prev.map((item, i) => (
+            i === index ? { ...item, [field]: value } : item
+        )));
+    };
+
+    const adjustRecipeAddToFridgeDraftQuantity = (index, delta) => {
+        adjustIngredientQuantityInList(setRecipeAddToFridgeDraft, index, delta);
+    };
+
+    const removeRecipeAddToFridgeDraftItem = (index) => {
+        removeIngredientRowFromList(setRecipeAddToFridgeDraft, index);
+    };
+
+    const confirmRecipeAddToFridge = () => {
+        if (!recipeAddToFridgeRecipe || recipeAddToFridgeDraft.length === 0) return;
+        let nextId = Date.now();
+        const newFridgeItems = recipeAddToFridgeDraft
+            .filter(row => row.catalogItemId)
+            .map(row => FB.buildFridgeItemFromGroceryListEntry({
+                catalogItemId: row.catalogItemId,
+                quantity: row.quantity,
+                unit: row.unit
+            }, catalogItems, nextId++))
+            .filter(Boolean);
+        if (newFridgeItems.length === 0) return;
+        setItems(prev => [...prev, ...newFridgeItems]);
+        closeRecipeAddToFridgePreview();
+    };
+
     const { readyToMake: readyToMakeRecipes, almostThere: almostThereRecipes } = classifyRecipesForHome(
         recipes,
         items,
@@ -1559,6 +1604,8 @@ function useFridgeBuddy() {
                     id: nextId++,
                     catalogItemId: catalogItem.id,
                     name: catalogItem.name,
+                    quantity: getDefaultCatalogQuantity(catalogItem),
+                    unit: getDefaultCatalogUnit(catalogItem),
                     source: 'manual',
                     detail: 'added by you',
                     detailTone: 'success'
@@ -1611,14 +1658,49 @@ function useFridgeBuddy() {
 
         if (!catalogItemId) return;
 
+        const catalogItem = catalogItems.find(entry => String(entry.id) === String(catalogItemId));
         setManualGroceryListItems(prev => [...prev, {
             id: Date.now(),
             catalogItemId,
             name,
+            quantity: catalogItem ? getDefaultCatalogQuantity(catalogItem) : 1,
+            unit: catalogItem ? getDefaultCatalogUnit(catalogItem) : 'piece',
             source: 'manual',
             detail: 'added by you',
             detailTone: 'success'
         }]);
+    };
+
+    const updateGroceryListItem = (id, field, value) => {
+        setManualGroceryListItems(prev => prev.map(item => (
+            item.id === id ? { ...item, [field]: value } : item
+        )));
+    };
+
+    const adjustGroceryListItemQuantity = (id, delta) => {
+        setManualGroceryListItems(prev => prev.map(item => {
+            if (item.id !== id) return item;
+            const current = parseIngredientQuantity(item.quantity);
+            return { ...item, quantity: roundIngredientQuantity(current + delta) };
+        }));
+    };
+
+    const addGroceryListItemToFridge = (groceryItem) => {
+        const fridgeItem = FB.buildFridgeItemFromGroceryListEntry(groceryItem, catalogItems, Date.now());
+        if (!fridgeItem) return;
+        setItems(prev => [...prev, fridgeItem]);
+        setManualGroceryListItems(prev => prev.filter(entry => entry.id !== groceryItem.id));
+    };
+
+    const addAllGroceryListItemsToFridge = () => {
+        if (manualGroceryListItems.length === 0) return;
+        let nextId = Date.now();
+        const newFridgeItems = manualGroceryListItems
+            .map(item => FB.buildFridgeItemFromGroceryListEntry(item, catalogItems, nextId++))
+            .filter(Boolean);
+        if (newFridgeItems.length === 0) return;
+        setItems(prev => [...prev, ...newFridgeItems]);
+        setManualGroceryListItems([]);
     };
 
     const appendManualGroceryListEntries = (entries) => {
@@ -1640,7 +1722,15 @@ function useFridgeBuddy() {
             .map(entry => {
                 existingCatalogIds.add(String(entry.catalogItemId));
                 existingNames.add(entry.name.toLowerCase());
-                return { id: nextId++, ...entry };
+                const catalogItem = catalogItems.find(
+                    item => String(item.id) === String(entry.catalogItemId)
+                );
+                return {
+                    id: nextId++,
+                    ...entry,
+                    quantity: entry.quantity ?? (catalogItem ? getDefaultCatalogQuantity(catalogItem) : 1),
+                    unit: entry.unit ?? (catalogItem ? getDefaultCatalogUnit(catalogItem) : 'piece')
+                };
             });
         if (newItems.length === 0) return 0;
         setManualGroceryListItems(prev => [...prev, ...newItems]);
@@ -1662,9 +1752,19 @@ function useFridgeBuddy() {
             .map(ingredient => {
                 const resolved = FB.resolveGroceryListCatalogEntry(ingredient, catalogItems);
                 if (!resolved) return null;
+                const catalogItem = catalogItems.find(
+                    entry => String(entry.id) === String(resolved.catalogItemId)
+                );
+                const quantity = ingredient.quantity != null && ingredient.quantity !== ''
+                    ? ingredient.quantity
+                    : (catalogItem ? getDefaultCatalogQuantity(catalogItem) : 1);
+                const unit = ingredient.unit
+                    || (catalogItem ? getDefaultCatalogUnit(catalogItem) : 'piece');
                 return {
                     catalogItemId: resolved.catalogItemId,
                     name: resolved.name,
+                    quantity,
+                    unit,
                     source: 'manual',
                     detail: `from ${recipe.name}`,
                     detailTone: 'success'
@@ -1714,6 +1814,8 @@ function useFridgeBuddy() {
         agentPromptCopied, copyAgentPrompt,
         addGroceryListItemRow, updateGroceryListDraftItem, removeGroceryListDraftItem,
         addManualGroceryListItems, removeGroceryListItem, addSuggestedItemToGroceryList,
+        updateGroceryListItem, adjustGroceryListItemQuantity,
+        addGroceryListItemToFridge, addAllGroceryListItemsToFridge,
         isOnManualGroceryList, groceryListRecipeId, setGroceryListRecipeId,
         addRecipeIngredientsToGroceryList,
         haulImportPaste, setHaulImportPaste,
@@ -1789,6 +1891,10 @@ function useFridgeBuddy() {
         updateIngredientInList, adjustIngredientQuantityInList, removeIngredientRowFromList,
         openEditRecipeModal, closeEditRecipeModal, saveRecipeEdit, deleteRecipeFromModal,
         toggleRecipeShowQuantities, openViewRecipeModal, closeViewRecipeModal,
+        recipeAddToFridgeRecipe, recipeAddToFridgeDraft,
+        openRecipeAddToFridgePreview, closeRecipeAddToFridgePreview,
+        updateRecipeAddToFridgeDraftItem, adjustRecipeAddToFridgeDraftQuantity,
+        removeRecipeAddToFridgeDraftItem, confirmRecipeAddToFridge,
         theme, setThemeId, selectClassicTheme, toggleClassicMode,
         isClassicTheme: FB.isClassicFridgeTheme(theme)
     };

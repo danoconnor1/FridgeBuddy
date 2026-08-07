@@ -5,7 +5,6 @@ function ImportExpenseSection({
     previewExpenseImport, confirmExpenseImport, clearExpenseImport
 }) {
     const { formatExpenseCategory, formatExpensePrice } = window.FB;
-    const { categoryHeading } = window.FB_STYLES;
 
     const importableExpenseCount = expenseImportPreview
         ? expenseImportPreview.filter(expense => {
@@ -28,7 +27,7 @@ function ImportExpenseSection({
                 Assuming agent prompt (home page) has been pasted, paste, describe, or include a screenshot of your receipt to your agent, then paste the response below.
             </p>
 
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+            <div className="import-paste-row">
                 <textarea
                     id="expense-import-paste"
                     value={expenseImportPaste}
@@ -62,7 +61,7 @@ function ImportExpenseSection({
 
             {expenseImportPreview && (
                 <div className="meals-import-preview">
-                    <h5 style={{ ...categoryHeading, marginTop: 0, marginBottom: '0.4rem' }}>Preview</h5>
+                    <h5 className="import-preview-heading">Preview</h5>
                     {expenseImportPreview.map(expense => (
                         <div key={expense.expenseIndex} style={{ marginBottom: '0.5rem' }}>
                             <p style={{ fontSize: '12px', fontWeight: '600', margin: '0 0 0.25rem 0' }}>
@@ -83,14 +82,14 @@ function ImportExpenseSection({
                             {expense.items.map(row => (
                                 <div key={row.itemIndex} className="meals-preview-row">
                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                        <p style={{ fontSize: '11px', fontWeight: '500', margin: 0 }}>{row.name}</p>
-                                        <p style={{ fontSize: '10px', color: 'var(--text-secondary)', margin: 0 }}>
+                                        <p className="preview-row-name">{row.name}</p>
+                                        <p className="preview-row-detail">
                                             {row.status === 'ready'
                                                 ? formatExpensePrice(row.price)
                                                 : row.error}
                                         </p>
                                     </div>
-                                    <span style={{ fontSize: '10px', fontWeight: '500', color: statusColor(row.status), flexShrink: 0 }}>
+                                    <span className="preview-row-status" style={{ color: statusColor(row.status) }}>
                                         {statusLabel(row)}
                                     </span>
                                 </div>

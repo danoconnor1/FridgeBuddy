@@ -632,6 +632,43 @@
                 name: catalogItem.name
             };
         },
+        getGroceryListItemQuantityDefaults(groceryItem, catalogItems) {
+            const catalogItem = catalogItems?.find(
+                entry => String(entry.id) === String(groceryItem.catalogItemId)
+            );
+            const quantity = groceryItem.quantity != null && groceryItem.quantity !== ''
+                ? groceryItem.quantity
+                : (catalogItem ? window.FB.getDefaultCatalogQuantity(catalogItem) : 1);
+            const unit = groceryItem.unit
+                || (catalogItem ? window.FB.getDefaultCatalogUnit(catalogItem) : 'piece');
+            return { quantity, unit, catalogItem };
+        },
+        buildFridgeItemFromGroceryListEntry(groceryItem, catalogItems, id) {
+            const { quantity, unit, catalogItem } = window.FB.getGroceryListItemQuantityDefaults(
+                groceryItem,
+                catalogItems
+            );
+            if (!catalogItem) return null;
+
+            if (window.FB.isSeasoningCategory(catalogItem.category)) {
+                return {
+                    id,
+                    catalogItemId: catalogItem.id,
+                    name: catalogItem.name,
+                    seasoningStatus: catalogItem.defaultStatus || 'full'
+                };
+            }
+
+            const parsedQty = window.FB.parseIngredientQuantity(quantity);
+            return {
+                id,
+                catalogItemId: catalogItem.id,
+                name: catalogItem.name,
+                expiry: window.FB.addExpirationFromToday(catalogItem.expirationDays ?? 7, 'days'),
+                quantity: parsedQty,
+                unit
+            };
+        },
         classifyRecipesForHome(recipes, fridgeItems, getDaysUntilExpiry, catalogItems) {
             const readyToMake = [];
             const almostThere = [];

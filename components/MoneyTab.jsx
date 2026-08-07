@@ -168,7 +168,7 @@ function MoneyTab({
                     <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No expenses logged yet</p>
                 ) : (
                     [...expenses].reverse().map(expense => (
-                        <div key={expense.id} style={{ ...window.FB_STYLES.card, marginBottom: '12px' }}>
+                        <div key={expense.id} className="fb-card">
                             <ExpenseCard expense={expense} onRemove={removeExpense} />
                         </div>
                     ))

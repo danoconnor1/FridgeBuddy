@@ -2,7 +2,7 @@ function FridgeBuddy() {
     const fb = useFridgeBuddy();
     const {
         HomeTab, GroceryStoreTab, FridgeTab, RecipesTab, MealsTab, MoneyTab,
-        AddCatalogModal, EditCatalogModal, EditRecipeModal, RecipeViewModal,
+        AddCatalogModal, EditCatalogModal, EditRecipeModal, RecipeViewModal, RecipeAddToFridgeModal,
         DuplicateFridgeConfirmModal, ImportUnmatchedConfirmModal, AddLeftoverModal,
         EditFridgeItemModal, EmptyFridgeConfirmModal, AddExpenseCategoryModal, DeleteExpenseCategoryModal
     } = window.FBComponents;
@@ -21,12 +21,12 @@ function FridgeBuddy() {
     }, [themeMenuOpen]);
 
     const tabs = [
-        { id: 'home', label: 'Home' },
-        { id: 'allItems', label: 'Grocery store' },
-        { id: 'fridge', label: 'Fridge' },
-        { id: 'recipes', label: 'Recipes' },
-        { id: 'meals', label: 'Meals' },
-        { id: 'money', label: 'Money' }
+        { id: 'home', label: 'Home', shortLabel: 'Home' },
+        { id: 'allItems', label: 'Grocery store', shortLabel: 'Store' },
+        { id: 'fridge', label: 'Fridge', shortLabel: 'Fridge' },
+        { id: 'recipes', label: 'Recipes', shortLabel: 'Recipes' },
+        { id: 'meals', label: 'Meals', shortLabel: 'Meals' },
+        { id: 'money', label: 'Money', shortLabel: 'Money' }
     ];
 
     const isThemeActive = (optionId) => {
@@ -63,10 +63,7 @@ function FridgeBuddy() {
             background: hasSceneBackground ? 'transparent' : 'var(--surface-0)',
             padding: '1rem'
         }}>
-            <div style={{
-                width: '100%',
-                margin: '0 auto'
-            }}>
+            <div className="app-shell-inner">
                 <header className="app-header">
                     <div className="app-header-brand">
                         <i className="ti ti-fridge app-header-icon" aria-hidden="true" />
@@ -152,7 +149,8 @@ function FridgeBuddy() {
                             className={`app-tab${fb.activeTab === tab.id ? ' active' : ''}`}
                             onClick={() => fb.setActiveTab(tab.id)}
                         >
-                            {tab.label}
+                            <span className="app-tab-label app-tab-label--full">{tab.label}</span>
+                            <span className="app-tab-label app-tab-label--short">{tab.shortLabel}</span>
                         </button>
                     ))}
                 </nav>
@@ -179,6 +177,10 @@ function FridgeBuddy() {
                         addManualGroceryListItems={fb.addManualGroceryListItems}
                         removeGroceryListItem={fb.removeGroceryListItem}
                         addSuggestedItemToGroceryList={fb.addSuggestedItemToGroceryList}
+                        updateGroceryListItem={fb.updateGroceryListItem}
+                        adjustGroceryListItemQuantity={fb.adjustGroceryListItemQuantity}
+                        addGroceryListItemToFridge={fb.addGroceryListItemToFridge}
+                        addAllGroceryListItemsToFridge={fb.addAllGroceryListItemsToFridge}
                         isOnManualGroceryList={fb.isOnManualGroceryList}
                         groceryListRecipeId={fb.groceryListRecipeId}
                         setGroceryListRecipeId={fb.setGroceryListRecipeId}
@@ -253,6 +255,7 @@ function FridgeBuddy() {
                         toggleRecipeShowQuantities={fb.toggleRecipeShowQuantities}
                         openEditRecipeModal={fb.openEditRecipeModal}
                         updateRecipeCalories={fb.updateRecipeCalories}
+                        openRecipeAddToFridgePreview={fb.openRecipeAddToFridgePreview}
                         recipeImportPaste={fb.recipeImportPaste}
                         setRecipeImportPaste={fb.setRecipeImportPaste}
                         recipeImportPreview={fb.recipeImportPreview}
@@ -495,6 +498,19 @@ function FridgeBuddy() {
                     items={fb.items}
                     toggleRecipeShowQuantities={fb.toggleRecipeShowQuantities}
                     closeViewRecipeModal={fb.closeViewRecipeModal}
+                />
+            )}
+
+            {fb.recipeAddToFridgeRecipe && (
+                <RecipeAddToFridgeModal
+                    recipe={fb.recipeAddToFridgeRecipe}
+                    draftIngredients={fb.recipeAddToFridgeDraft}
+                    catalogItems={fb.catalogItems}
+                    updateDraftItem={fb.updateRecipeAddToFridgeDraftItem}
+                    adjustDraftQuantity={fb.adjustRecipeAddToFridgeDraftQuantity}
+                    removeDraftItem={fb.removeRecipeAddToFridgeDraftItem}
+                    closeModal={fb.closeRecipeAddToFridgePreview}
+                    confirmAddToFridge={fb.confirmRecipeAddToFridge}
                 />
             )}
         </div>

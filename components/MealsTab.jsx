@@ -163,7 +163,7 @@ function MealsTab({
                                 )}
                             </div>
                             {group.meals.map(meal => (
-                                <div key={meal.id} style={{ ...window.FB_STYLES.card, marginBottom: '12px' }}>
+                                <div key={meal.id} className="fb-card">
                                     <MealCard
                                         meal={meal}
                                         catalogItems={catalogItems}
