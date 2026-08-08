@@ -35,6 +35,7 @@
             --cat-fruit: #C44B62;
             --cat-grains: #9A7348;
             --cat-condiments: #7B5BB5;
+            --cat-sauce-oil: #9A7348;
             --cat-seasoning: #8B6240;
             --cat-drink: #2E85B8;
             --cat-desserts-snacks: #B565A7;
@@ -77,6 +78,7 @@
             --cat-fruit: #F07898;
             --cat-grains: #C4A882;
             --cat-condiments: #A888E8;
+            --cat-sauce-oil: #D4A574;
             --cat-seasoning: #B89070;
             --cat-drink: #5CB0E8;
             --cat-desserts-snacks: #E890C8;
@@ -260,6 +262,9 @@
         .grocery-category-group[data-category="condiments"],
         .fridge-column[data-category="condiments"],
         .fridge-column-card[data-category="condiments"] { --food-cat-color: var(--cat-condiments); }
+        .grocery-category-group[data-category="sauce-oil"],
+        .fridge-column[data-category="sauce-oil"],
+        .fridge-column-card[data-category="sauce-oil"] { --food-cat-color: var(--cat-sauce-oil); }
         .grocery-category-group[data-category="seasoning"],
         .fridge-column[data-category="seasoning"],
         .fridge-column-card[data-category="seasoning"] { --food-cat-color: var(--cat-seasoning); }
@@ -1065,6 +1070,7 @@
             --cat-fruit: #F472B6;
             --cat-grains: #D4A574;
             --cat-condiments: #C084FC;
+            --cat-sauce-oil: #FB923C;
             --cat-seasoning: #C4A882;
             --cat-drink: #38BDF8;
             --cat-desserts-snacks: #F472B6;
@@ -1223,6 +1229,7 @@
             --cat-fruit: #D4788A;
             --cat-grains: #C4A67A;
             --cat-condiments: #B088C8;
+            --cat-sauce-oil: #E8A040;
             --cat-seasoning: #A08060;
             --cat-drink: #5AAFD4;
             --cat-desserts-snacks: #C088C8;
@@ -1377,6 +1384,7 @@
             --cat-fruit: #d4453a;
             --cat-grains: #c9922a;
             --cat-condiments: #7b4b8a;
+            --cat-sauce-oil: #c9922a;
             --cat-seasoning: #b8895a;
             --cat-drink: #6aabbf;
             --cat-desserts-snacks: #b86ba8;
@@ -2161,6 +2169,12 @@
 
         .ingredient-editor {
             margin-bottom: 12px;
+        }
+        .import-unmatched-fields {
+            padding-left: 24px;
+        }
+        .import-unmatched-qty-row {
+            margin-bottom: 0.65rem;
         }
         .ingredient-editor-label {
             font-size: 13px;

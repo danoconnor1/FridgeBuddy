@@ -1,5 +1,5 @@
 (function () {
-    const CATEGORIES = ['meat', 'seafood', 'dairy', 'cheese', 'eggs', 'vegetables', 'fruit', 'grains', 'condiments', 'seasoning', 'drink', 'desserts-snacks', 'other', 'leftovers'];
+    const CATEGORIES = ['meat', 'seafood', 'dairy', 'cheese', 'eggs', 'vegetables', 'fruit', 'grains', 'condiments', 'sauce-oil', 'seasoning', 'drink', 'desserts-snacks', 'other', 'leftovers'];
     const UNITS = [
         { abbr: 'oz', name: 'Ounce', terms: ['oz', 'ounce', 'ounces'] },
         { abbr: 'lb', name: 'Pound', terms: ['lb', 'pound', 'pounds'] },
@@ -51,10 +51,10 @@
         { name: 'Tortilla', category: 'grains', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 175, expirationDays: 14 },
         { name: 'Hard taco shell', category: 'grains', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 55, expirationDays: 90 },
         { name: 'Pasta', category: 'grains', defaultUnit: 'oz', defaultQuantity: 1, caloriesPerDefault: 100, expirationDays: 365 },
-        { name: 'Olive oil', category: 'condiments', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 120, expirationDays: 365 },
-        { name: 'Canola oil', category: 'condiments', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 120, expirationDays: 365 },
-        { name: 'Sesame oil', category: 'condiments', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 120, expirationDays: 365 },
-        { name: 'Soy sauce', category: 'condiments', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 10, expirationDays: 365 },
+        { name: 'Olive oil', category: 'sauce-oil', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 120, expirationDays: 365 },
+        { name: 'Canola oil', category: 'sauce-oil', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 120, expirationDays: 365 },
+        { name: 'Sesame oil', category: 'sauce-oil', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 120, expirationDays: 365 },
+        { name: 'Soy sauce', category: 'sauce-oil', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 10, expirationDays: 365 },
         { name: 'Taco seasoning', category: 'condiments', defaultUnit: 'oz', defaultQuantity: 1, caloriesPerDefault: 100, expirationDays: 365 },
         { name: 'Salt', category: 'seasoning', defaultUnit: 'tsp', defaultQuantity: 1, defaultStatus: 'full' },
         { name: 'Italian seasoning', category: 'seasoning', defaultUnit: 'tsp', defaultQuantity: 1, defaultStatus: 'full' },
@@ -226,6 +226,7 @@
                 const normalized = window.FB.normalizeCatalogItem(item);
                 const defaults = DEFAULT_CATALOG_BY_NAME.get(normalized.name?.toLowerCase());
                 if (defaults) {
+                    if (defaults.category) normalized.category = defaults.category;
                     if (normalized.defaultUnit == null && defaults.defaultUnit != null) {
                         normalized.defaultUnit = defaults.defaultUnit;
                     }
@@ -255,7 +256,7 @@
         },
         formatCategory(category) {
             if (!category) return '';
-            if (category === 'seasoning') return 'Seasoning/Sauce/Oil';
+            if (category === 'sauce-oil') return 'Sauce/Oil';
             if (category === 'desserts-snacks') return 'Desserts/Snacks';
             return category.charAt(0).toUpperCase() + category.slice(1);
         },
@@ -1471,7 +1472,7 @@ Rules for all responses:
 - For meals: include one object per meal; each meal needs a name and at least one ingredient; quantities reflect what was consumed.
 - For hauls: only include items I explicitly mention buying.
 - For expenses: include one object per receipt or purchase; each expense needs a title, category (expense category id), date (YYYY-MM-DD or omit for today), and either a top-level price in dollars OR an optional items array with name and price per line; all prices are USD.
-- If something is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, desserts-snacks, other).
+- If something is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, sauce-oil, seasoning, drink, desserts-snacks, other).
 - Unmatched grocery items can be added to the grocery store when I confirm the import in Fridge Buddy.
 
 EXPENSE CATEGORIES:
@@ -1516,7 +1517,7 @@ Rules:
 - unit must be one of: ${unitList}.
 - Include one object per recipe in the "recipes" array.
 - Each recipe must have a name and at least one ingredient.
-- If an ingredient is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, desserts-snacks, other).
+- If an ingredient is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, sauce-oil, seasoning, drink, desserts-snacks, other).
 - Only include recipes and ingredients I explicitly describe.
 - Unmatched ingredients can be added to the grocery store when you confirm the import.
 
@@ -1635,7 +1636,7 @@ Rules:
 - unit must be one of: ${unitList}.
 - Include one object per meal in the "meals" array.
 - Each meal must have a name and at least one ingredient.
-- If an ingredient is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, desserts-snacks, other).
+- If an ingredient is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, sauce-oil, seasoning, drink, desserts-snacks, other).
 - Only include meals and ingredients I explicitly describe.
 - Unmatched ingredients can be added to the grocery store when I confirm the import.
 

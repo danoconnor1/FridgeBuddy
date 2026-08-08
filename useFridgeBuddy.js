@@ -618,17 +618,24 @@ function useFridgeBuddy() {
         executeHaulImport(haulImportPreview);
     };
 
+    const applyUnmatchedChoiceToRow = (row, choice) => {
+        if (!choice) return row;
+        const quantity = parseIngredientQuantity(choice.quantity);
+        return {
+            ...row,
+            name: choice.name?.trim() || row.name,
+            quantity: Number.isFinite(quantity) && quantity > 0 ? roundIngredientQuantity(quantity) : row.quantity,
+            unit: choice.unit || row.unit,
+            createInCatalog: choice.addToCatalog,
+            suggestedCategory: choice.category
+        };
+    };
+
     const applyUnmatchedChoicesToHaulPreview = (choices) => {
         const choicesByKey = Object.fromEntries(choices.map(choice => [choice.key, choice]));
         return haulImportPreview.map(row => {
             if (row.status !== 'unmatched') return row;
-            const choice = choicesByKey[String(row.index)];
-            if (!choice) return row;
-            return {
-                ...row,
-                createInCatalog: choice.addToCatalog,
-                suggestedCategory: choice.category
-            };
+            return applyUnmatchedChoiceToRow(row, choicesByKey[String(row.index)]);
         });
     };
 
@@ -638,13 +645,7 @@ function useFridgeBuddy() {
             ...recipe,
             ingredients: recipe.ingredients.map(row => {
                 if (row.status !== 'unmatched') return row;
-                const choice = choicesByKey[row.name.toLowerCase()];
-                if (!choice) return row;
-                return {
-                    ...row,
-                    createInCatalog: choice.addToCatalog,
-                    suggestedCategory: choice.category
-                };
+                return applyUnmatchedChoiceToRow(row, choicesByKey[row.name.toLowerCase()]);
             })
         }));
     };
@@ -655,13 +656,7 @@ function useFridgeBuddy() {
             ...meal,
             ingredients: meal.ingredients.map(row => {
                 if (row.status !== 'unmatched') return row;
-                const choice = choicesByKey[row.name.toLowerCase()];
-                if (!choice) return row;
-                return {
-                    ...row,
-                    createInCatalog: choice.addToCatalog,
-                    suggestedCategory: choice.category
-                };
+                return applyUnmatchedChoiceToRow(row, choicesByKey[row.name.toLowerCase()]);
             })
         }));
     };
@@ -1335,7 +1330,7 @@ function useFridgeBuddy() {
                 return {
                     ...item,
                     trackingMode: 'capacity',
-                    seasoningStatus: item.seasoningStatus || 'half'
+                    seasoningStatus: item.seasoningStatus || 'full'
                 };
             }
             return {
