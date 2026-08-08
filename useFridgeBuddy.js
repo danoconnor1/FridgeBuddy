@@ -147,7 +147,14 @@ function useFridgeBuddy() {
     const [expenseChartFilter, setExpenseChartFilter] = useState('month');
     const [addLeftoverModalOpen, setAddLeftoverModalOpen] = useState(false);
     const [leftoverName, setLeftoverName] = useState('');
+    const [leftoverRecipeId, setLeftoverRecipeId] = useState(null);
     const [leftoverExpirationDays, setLeftoverExpirationDays] = useState(3);
+    const [editingExpenseId, setEditingExpenseId] = useState(null);
+    const [editExpenseTitle, setEditExpenseTitle] = useState('');
+    const [editExpenseDate, setEditExpenseDate] = useState(() => getTodayIsoDate());
+    const [editExpenseCategory, setEditExpenseCategory] = useState('');
+    const [editExpensePrice, setEditExpensePrice] = useState('');
+    const [editExpenseDraftItems, setEditExpenseDraftItems] = useState([]);
     const [editFridgeItemId, setEditFridgeItemId] = useState(null);
     const [editFridgeQuantity, setEditFridgeQuantity] = useState('');
     const [editFridgeUnit, setEditFridgeUnit] = useState('piece');
@@ -306,6 +313,7 @@ function useFridgeBuddy() {
         localStorage.setItem('fridgeTheme', theme);
         const meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.setAttribute('content', FB.getFridgeThemeColor(theme));
+        requestAnimationFrame(() => FB.updateThemeFavicon());
     }, [theme]);
 
     const setThemeId = (themeId) => {
@@ -718,6 +726,72 @@ function useFridgeBuddy() {
 
     const removeExpense = (expenseId) => {
         setExpenses(prev => prev.filter(expense => expense.id !== expenseId));
+    };
+
+    const openEditExpenseModal = (expense) => {
+        const normalized = normalizeStoredExpense(expense);
+        setEditingExpenseId(normalized.id);
+        setEditExpenseTitle(normalized.title);
+        setEditExpenseDate(normalized.date || getTodayIsoDate());
+        setEditExpenseCategory(normalized.category || '');
+        const items = normalized.items || [];
+        if (items.length > 0) {
+            setEditExpensePrice('');
+            setEditExpenseDraftItems(items.map(item => ({
+                name: item.name,
+                price: item.price != null ? String(item.price) : ''
+            })));
+        } else {
+            setEditExpensePrice(normalized.price != null ? String(normalized.price) : '');
+            setEditExpenseDraftItems([]);
+        }
+    };
+
+    const closeEditExpenseModal = () => {
+        setEditingExpenseId(null);
+        setEditExpenseTitle('');
+        setEditExpenseDate(getTodayIsoDate());
+        setEditExpenseCategory('');
+        setEditExpensePrice('');
+        setEditExpenseDraftItems([]);
+    };
+
+    const addEditExpenseItemRow = () => {
+        setEditExpenseDraftItems(prev => [...prev, emptyExpenseItem()]);
+        setEditExpensePrice('');
+    };
+
+    const updateEditExpenseDraftItem = (index, field, value) => {
+        setEditExpenseDraftItems(prev => prev.map((item, i) => (
+            i === index ? { ...item, [field]: value } : item
+        )));
+    };
+
+    const removeEditExpenseDraftItem = (index) => {
+        setEditExpenseDraftItems(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const saveExpenseEdit = () => {
+        if (!editingExpenseId) return;
+        const items = serializeExpenseDraftItems(editExpenseDraftItems);
+        const category = FB.normalizeExpenseCategory(editExpenseCategory);
+        const price = FB.normalizeExpensePrice(editExpensePrice);
+        if (!editExpenseTitle.trim() || !category) return;
+        if (items.length === 0 && price == null) return;
+
+        const updated = {
+            id: editingExpenseId,
+            title: editExpenseTitle.trim(),
+            date: FB.normalizeExpenseDate(editExpenseDate),
+            category,
+            items
+        };
+        if (items.length === 0) updated.price = price;
+
+        setExpenses(prev => prev.map(expense => (
+            expense.id === editingExpenseId ? updated : expense
+        )));
+        closeEditExpenseModal();
     };
 
     const previewExpenseImport = () => {
@@ -1210,6 +1284,7 @@ function useFridgeBuddy() {
 
     const openAddLeftoverModal = () => {
         setLeftoverName('');
+        setLeftoverRecipeId(null);
         setLeftoverExpirationDays(3);
         setAddLeftoverModalOpen(true);
     };
@@ -1217,7 +1292,19 @@ function useFridgeBuddy() {
     const closeAddLeftoverModal = () => {
         setAddLeftoverModalOpen(false);
         setLeftoverName('');
+        setLeftoverRecipeId(null);
         setLeftoverExpirationDays(3);
+    };
+
+    const setLeftoverRecipeSelection = (recipeIdStr) => {
+        if (!recipeIdStr) {
+            setLeftoverRecipeId(null);
+            return;
+        }
+        const recipeId = Number(recipeIdStr);
+        const recipe = recipes.find(entry => entry.id === recipeId);
+        setLeftoverRecipeId(recipe ? recipeId : null);
+        if (recipe) setLeftoverName(recipe.name);
     };
 
     const adjustLeftoverExpirationDays = (delta) => {
@@ -1225,10 +1312,14 @@ function useFridgeBuddy() {
     };
 
     const addLeftover = () => {
-        if (!leftoverName.trim()) return;
+        const recipe = leftoverRecipeId != null
+            ? recipes.find(entry => entry.id === leftoverRecipeId)
+            : null;
+        const name = leftoverName.trim() || recipe?.name?.trim();
+        if (!name) return;
         setItems([...items, {
             id: Date.now(),
-            name: leftoverName.trim(),
+            name,
             category: 'leftovers',
             expiry: addExpirationFromToday(Math.max(1, Number(leftoverExpirationDays) || 1), 'days')
         }]);
@@ -1604,8 +1695,6 @@ function useFridgeBuddy() {
                     id: nextId++,
                     catalogItemId: catalogItem.id,
                     name: catalogItem.name,
-                    quantity: getDefaultCatalogQuantity(catalogItem),
-                    unit: getDefaultCatalogUnit(catalogItem),
                     source: 'manual',
                     detail: 'added by you',
                     detailTone: 'success'
@@ -1658,31 +1747,14 @@ function useFridgeBuddy() {
 
         if (!catalogItemId) return;
 
-        const catalogItem = catalogItems.find(entry => String(entry.id) === String(catalogItemId));
         setManualGroceryListItems(prev => [...prev, {
             id: Date.now(),
             catalogItemId,
             name,
-            quantity: catalogItem ? getDefaultCatalogQuantity(catalogItem) : 1,
-            unit: catalogItem ? getDefaultCatalogUnit(catalogItem) : 'piece',
             source: 'manual',
             detail: 'added by you',
             detailTone: 'success'
         }]);
-    };
-
-    const updateGroceryListItem = (id, field, value) => {
-        setManualGroceryListItems(prev => prev.map(item => (
-            item.id === id ? { ...item, [field]: value } : item
-        )));
-    };
-
-    const adjustGroceryListItemQuantity = (id, delta) => {
-        setManualGroceryListItems(prev => prev.map(item => {
-            if (item.id !== id) return item;
-            const current = parseIngredientQuantity(item.quantity);
-            return { ...item, quantity: roundIngredientQuantity(current + delta) };
-        }));
     };
 
     const addGroceryListItemToFridge = (groceryItem) => {
@@ -1722,14 +1794,9 @@ function useFridgeBuddy() {
             .map(entry => {
                 existingCatalogIds.add(String(entry.catalogItemId));
                 existingNames.add(entry.name.toLowerCase());
-                const catalogItem = catalogItems.find(
-                    item => String(item.id) === String(entry.catalogItemId)
-                );
                 return {
                     id: nextId++,
-                    ...entry,
-                    quantity: entry.quantity ?? (catalogItem ? getDefaultCatalogQuantity(catalogItem) : 1),
-                    unit: entry.unit ?? (catalogItem ? getDefaultCatalogUnit(catalogItem) : 'piece')
+                    ...entry
                 };
             });
         if (newItems.length === 0) return 0;
@@ -1752,19 +1819,9 @@ function useFridgeBuddy() {
             .map(ingredient => {
                 const resolved = FB.resolveGroceryListCatalogEntry(ingredient, catalogItems);
                 if (!resolved) return null;
-                const catalogItem = catalogItems.find(
-                    entry => String(entry.id) === String(resolved.catalogItemId)
-                );
-                const quantity = ingredient.quantity != null && ingredient.quantity !== ''
-                    ? ingredient.quantity
-                    : (catalogItem ? getDefaultCatalogQuantity(catalogItem) : 1);
-                const unit = ingredient.unit
-                    || (catalogItem ? getDefaultCatalogUnit(catalogItem) : 'piece');
                 return {
                     catalogItemId: resolved.catalogItemId,
                     name: resolved.name,
-                    quantity,
-                    unit,
                     source: 'manual',
                     detail: `from ${recipe.name}`,
                     detailTone: 'success'
@@ -1814,7 +1871,6 @@ function useFridgeBuddy() {
         agentPromptCopied, copyAgentPrompt,
         addGroceryListItemRow, updateGroceryListDraftItem, removeGroceryListDraftItem,
         addManualGroceryListItems, removeGroceryListItem, addSuggestedItemToGroceryList,
-        updateGroceryListItem, adjustGroceryListItemQuantity,
         addGroceryListItemToFridge, addAllGroceryListItemsToFridge,
         isOnManualGroceryList, groceryListRecipeId, setGroceryListRecipeId,
         addRecipeIngredientsToGroceryList,
@@ -1861,6 +1917,14 @@ function useFridgeBuddy() {
         addExpense, addExpenseItemRow, updateExpenseDraftItem, removeExpenseDraftItem,
         previewExpenseImport, confirmExpenseImport, clearExpenseImport,
         removeExpense,
+        editingExpenseId,
+        editExpenseTitle, setEditExpenseTitle,
+        editExpenseDate, setEditExpenseDate,
+        editExpenseCategory, setEditExpenseCategory,
+        editExpensePrice, setEditExpensePrice,
+        editExpenseDraftItems,
+        openEditExpenseModal, closeEditExpenseModal, saveExpenseEdit,
+        addEditExpenseItemRow, updateEditExpenseDraftItem, removeEditExpenseDraftItem,
         addMealManual, addMealIngredientRow, addMealFromRecipes, setMealRecipeSelection, removeMeal, removeMealIngredient,
         updateMealCalories,
         getCatalogDraft, updateCatalogDraft, adjustCatalogDraftField,
@@ -1873,6 +1937,7 @@ function useFridgeBuddy() {
         openEmptyFridgeConfirm,
         openAddLeftoverModal, closeAddLeftoverModal, addLeftover,
         addLeftoverModalOpen, leftoverName, setLeftoverName,
+        leftoverRecipeId, setLeftoverRecipeSelection,
         leftoverExpirationDays, setLeftoverExpirationDays, adjustLeftoverExpirationDays,
         editFridgeItemId, editingFridgeItem,
         editFridgeQuantity, setEditFridgeQuantity,

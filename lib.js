@@ -1,5 +1,5 @@
 (function () {
-    const CATEGORIES = ['meat', 'seafood', 'dairy', 'cheese', 'eggs', 'vegetables', 'fruit', 'grains', 'condiments', 'seasoning', 'drink', 'other', 'leftovers'];
+    const CATEGORIES = ['meat', 'seafood', 'dairy', 'cheese', 'eggs', 'vegetables', 'fruit', 'grains', 'condiments', 'seasoning', 'drink', 'desserts-snacks', 'other', 'leftovers'];
     const UNITS = [
         { abbr: 'oz', name: 'Ounce', terms: ['oz', 'ounce', 'ounces'] },
         { abbr: 'lb', name: 'Pound', terms: ['lb', 'pound', 'pounds'] },
@@ -57,7 +57,9 @@
         { name: 'Soy sauce', category: 'condiments', defaultUnit: 'tbsp', defaultQuantity: 1, caloriesPerDefault: 10, expirationDays: 365 },
         { name: 'Taco seasoning', category: 'condiments', defaultUnit: 'oz', defaultQuantity: 1, caloriesPerDefault: 100, expirationDays: 365 },
         { name: 'Salt', category: 'seasoning', defaultUnit: 'tsp', defaultQuantity: 1, defaultStatus: 'full' },
-        { name: 'Italian seasoning', category: 'seasoning', defaultUnit: 'tsp', defaultQuantity: 1, defaultStatus: 'full' }
+        { name: 'Italian seasoning', category: 'seasoning', defaultUnit: 'tsp', defaultQuantity: 1, defaultStatus: 'full' },
+        { name: 'Oreos', category: 'desserts-snacks', defaultUnit: 'piece', defaultQuantity: 1, caloriesPerDefault: 160, expirationDays: 90 },
+        { name: 'Ice cream', category: 'desserts-snacks', defaultUnit: 'cup', defaultQuantity: 1, caloriesPerDefault: 270, expirationDays: 60 }
     ];
 
     const DEFAULT_CATALOG_BY_NAME = new Map(
@@ -138,6 +140,62 @@
                 'farmers-market': '#c9dce8'
             })[theme] || '#ffffff';
         },
+        getMascotColorsFromDom() {
+            if (typeof document === 'undefined') return null;
+            const style = getComputedStyle(document.documentElement);
+            const get = (name) => style.getPropertyValue(name).trim();
+            const colors = {
+                bg: get('--mascot-bg'),
+                body: get('--mascot-body'),
+                primary: get('--mascot-primary'),
+                secondary: get('--mascot-secondary'),
+                trim: get('--mascot-trim'),
+                eye: get('--mascot-eye')
+            };
+            return colors.bg ? colors : null;
+        },
+        buildMascotSvgMarkup(options = {}) {
+            const useCssVars = Boolean(options.useCssVars);
+            const fill = (key) => (useCssVars ? `var(--mascot-${key})` : (options.colors?.[key] || '#000'));
+            const bg = options.includeBackground
+                ? `<rect width="180" height="180" rx="36" fill="${fill('bg')}"/>`
+                : '';
+
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-hidden="true">${bg}<rect x="54" y="140" width="22" height="16" rx="3" fill="${fill('body')}" stroke="${fill('trim')}" stroke-width="2.5"/><rect x="104" y="140" width="22" height="16" rx="3" fill="${fill('body')}" stroke="${fill('trim')}" stroke-width="2.5"/><rect x="46" y="30" width="88" height="112" rx="5" fill="${fill('body')}" stroke="${fill('primary')}" stroke-width="3"/><rect x="49" y="33" width="4" height="106" rx="2" fill="${fill('secondary')}" opacity="0.85"/><line x1="50" y1="82" x2="130" y2="82" stroke="${fill('trim')}" stroke-width="2.5" stroke-linecap="round"/><line x1="90" y1="84" x2="90" y2="138" stroke="${fill('trim')}" stroke-width="2" stroke-linecap="round"/><rect x="58" y="60" width="16" height="7" rx="1.5" fill="${fill('eye')}"/><rect x="106" y="60" width="16" height="7" rx="1.5" fill="${fill('eye')}"/><rect x="36" y="94" width="10" height="24" rx="2" fill="${fill('body')}" stroke="${fill('trim')}" stroke-width="2.5"/><rect x="134" y="78" width="10" height="22" rx="2" fill="${fill('body')}" stroke="${fill('secondary')}" stroke-width="2.5" transform="rotate(-35 139 89)"/><rect x="148" y="52" width="10" height="22" rx="2" fill="${fill('body')}" stroke="${fill('trim')}" stroke-width="2.5" transform="rotate(-15 153 63)"/></svg>`;
+        },
+        updateThemeFavicon() {
+            if (typeof document === 'undefined') return;
+            const colors = window.FB.getMascotColorsFromDom();
+            if (!colors) return;
+
+            const svg = window.FB.buildMascotSvgMarkup({ colors, includeBackground: true });
+            const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 180;
+                canvas.height = 180;
+                const ctx = canvas.getContext('2d');
+                if (ctx) ctx.drawImage(img, 0, 0, 180, 180);
+                URL.revokeObjectURL(url);
+
+                let link = document.getElementById('app-favicon');
+                if (!link) {
+                    link = document.createElement('link');
+                    link.id = 'app-favicon';
+                    link.rel = 'icon';
+                    link.type = 'image/png';
+                    link.sizes = '180x180';
+                    document.head.appendChild(link);
+                }
+                link.href = canvas.toDataURL('image/png');
+            };
+
+            img.onerror = () => URL.revokeObjectURL(url);
+            img.src = url;
+        },
         isClassicFridgeTheme(theme) {
             return theme === 'classic-light' || theme === 'classic-dark';
         },
@@ -198,6 +256,7 @@
         formatCategory(category) {
             if (!category) return '';
             if (category === 'seasoning') return 'Seasoning/Sauce/Oil';
+            if (category === 'desserts-snacks') return 'Desserts/Snacks';
             return category.charAt(0).toUpperCase() + category.slice(1);
         },
         isFoodCategory(category) {
@@ -636,11 +695,8 @@
             const catalogItem = catalogItems?.find(
                 entry => String(entry.id) === String(groceryItem.catalogItemId)
             );
-            const quantity = groceryItem.quantity != null && groceryItem.quantity !== ''
-                ? groceryItem.quantity
-                : (catalogItem ? window.FB.getDefaultCatalogQuantity(catalogItem) : 1);
-            const unit = groceryItem.unit
-                || (catalogItem ? window.FB.getDefaultCatalogUnit(catalogItem) : 'piece');
+            const quantity = catalogItem ? window.FB.getDefaultCatalogQuantity(catalogItem) : 1;
+            const unit = catalogItem ? window.FB.getDefaultCatalogUnit(catalogItem) : 'piece';
             return { quantity, unit, catalogItem };
         },
         buildFridgeItemFromGroceryListEntry(groceryItem, catalogItems, id) {
@@ -1415,7 +1471,7 @@ Rules for all responses:
 - For meals: include one object per meal; each meal needs a name and at least one ingredient; quantities reflect what was consumed.
 - For hauls: only include items I explicitly mention buying.
 - For expenses: include one object per receipt or purchase; each expense needs a title, category (expense category id), date (YYYY-MM-DD or omit for today), and either a top-level price in dollars OR an optional items array with name and price per line; all prices are USD.
-- If something is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, other).
+- If something is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, desserts-snacks, other).
 - Unmatched grocery items can be added to the grocery store when I confirm the import in Fridge Buddy.
 
 EXPENSE CATEGORIES:
@@ -1460,7 +1516,7 @@ Rules:
 - unit must be one of: ${unitList}.
 - Include one object per recipe in the "recipes" array.
 - Each recipe must have a name and at least one ingredient.
-- If an ingredient is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, other).
+- If an ingredient is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, desserts-snacks, other).
 - Only include recipes and ingredients I explicitly describe.
 - Unmatched ingredients can be added to the grocery store when you confirm the import.
 
@@ -1579,7 +1635,7 @@ Rules:
 - unit must be one of: ${unitList}.
 - Include one object per meal in the "meals" array.
 - Each meal must have a name and at least one ingredient.
-- If an ingredient is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, other).
+- If an ingredient is NOT in the catalog, include your best name guess, omit catalogItemId, use unit "piece" if unclear, and include a "category" field (one of: meat, seafood, dairy, cheese, eggs, vegetables, fruit, grains, condiments, seasoning, drink, desserts-snacks, other).
 - Only include meals and ingredients I explicitly describe.
 - Unmatched ingredients can be added to the grocery store when I confirm the import.
 

@@ -1,22 +1,48 @@
 function AddLeftoverModal({
+    recipes,
+    leftoverRecipeId, setLeftoverRecipeSelection,
     leftoverName, setLeftoverName,
     leftoverExpirationDays, setLeftoverExpirationDays,
     adjustLeftoverExpirationDays,
     closeAddLeftoverModal, addLeftover
 }) {
     const { modalOverlay, modalCard, stepBtn } = window.FB_STYLES;
+    const sortedRecipes = [...recipes].sort((a, b) => a.name.localeCompare(b.name));
+    const selectedRecipeId = leftoverRecipeId != null ? String(leftoverRecipeId) : '';
+    const canAdd = Boolean(leftoverName.trim()) || leftoverRecipeId != null;
 
     return (
         <div style={modalOverlay} onClick={closeAddLeftoverModal}>
             <div style={{ ...modalCard, maxWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
                 <h3 style={{ fontSize: '18px', fontWeight: '500', margin: '0 0 1rem 0' }}>Add leftover</h3>
                 <label style={{ display: 'block', marginBottom: '12px' }}>
-                    <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Name</span>
+                    <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>From recipe</span>
+                    <select
+                        className="meals-recipe-select"
+                        value={selectedRecipeId}
+                        onChange={(e) => setLeftoverRecipeSelection(e.target.value)}
+                        aria-label="Choose a recipe"
+                    >
+                        <option value="">Choose a recipe (optional)</option>
+                        {sortedRecipes.length === 0 ? (
+                            <option value="" disabled>No recipes yet</option>
+                        ) : (
+                            sortedRecipes.map(recipe => (
+                                <option key={recipe.id} value={String(recipe.id)}>{recipe.name}</option>
+                            ))
+                        )}
+                    </select>
+                </label>
+                <label style={{ display: 'block', marginBottom: '12px' }}>
+                    <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Or enter a name</span>
                     <input
                         type="text"
                         placeholder="e.g. Chicken stir fry"
                         value={leftoverName}
-                        onChange={(e) => setLeftoverName(e.target.value)}
+                        onChange={(e) => {
+                            setLeftoverName(e.target.value);
+                            if (leftoverRecipeId != null) setLeftoverRecipeSelection('');
+                        }}
                         style={{ marginBottom: 0 }}
                     />
                 </label>
@@ -44,7 +70,7 @@ function AddLeftoverModal({
                 </label>
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={closeAddLeftoverModal} style={{ flex: 1, padding: '10px', background: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px' }}>Cancel</button>
-                    <button onClick={addLeftover} style={{ flex: 1, padding: '10px', background: 'var(--fill-accent)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px' }}>Add leftover</button>
+                    <button onClick={addLeftover} disabled={!canAdd} style={{ flex: 1, padding: '10px', background: 'var(--fill-accent)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px', opacity: canAdd ? 1 : 0.5, cursor: canAdd ? 'pointer' : 'not-allowed' }}>Add leftover</button>
                 </div>
             </div>
         </div>

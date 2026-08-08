@@ -37,8 +37,15 @@
             --cat-condiments: #7B5BB5;
             --cat-seasoning: #8B6240;
             --cat-drink: #2E85B8;
+            --cat-desserts-snacks: #B565A7;
             --cat-other: #6E6E6E;
             --cat-leftovers: #7B6BAD;
+            --mascot-bg: #378ADD;
+            --mascot-body: #1e3348;
+            --mascot-primary: #5B8FD4;
+            --mascot-secondary: #378ADD;
+            --mascot-trim: #7dd3fc;
+            --mascot-eye: #7dd3fc;
         }
         [data-theme="classic-dark"] {
             --text-primary: #e0e0e0;
@@ -72,8 +79,15 @@
             --cat-condiments: #A888E8;
             --cat-seasoning: #B89070;
             --cat-drink: #5CB0E8;
+            --cat-desserts-snacks: #E890C8;
             --cat-other: #A0A0A0;
             --cat-leftovers: #A090D8;
+            --mascot-bg: #1a1a1a;
+            --mascot-body: #243447;
+            --mascot-primary: #378ADD;
+            --mascot-secondary: #5B8FD4;
+            --mascot-trim: #7dd3fc;
+            --mascot-eye: #7dd3fc;
         }
         html, body {
             height: 100%;
@@ -252,6 +266,9 @@
         .grocery-category-group[data-category="drink"],
         .fridge-column[data-category="drink"],
         .fridge-column-card[data-category="drink"] { --food-cat-color: var(--cat-drink); }
+        .grocery-category-group[data-category="desserts-snacks"],
+        .fridge-column[data-category="desserts-snacks"],
+        .fridge-column-card[data-category="desserts-snacks"] { --food-cat-color: var(--cat-desserts-snacks); }
         .grocery-category-group[data-category="other"],
         .fridge-column[data-category="other"],
         .fridge-column-card[data-category="other"] { --food-cat-color: var(--cat-other); }
@@ -733,21 +750,6 @@
             padding: 6px 0;
             border-top: 1px solid var(--border);
         }
-        .home-grocery-list-item--manual {
-            flex-wrap: wrap;
-            align-items: flex-start;
-            padding: 8px 0;
-        }
-        .home-grocery-list-item--manual .home-grocery-list-item-info {
-            flex: 1 1 100%;
-        }
-        .home-grocery-list-item--manual .home-grocery-list-qty-row {
-            flex: 1;
-            min-width: 0;
-        }
-        .home-grocery-list-item--manual .home-grocery-list-actions {
-            flex-shrink: 0;
-        }
         .home-grocery-list-add-all-btn {
             width: 100%;
             margin-bottom: 0.75rem;
@@ -759,54 +761,6 @@
             border: none;
             border-radius: var(--radius);
             cursor: pointer;
-        }
-        .home-grocery-list-qty-row {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-        }
-        .home-grocery-list-qty-step {
-            width: 22px;
-            height: 22px;
-            padding: 0;
-            background: var(--surface-0);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            color: var(--text-primary);
-            font-size: 14px;
-            font-weight: 600;
-            line-height: 1;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .home-grocery-list-qty-step:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .home-grocery-list-qty-input {
-            width: 40px;
-            margin-bottom: 0;
-            padding: 4px 4px;
-            font-size: 12px;
-            text-align: center;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: var(--surface-0);
-            color: var(--text-primary);
-            flex-shrink: 0;
-        }
-        .home-grocery-list-qty-unit {
-            width: 72px;
-            flex-shrink: 0;
-            margin-bottom: 0;
-            padding: 4px 6px;
-            font-size: 12px;
-        }
-        .home-grocery-list-qty-unit-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            flex-shrink: 0;
         }
         .home-grocery-list-item:first-child {
             border-top: none;
@@ -1113,11 +1067,16 @@
             --cat-condiments: #C084FC;
             --cat-seasoning: #C4A882;
             --cat-drink: #38BDF8;
+            --cat-desserts-snacks: #F472B6;
             --cat-other: #94A3B8;
             --cat-leftovers: #A78BFA;
+            --mascot-bg: #0f0f1a;
+            --mascot-body: #1a1a2e;
+            --mascot-primary: #9333ea;
+            --mascot-secondary: #ec4899;
+            --mascot-trim: #22d3ee;
+            --mascot-eye: #22d3ee;
         }
-
-        html[data-theme="neon-kitchen"],
         html[data-theme="neon-kitchen"] body {
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
@@ -1174,13 +1133,8 @@
             cursor: pointer;
         }
 
-        [data-theme="neon-kitchen"] .app-header-icon {
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            filter: drop-shadow(0 0 10px rgba(167, 139, 250, 0.5));
-            color: transparent;
+        [data-theme="neon-kitchen"] .app-header-mascot {
+            filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.55));
         }
 
         [data-theme="neon-kitchen"] .app-header {
@@ -1271,8 +1225,15 @@
             --cat-condiments: #B088C8;
             --cat-seasoning: #A08060;
             --cat-drink: #5AAFD4;
+            --cat-desserts-snacks: #C088C8;
             --cat-other: #8A9CB0;
             --cat-leftovers: #9A88C0;
+            --mascot-bg: #1a2840;
+            --mascot-body: #243652;
+            --mascot-primary: #d85642;
+            --mascot-secondary: #e8c878;
+            --mascot-trim: #6aabbf;
+            --mascot-eye: #6aabbf;
         }
 
         html[data-theme="retro-space"],
@@ -1323,8 +1284,8 @@
             box-shadow: 0 0 0 2px rgba(106, 171, 191, 0.25);
         }
 
-        [data-theme="retro-space"] .app-header-icon {
-            color: #d85642;
+        [data-theme="retro-space"] .app-header-mascot {
+            filter: drop-shadow(0 0 5px rgba(106, 171, 191, 0.35));
         }
 
         [data-theme="retro-space"] .app-header-title {
@@ -1418,8 +1379,15 @@
             --cat-condiments: #7b4b8a;
             --cat-seasoning: #b8895a;
             --cat-drink: #6aabbf;
+            --cat-desserts-snacks: #b86ba8;
             --cat-other: #8a7560;
             --cat-leftovers: #9a7048;
+            --mascot-bg: #3d8f7e;
+            --mascot-body: #2c4a42;
+            --mascot-primary: #e8782a;
+            --mascot-secondary: #5a9e4b;
+            --mascot-trim: #c9dce8;
+            --mascot-eye: #c9dce8;
         }
 
         html[data-theme="farmers-market"],
@@ -1476,10 +1444,6 @@
         [data-theme="farmers-market"] select:focus {
             border-color: #3d8f7e;
             box-shadow: 0 0 0 3px rgba(61, 143, 126, 0.18);
-        }
-
-        [data-theme="farmers-market"] .app-header-icon {
-            color: #3d8f7e;
         }
 
         [data-theme="farmers-market"] .app-header-title {
@@ -1586,10 +1550,18 @@
             min-width: 0;
         }
 
-        .app-header-icon {
-            font-size: 28px;
-            color: var(--fill-accent);
+        .app-header-mascot {
+            width: 52px;
+            height: 52px;
             flex-shrink: 0;
+            display: block;
+            line-height: 0;
+        }
+
+        .app-header-mascot svg {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
         .app-header-title {
@@ -2454,8 +2426,9 @@
                 font-size: 18px;
             }
 
-            .app-header-icon {
-                font-size: 22px;
+            .app-header-mascot {
+                width: 44px;
+                height: 44px;
             }
 
             .app-tabs {
@@ -2597,21 +2570,6 @@
                 max-width: none;
             }
 
-            .home-grocery-list-item--manual {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-            }
-
-            .home-grocery-list-item--manual .home-grocery-list-qty-row {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-
-            .home-grocery-list-item--manual .home-grocery-list-actions {
-                align-self: flex-end;
-            }
-
             .home-grocery-recipe-add-row {
                 flex-direction: column;
                 align-items: stretch;
@@ -2689,8 +2647,7 @@
             }
 
             .fb-step-btn,
-            .grocery-store-ticker-step,
-            .home-grocery-list-qty-step {
+            .grocery-store-ticker-step {
                 width: 36px;
                 height: 36px;
                 font-size: 18px;
@@ -2700,11 +2657,6 @@
             .home-grocery-list-remove {
                 width: 36px;
                 height: 36px;
-            }
-
-            .home-grocery-list-qty-input {
-                width: 48px;
-                padding: 6px 4px;
             }
 
             .home-agent-prompt-bar {

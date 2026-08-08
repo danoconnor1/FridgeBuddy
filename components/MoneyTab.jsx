@@ -12,7 +12,7 @@ function MoneyTab({
     expenseChartFilter, setExpenseChartFilter,
     addExpense, addExpenseItemRow, updateExpenseDraftItem, removeExpenseDraftItem,
     previewExpenseImport, confirmExpenseImport, clearExpenseImport,
-    removeExpense,
+    removeExpense, openEditExpenseModal,
     openAddExpenseCategoryModal,
     openDeleteExpenseCategoryModal
 }) {
@@ -169,7 +169,7 @@ function MoneyTab({
                 ) : (
                     [...expenses].reverse().map(expense => (
                         <div key={expense.id} className="fb-card">
-                            <ExpenseCard expense={expense} onRemove={removeExpense} />
+                            <ExpenseCard expense={expense} onEdit={openEditExpenseModal} onRemove={removeExpense} />
                         </div>
                     ))
                 )}

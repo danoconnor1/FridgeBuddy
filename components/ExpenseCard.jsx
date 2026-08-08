@@ -1,4 +1,4 @@
-function ExpenseCard({ expense, onRemove }) {
+function ExpenseCard({ expense, onEdit, onRemove }) {
     const { formatExpenseCategory, formatExpensePrice, getExpenseTotal } = window.FB;
     const total = getExpenseTotal(expense);
     const items = expense.items || [];
@@ -28,20 +28,35 @@ function ExpenseCard({ expense, onRemove }) {
                     </ul>
                 )}
             </div>
-            {onRemove && (
-                <button
-                    type="button"
-                    onClick={() => onRemove(expense.id)}
-                    style={{
-                        width: '28px', height: '28px', background: 'var(--fill-danger)', border: 'none',
-                        borderRadius: 'var(--radius)', color: '#fff', fontSize: '18px', fontWeight: '600',
-                        lineHeight: 1, flexShrink: 0, padding: 0
-                    }}
-                    aria-label={`Remove ${expense.title}`}
-                >
-                    −
-                </button>
-            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flexShrink: 0 }}>
+                {onEdit && (
+                    <button
+                        type="button"
+                        onClick={() => onEdit(expense)}
+                        className="grocery-store-edit-btn"
+                        aria-label={`Edit ${expense.title}`}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M4 20h4l10.5-10.5a2.828 2.828 0 1 0-4-4L4 16v4" />
+                            <path d="M13.5 6.5l4 4" />
+                        </svg>
+                    </button>
+                )}
+                {onRemove && (
+                    <button
+                        type="button"
+                        onClick={() => onRemove(expense.id)}
+                        style={{
+                            width: '28px', height: '28px', background: 'var(--fill-danger)', border: 'none',
+                            borderRadius: 'var(--radius)', color: '#fff', fontSize: '18px', fontWeight: '600',
+                            lineHeight: 1, flexShrink: 0, padding: 0
+                        }}
+                        aria-label={`Remove ${expense.title}`}
+                    >
+                        −
+                    </button>
+                )}
+            </div>
         </div>
     );
 }

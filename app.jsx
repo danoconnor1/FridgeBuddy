@@ -4,7 +4,8 @@ function FridgeBuddy() {
         HomeTab, GroceryStoreTab, FridgeTab, RecipesTab, MealsTab, MoneyTab,
         AddCatalogModal, EditCatalogModal, EditRecipeModal, RecipeViewModal, RecipeAddToFridgeModal,
         DuplicateFridgeConfirmModal, ImportUnmatchedConfirmModal, AddLeftoverModal,
-        EditFridgeItemModal, EmptyFridgeConfirmModal, AddExpenseCategoryModal, DeleteExpenseCategoryModal
+        EditFridgeItemModal, EmptyFridgeConfirmModal, AddExpenseCategoryModal, DeleteExpenseCategoryModal,
+        EditExpenseModal, FridgeBuddyMascot
     } = window.FBComponents;
     const [themeMenuOpen, setThemeMenuOpen] = React.useState(false);
     const themeMenuRef = React.useRef(null);
@@ -66,7 +67,7 @@ function FridgeBuddy() {
             <div className="app-shell-inner">
                 <header className="app-header">
                     <div className="app-header-brand">
-                        <i className="ti ti-fridge app-header-icon" aria-hidden="true" />
+                        <FridgeBuddyMascot className="app-header-mascot" />
                         <h1 className="app-header-title">Fridge Buddy</h1>
                     </div>
                     <div className="app-header-actions">
@@ -177,8 +178,6 @@ function FridgeBuddy() {
                         addManualGroceryListItems={fb.addManualGroceryListItems}
                         removeGroceryListItem={fb.removeGroceryListItem}
                         addSuggestedItemToGroceryList={fb.addSuggestedItemToGroceryList}
-                        updateGroceryListItem={fb.updateGroceryListItem}
-                        adjustGroceryListItemQuantity={fb.adjustGroceryListItemQuantity}
                         addGroceryListItemToFridge={fb.addGroceryListItemToFridge}
                         addAllGroceryListItemsToFridge={fb.addAllGroceryListItemsToFridge}
                         isOnManualGroceryList={fb.isOnManualGroceryList}
@@ -336,6 +335,7 @@ function FridgeBuddy() {
                         confirmExpenseImport={fb.confirmExpenseImport}
                         clearExpenseImport={fb.clearExpenseImport}
                         removeExpense={fb.removeExpense}
+                        openEditExpenseModal={fb.openEditExpenseModal}
                         openAddExpenseCategoryModal={fb.openAddExpenseCategoryModal}
                         openDeleteExpenseCategoryModal={fb.openDeleteExpenseCategoryModal}
                     />
@@ -372,6 +372,9 @@ function FridgeBuddy() {
 
             {fb.addLeftoverModalOpen && (
                 <AddLeftoverModal
+                    recipes={fb.recipes}
+                    leftoverRecipeId={fb.leftoverRecipeId}
+                    setLeftoverRecipeSelection={fb.setLeftoverRecipeSelection}
                     leftoverName={fb.leftoverName}
                     setLeftoverName={fb.setLeftoverName}
                     leftoverExpirationDays={fb.leftoverExpirationDays}
@@ -379,6 +382,26 @@ function FridgeBuddy() {
                     adjustLeftoverExpirationDays={fb.adjustLeftoverExpirationDays}
                     closeAddLeftoverModal={fb.closeAddLeftoverModal}
                     addLeftover={fb.addLeftover}
+                />
+            )}
+
+            {fb.editingExpenseId !== null && (
+                <EditExpenseModal
+                    expenseCategories={fb.expenseCategories}
+                    editExpenseTitle={fb.editExpenseTitle}
+                    setEditExpenseTitle={fb.setEditExpenseTitle}
+                    editExpenseDate={fb.editExpenseDate}
+                    setEditExpenseDate={fb.setEditExpenseDate}
+                    editExpenseCategory={fb.editExpenseCategory}
+                    setEditExpenseCategory={fb.setEditExpenseCategory}
+                    editExpensePrice={fb.editExpensePrice}
+                    setEditExpensePrice={fb.setEditExpensePrice}
+                    editExpenseDraftItems={fb.editExpenseDraftItems}
+                    addEditExpenseItemRow={fb.addEditExpenseItemRow}
+                    updateEditExpenseDraftItem={fb.updateEditExpenseDraftItem}
+                    removeEditExpenseDraftItem={fb.removeEditExpenseDraftItem}
+                    closeEditExpenseModal={fb.closeEditExpenseModal}
+                    saveExpenseEdit={fb.saveExpenseEdit}
                 />
             )}
 
