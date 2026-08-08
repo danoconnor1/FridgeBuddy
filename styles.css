@@ -1004,7 +1004,13 @@
             color: var(--on-accent);
             border: none;
             border-radius: var(--radius);
-            font-weight: 500;
+            font-weight: 600;
+        }
+        .meals-add-btn:hover:not(:disabled) {
+            filter: brightness(1.08);
+        }
+        .meals-add-btn:active:not(:disabled) {
+            transform: scale(0.98);
         }
         .meals-add-btn:disabled {
             opacity: 0.5;
@@ -1240,7 +1246,7 @@
             --surface-2: rgba(46, 66, 96, 0.9);
             --border: rgba(240, 230, 212, 0.14);
             --border-strong: rgba(106, 171, 191, 0.45);
-            --fill-accent: #d85642;
+            --fill-accent: #40a9c6;
             --on-accent: #1e3348;
             --fill-success: #6ec4a0;
             --fill-lime: #6ec4a0;
@@ -1755,14 +1761,14 @@
         }
 
         [data-theme="retro-space"] .import-preview-btn:not(:disabled) {
-            background: #d85642;
+            background: #40a9c6;
             color: #1e3348;
             font-weight: 700;
-            box-shadow: 0 2px 10px rgba(216, 86, 66, 0.35);
+            box-shadow: 0 2px 10px rgba(106, 171, 191, 0.35);
         }
 
         [data-theme="retro-space"] .import-preview-btn:not(:disabled):hover {
-            background: #c04a38;
+            background: #40a9c6;
             filter: none;
         }
 
@@ -1849,25 +1855,28 @@
         .expense-add-category-btn,
         .expense-delete-category-btn {
             padding: 8px 14px;
-            border: 1px dashed var(--border-strong);
+            border: none;
             border-radius: var(--radius);
-            background: transparent;
             font-size: 13px;
             font-weight: 600;
         }
         .expense-add-category-btn {
-            color: var(--text-secondary);
+            background: var(--fill-accent);
+            color: var(--on-accent);
         }
         .expense-delete-category-btn {
-            color: var(--text-danger);
-            border-color: rgba(220, 38, 38, 0.35);
+            background: var(--fill-danger);
+            color: #ffffff;
         }
         .expense-add-category-btn:hover {
-            color: var(--text-primary);
-            border-color: var(--fill-accent);
+            filter: brightness(1.08);
         }
         .expense-delete-category-btn:hover {
-            border-color: var(--fill-danger);
+            filter: brightness(1.08);
+        }
+        .expense-add-category-btn:active,
+        .expense-delete-category-btn:active {
+            transform: scale(0.98);
         }
 
         .expense-item-row {

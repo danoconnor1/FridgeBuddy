@@ -239,7 +239,7 @@ function FridgeTab({
                 )}
 
                 {items.length === 0 ? (
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No items yet</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Fridge is empty!</p>
                 ) : filteredFridgeItems.length === 0 ? (
                     <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No items match your search.</p>
                 ) : (
