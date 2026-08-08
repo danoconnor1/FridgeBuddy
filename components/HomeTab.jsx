@@ -4,17 +4,36 @@ function HomeTab({
     manualGroceryListItems, suggestedGroceryListItems,
     groceryListDraftItems,
     openViewRecipeModal, agentPromptCopied, copyAgentPrompt,
+    exportFridge, importFridgeFromText,
+    fridgeImportError, fridgeImportSuccess,
     addGroceryListItemRow, updateGroceryListDraftItem, removeGroceryListDraftItem,
     addManualGroceryListItems, removeGroceryListItem, addSuggestedItemToGroceryList,
     addGroceryListItemToFridge, addAllGroceryListItemsToFridge,
     isOnManualGroceryList,
     groceryListRecipeId, setGroceryListRecipeId, addRecipeIngredientsToGroceryList
 }) {
+    const { useRef } = React;
     const {
         formatFridgeItemLabel, getDaysUntilExpiry,
         formatExpiresIn, getExpirationTextColor, countFailingIngredients
     } = window.FB;
     const { GroceryListItemEditor } = window.FBComponents;
+    const fridgeImportInputRef = useRef(null);
+
+    const handleFridgeImportFile = (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            importFridgeFromText(String(reader.result || ''));
+            event.target.value = '';
+        };
+        reader.onerror = () => {
+            importFridgeFromText('');
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    };
 
     const copyIcon = (
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -353,6 +372,47 @@ function HomeTab({
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <section className="home-fridge-backup-section">
+                <p className="home-fridge-backup-title">Move your fridge</p>
+                <p className="home-fridge-backup-desc">
+                    Export from Safari and import on your home screen shortcut, or the other way around.
+                    Your data stays on your device.
+                </p>
+                <div className="home-fridge-backup-actions">
+                    <button
+                        type="button"
+                        onClick={exportFridge}
+                        className="home-fridge-backup-btn"
+                    >
+                        Export fridge
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => fridgeImportInputRef.current?.click()}
+                        className="home-fridge-backup-btn home-fridge-backup-btn--secondary"
+                    >
+                        Import fridge
+                    </button>
+                    <input
+                        ref={fridgeImportInputRef}
+                        type="file"
+                        accept=".json,application/json"
+                        hidden
+                        onChange={handleFridgeImportFile}
+                    />
+                </div>
+                {fridgeImportError && (
+                    <p className="home-fridge-backup-message home-fridge-backup-message--error" role="alert">
+                        {fridgeImportError}
+                    </p>
+                )}
+                {fridgeImportSuccess && (
+                    <p className="home-fridge-backup-message home-fridge-backup-message--success" role="status">
+                        Fridge imported successfully.
+                    </p>
+                )}
             </section>
         </div>
     );

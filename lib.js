@@ -1155,6 +1155,76 @@
         saveCustomExpenseCategories(categories) {
             localStorage.setItem('fridgeCustomExpenseCategories', JSON.stringify(categories));
         },
+        FRIDGE_EXPORT_VERSION: 1,
+        buildFridgeExportBundle(snapshot) {
+            return {
+                version: window.FB.FRIDGE_EXPORT_VERSION,
+                exportedAt: new Date().toISOString(),
+                catalog: snapshot.catalog || [],
+                items: snapshot.items || [],
+                recipes: snapshot.recipes || [],
+                meals: snapshot.meals || [],
+                expenses: snapshot.expenses || [],
+                groceryList: snapshot.groceryList || [],
+                dismissedGroceryListIds: snapshot.dismissedGroceryListIds || [],
+                customExpenseCategories: snapshot.customExpenseCategories || [],
+                theme: snapshot.theme || null
+            };
+        },
+        parseFridgeImportText(text) {
+            if (!text || !String(text).trim()) {
+                return { error: 'Backup file is empty' };
+            }
+            let parsed;
+            try {
+                parsed = JSON.parse(text);
+            } catch {
+                return { error: 'Invalid JSON backup file' };
+            }
+            if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                return { error: 'Invalid backup format' };
+            }
+            return window.FB.normalizeFridgeImportBundle(parsed);
+        },
+        normalizeFridgeImportBundle(parsed) {
+            const asArray = (value) => (Array.isArray(value) ? value : null);
+            const catalogRaw = asArray(parsed.catalog);
+            const itemsRaw = asArray(parsed.items);
+            if (!catalogRaw && !itemsRaw) {
+                return { error: 'Backup is missing catalog and fridge items' };
+            }
+
+            const catalog = catalogRaw
+                ? catalogRaw.map(item => window.FB.normalizeCatalogItem(item)).filter(item => item.name)
+                : window.FB.createDefaultCatalogItems();
+
+            return {
+                bundle: {
+                    catalog,
+                    items: itemsRaw || [],
+                    recipes: asArray(parsed.recipes) || [],
+                    meals: asArray(parsed.meals) || [],
+                    expenses: (asArray(parsed.expenses) || []).map(expense => window.FB.normalizeStoredExpense(expense)),
+                    groceryList: asArray(parsed.groceryList) || [],
+                    dismissedGroceryListIds: asArray(parsed.dismissedGroceryListIds) || [],
+                    customExpenseCategories: asArray(parsed.customExpenseCategories) || [],
+                    theme: parsed.theme ? window.FB.normalizeFridgeTheme(parsed.theme) : null
+                }
+            };
+        },
+        downloadFridgeExportBundle(bundle) {
+            const json = JSON.stringify(bundle, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const date = window.FB.getTodayIsoDate();
+            link.href = url;
+            link.download = `fridge-buddy-backup-${date}.json`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        },
         getExpenseCategories() {
             return [...EXPENSE_CATEGORIES, ...window.FB.loadCustomExpenseCategories()];
         },

@@ -21,7 +21,9 @@ function useFridgeBuddy() {
         EXPENSE_CATEGORIES,
         mergeIngredients, deductMealFromFridge,
         estimateCaloriesFromIngredients, parseCalories, resolveCalories, adjustCalories,
-        getRecipeDisplayCalories
+        getRecipeDisplayCalories,
+        buildFridgeExportBundle, parseFridgeImportText, downloadFridgeExportBundle,
+        generateSessionRandomGroceryItems
     } = FB;
 
     const [catalogItems, setCatalogItems] = useState(() => loadCatalogItems());
@@ -83,6 +85,8 @@ function useFridgeBuddy() {
     const [haulImportError, setHaulImportError] = useState('');
     const [haulImportSuccess, setHaulImportSuccess] = useState(false);
     const [agentPromptCopied, setAgentPromptCopied] = useState(false);
+    const [fridgeImportError, setFridgeImportError] = useState('');
+    const [fridgeImportSuccess, setFridgeImportSuccess] = useState(false);
     const [manualGroceryListItems, setManualGroceryListItems] = useState(() => {
         const saved = localStorage.getItem('fridgeGroceryList');
         return saved ? JSON.parse(saved) : [];
@@ -279,6 +283,11 @@ function useFridgeBuddy() {
         const timer = setTimeout(() => setAgentPromptCopied(false), 2500);
         return () => clearTimeout(timer);
     }, [agentPromptCopied]);
+    useEffect(() => {
+        if (!fridgeImportSuccess) return;
+        const timer = setTimeout(() => setFridgeImportSuccess(false), 3000);
+        return () => clearTimeout(timer);
+    }, [fridgeImportSuccess]);
     useEffect(() => {
         if (!haulImportSuccess) return;
         const timer = setTimeout(() => setHaulImportSuccess(false), 2500);
@@ -507,6 +516,56 @@ function useFridgeBuddy() {
         } catch {
             setAgentPromptCopied(false);
         }
+    };
+
+    const exportFridge = () => {
+        const bundle = buildFridgeExportBundle({
+            catalog: catalogItems,
+            items,
+            recipes,
+            meals,
+            expenses,
+            groceryList: manualGroceryListItems,
+            dismissedGroceryListIds,
+            customExpenseCategories,
+            theme
+        });
+        downloadFridgeExportBundle(bundle);
+    };
+
+    const importFridgeFromText = (text) => {
+        setFridgeImportError('');
+        const result = parseFridgeImportText(text);
+        if (result.error) {
+            setFridgeImportError(result.error);
+            return;
+        }
+
+        const confirmed = window.confirm(
+            'Import will replace your grocery store, fridge, recipes, meals, expenses, and grocery list on this device. Continue?'
+        );
+        if (!confirmed) return;
+
+        const { bundle } = result;
+        setCatalogItems(bundle.catalog);
+        setItems(bundle.items);
+        setRecipes(bundle.recipes);
+        setMeals(bundle.meals);
+        setExpenses(bundle.expenses);
+        setManualGroceryListItems(bundle.groceryList);
+        setDismissedGroceryListIds(bundle.dismissedGroceryListIds);
+        setCustomExpenseCategories(bundle.customExpenseCategories);
+        if (bundle.theme) setTheme(bundle.theme);
+        setSessionRandomGroceryItems(
+            generateSessionRandomGroceryItems(
+                bundle.catalog,
+                bundle.groceryList.map(item => item.name),
+                3,
+                Date.now()
+            )
+        );
+        setGroceryListDraftItems([]);
+        setFridgeImportSuccess(true);
     };
 
     const previewHaulImport = () => {
@@ -1864,6 +1923,8 @@ function useFridgeBuddy() {
         importUnmatchedConfirm,
         addedToFridgeItemId,
         agentPromptCopied, copyAgentPrompt,
+        exportFridge, importFridgeFromText,
+        fridgeImportError, fridgeImportSuccess,
         addGroceryListItemRow, updateGroceryListDraftItem, removeGroceryListDraftItem,
         addManualGroceryListItems, removeGroceryListItem, addSuggestedItemToGroceryList,
         addGroceryListItemToFridge, addAllGroceryListItemsToFridge,

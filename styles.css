@@ -900,6 +900,58 @@
             font-size: 14px;
             font-weight: 500;
         }
+        .home-fridge-backup-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .home-fridge-backup-title {
+            margin: 0 0 0.35rem 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .home-fridge-backup-desc {
+            margin: 0 0 0.85rem 0;
+            max-width: 42rem;
+            font-size: 12px;
+            line-height: 1.45;
+            color: var(--text-secondary);
+        }
+        .home-fridge-backup-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .home-fridge-backup-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--fill-accent);
+            color: var(--on-accent);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .home-fridge-backup-btn--secondary {
+            background: var(--surface-1);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .home-fridge-backup-message {
+            margin: 0.65rem 0 0 0;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .home-fridge-backup-message--error {
+            color: var(--text-danger);
+        }
+        .home-fridge-backup-message--success {
+            color: var(--text-success);
+        }
         .meals-import-textarea {
             flex: 1;
             min-width: 0;

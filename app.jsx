@@ -172,6 +172,10 @@ function FridgeBuddy() {
                         openViewRecipeModal={fb.openViewRecipeModal}
                         agentPromptCopied={fb.agentPromptCopied}
                         copyAgentPrompt={fb.copyAgentPrompt}
+                        exportFridge={fb.exportFridge}
+                        importFridgeFromText={fb.importFridgeFromText}
+                        fridgeImportError={fb.fridgeImportError}
+                        fridgeImportSuccess={fb.fridgeImportSuccess}
                         addGroceryListItemRow={fb.addGroceryListItemRow}
                         updateGroceryListDraftItem={fb.updateGroceryListDraftItem}
                         removeGroceryListDraftItem={fb.removeGroceryListDraftItem}
