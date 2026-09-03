@@ -672,6 +672,42 @@
                 return availability.status !== 'enough';
             }).length;
         },
+        getRecipeIngredientProgress(recipe, fridgeItems, getDaysUntilExpiry, catalogItems) {
+            const ingredients = recipe?.ingredients || [];
+            if (ingredients.length === 0) {
+                return { available: 0, total: 0, percent: 0 };
+            }
+            const available = ingredients.filter(ingredient => {
+                const availability = window.FB.getIngredientFridgeAvailability(
+                    ingredient,
+                    fridgeItems,
+                    getDaysUntilExpiry,
+                    catalogItems
+                );
+                return availability.status === 'enough';
+            }).length;
+            const total = ingredients.length;
+            return {
+                available,
+                total,
+                percent: Math.round((available / total) * 100)
+            };
+        },
+        normalizeRecipeUrl(value) {
+            const trimmed = String(value || '').trim();
+            if (!trimmed) return '';
+            if (/^https?:\/\//i.test(trimmed)) return trimmed;
+            return `https://${trimmed}`;
+        },
+        formatRecipeLinkLabel(url) {
+            if (!url) return '';
+            try {
+                const parsed = new URL(url);
+                return parsed.hostname.replace(/^www\./, '');
+            } catch {
+                return url;
+            }
+        },
         getRecipeIngredientsNotInFridge(recipe, fridgeItems, getDaysUntilExpiry, catalogItems) {
             if (!recipe?.ingredients?.length) return [];
             return recipe.ingredients.filter(ingredient => {
@@ -829,6 +865,17 @@
             if (days < 0) return 'expired';
             if (days <= 3) return 'expiring-soon';
             return 'fresh';
+        },
+        canImproveFridgeItemExpiration(item, catalogItems) {
+            if (window.FB.isSeasoningFridgeItem(item, catalogItems)) return false;
+            if (!item.expiry) return false;
+            return window.FB.getDaysUntilExpiry(item.expiry) <= 3;
+        },
+        improveFridgeItemExpiration(expiryDate) {
+            const days = window.FB.getDaysUntilExpiry(expiryDate);
+            if (days > 3) return expiryDate;
+            if (days < 0) return window.FB.addExpirationFromToday(3, 'days');
+            return window.FB.addExpirationFromToday(4, 'days');
         },
         compareFridgeItemsByUrgency(a, b, catalogItems) {
             if (window.FB.isSeasoningFridgeItem(a, catalogItems) && window.FB.isSeasoningFridgeItem(b, catalogItems)) {

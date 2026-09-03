@@ -61,9 +61,11 @@ function useFridgeBuddy() {
     const [catalogAddSuccess, setCatalogAddSuccess] = useState(false);
     const [addCatalogModalOpen, setAddCatalogModalOpen] = useState(false);
     const [recipeName, setRecipeName] = useState('');
+    const [recipeUrl, setRecipeUrl] = useState('');
     const [draftIngredients, setDraftIngredients] = useState([]);
     const [editingRecipeId, setEditingRecipeId] = useState(null);
     const [editRecipeName, setEditRecipeName] = useState('');
+    const [editRecipeUrl, setEditRecipeUrl] = useState('');
     const [editDraftIngredients, setEditDraftIngredients] = useState([]);
     const [editRecipeCalories, setEditRecipeCalories] = useState('');
     const [editRecipeCaloriesTouched, setEditRecipeCaloriesTouched] = useState(false);
@@ -163,7 +165,7 @@ function useFridgeBuddy() {
     const [editFridgeQuantity, setEditFridgeQuantity] = useState('');
     const [editFridgeUnit, setEditFridgeUnit] = useState('piece');
     const [editFridgeSeasoningStatus, setEditFridgeSeasoningStatus] = useState('full');
-    const [editFridgeLeftoverName, setEditFridgeLeftoverName] = useState('');
+    const [editFridgeName, setEditFridgeName] = useState('');
     const [editFridgeLeftoverDays, setEditFridgeLeftoverDays] = useState(3);
     const [editFridgeExpirationValue, setEditFridgeExpirationValue] = useState('');
     const [editFridgeExpirationUnit, setEditFridgeExpirationUnit] = useState('days');
@@ -1326,6 +1328,14 @@ function useFridgeBuddy() {
         }));
     };
 
+    const improveFridgeItemExpiration = (itemId) => {
+        setItems(prev => prev.map(item => {
+            if (item.id !== itemId || !item.expiry) return item;
+            if (!FB.canImproveFridgeItemExpiration(item, catalogItems)) return item;
+            return { ...item, expiry: FB.improveFridgeItemExpiration(item.expiry) };
+        }));
+    };
+
     const openEmptyFridgeConfirm = () => setEmptyFridgeConfirmOpen(true);
     const cancelEmptyFridge = () => setEmptyFridgeConfirmOpen(false);
     const confirmEmptyFridge = () => {
@@ -1403,8 +1413,8 @@ function useFridgeBuddy() {
 
     const openEditFridgeItemModal = (item) => {
         setEditFridgeItemId(item.id);
+        setEditFridgeName(item.name || '');
         if (isLeftoverFridgeItem(item)) {
-            setEditFridgeLeftoverName(item.name);
             setEditFridgeLeftoverDays(Math.max(1, getDaysUntilExpiry(item.expiry)));
             return;
         }
@@ -1429,7 +1439,7 @@ function useFridgeBuddy() {
         setEditFridgeQuantity('');
         setEditFridgeUnit('piece');
         setEditFridgeSeasoningStatus('full');
-        setEditFridgeLeftoverName('');
+        setEditFridgeName('');
         setEditFridgeLeftoverDays(3);
         setEditFridgeExpirationValue('');
         setEditFridgeExpirationUnit('days');
@@ -1453,22 +1463,24 @@ function useFridgeBuddy() {
 
     const saveFridgeItemEdit = () => {
         if (editFridgeItemId == null) return;
+        const trimmedName = editFridgeName.trim();
+        if (!trimmedName) return;
         setItems(prev => prev.map(item => {
             if (item.id !== editFridgeItemId) return item;
             if (isLeftoverFridgeItem(item)) {
-                if (!editFridgeLeftoverName.trim()) return item;
                 return {
                     ...item,
-                    name: editFridgeLeftoverName.trim(),
+                    name: trimmedName,
                     expiry: addExpirationFromToday(Math.max(1, Number(editFridgeLeftoverDays) || 1), 'days')
                 };
             }
             if (usesFridgeCapacityTracking(item)) {
                 if (isSeasoningFridgeItem(item)) {
-                    return { ...item, seasoningStatus: editFridgeSeasoningStatus };
+                    return { ...item, name: trimmedName, seasoningStatus: editFridgeSeasoningStatus };
                 }
                 return {
                     ...item,
+                    name: trimmedName,
                     trackingMode: 'capacity',
                     seasoningStatus: editFridgeSeasoningStatus,
                     expiry: addExpirationFromToday(
@@ -1479,6 +1491,7 @@ function useFridgeBuddy() {
             }
             return {
                 ...item,
+                name: trimmedName,
                 trackingMode: 'amount',
                 quantity: roundIngredientQuantity(editFridgeQuantity),
                 unit: editFridgeUnit || 'piece',
@@ -1515,12 +1528,15 @@ function useFridgeBuddy() {
     const addRecipe = () => {
         const ingredients = serializeDraftIngredients(draftIngredients, catalogItems);
         if (recipeName.trim() && ingredients.length > 0) {
+            const url = FB.normalizeRecipeUrl(recipeUrl);
             setRecipes([...recipes, {
                 id: Date.now(),
                 name: recipeName.trim(),
-                ingredients
+                ingredients,
+                ...(url ? { url } : {})
             }]);
             setRecipeName('');
+            setRecipeUrl('');
             setDraftIngredients([]);
         }
     };
@@ -1572,6 +1588,7 @@ function useFridgeBuddy() {
         const displayCalories = FB.getRecipeDisplayCalories(recipe, catalogItems);
         setEditingRecipeId(recipe.id);
         setEditRecipeName(recipe.name);
+        setEditRecipeUrl(recipe.url || '');
         setEditRecipeCalories(displayCalories != null ? String(displayCalories) : '');
         setEditRecipeCaloriesTouched(parseCalories(recipe.calories) != null);
         setEditDraftIngredients(recipe.ingredients.map(ingredient => toDraftIngredient(ingredient, catalogItems)));
@@ -1580,6 +1597,7 @@ function useFridgeBuddy() {
     const closeEditRecipeModal = () => {
         setEditingRecipeId(null);
         setEditRecipeName('');
+        setEditRecipeUrl('');
         setEditDraftIngredients([]);
         setEditRecipeCalories('');
         setEditRecipeCaloriesTouched(false);
@@ -1590,13 +1608,15 @@ function useFridgeBuddy() {
         const ingredients = serializeDraftIngredients(editDraftIngredients, catalogItems);
         if (ingredients.length === 0) return;
         const calories = resolveCalories(editRecipeCalories, ingredients, catalogItems);
+        const url = FB.normalizeRecipeUrl(editRecipeUrl);
         setRecipes(recipes.map(recipe =>
             recipe.id === editingRecipeId
                 ? {
                     ...recipe,
                     name: editRecipeName.trim(),
                     ingredients,
-                    ...(calories != null ? { calories } : { calories: undefined })
+                    ...(calories != null ? { calories } : { calories: undefined }),
+                    ...(url ? { url } : { url: undefined })
                 }
                 : recipe
         ));
@@ -1905,9 +1925,11 @@ function useFridgeBuddy() {
         editCatalogDefaultUnit, setEditCatalogDefaultUnit,
         editCatalogDefaultStatus, setEditCatalogDefaultStatus,
         recipeName, setRecipeName,
+        recipeUrl, setRecipeUrl,
         draftIngredients, setDraftIngredients,
         editingRecipeId,
         editRecipeName, setEditRecipeName,
+        editRecipeUrl, setEditRecipeUrl,
         editDraftIngredients, setEditDraftIngredients,
         editRecipeCalories, setEditRecipeCalories: (value) => {
             setEditRecipeCaloriesTouched(true);
@@ -1989,7 +2011,7 @@ function useFridgeBuddy() {
         openAddCatalogModal, closeAddCatalogModal, addCatalogItem,
         openEditCatalogModal, closeEditCatalogModal, saveCatalogItemEdit, deleteCatalogItemFromModal,
         addFromCatalogRow, confirmDuplicateFridgeAdd, cancelDuplicateFridgeAdd,
-        removeItem, lowerFridgeItemSeasoningStatus,
+        removeItem, lowerFridgeItemSeasoningStatus, improveFridgeItemExpiration,
         openEmptyFridgeConfirm,
         openAddLeftoverModal, closeAddLeftoverModal, addLeftover,
         addLeftoverModalOpen, leftoverName, setLeftoverName,
@@ -1999,7 +2021,7 @@ function useFridgeBuddy() {
         editFridgeQuantity, setEditFridgeQuantity,
         editFridgeUnit, setEditFridgeUnit, adjustEditFridgeQuantity,
         editFridgeSeasoningStatus, adjustEditFridgeSeasoningStatus,
-        editFridgeLeftoverName, setEditFridgeLeftoverName,
+        editFridgeName, setEditFridgeName,
         editFridgeLeftoverDays, setEditFridgeLeftoverDays, adjustEditFridgeLeftoverDays,
         editFridgeExpirationValue, setEditFridgeExpirationValue,
         editFridgeExpirationUnit, setEditFridgeExpirationUnit,

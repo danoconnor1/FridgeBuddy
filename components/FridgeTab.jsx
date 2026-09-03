@@ -2,18 +2,26 @@ function FridgeTab({
     items, catalogItems, filteredFridgeItems, fridgeItemGroups, fridgeSearch, setFridgeSearch,
     fridgeSort, setFridgeSort, isSeasoningFridgeItem, usesFridgeCapacityTracking,
     canToggleFridgeTrackingMode, setFridgeItemTrackingMode, isLeftoverFridgeItem,
-    removeItem, lowerFridgeItemSeasoningStatus, openEmptyFridgeConfirm, openEditFridgeItemModal, openAddLeftoverModal, setActiveTab,
+    removeItem, lowerFridgeItemSeasoningStatus, improveFridgeItemExpiration, openEmptyFridgeConfirm, openEditFridgeItemModal, openAddLeftoverModal, setActiveTab,
     haulImportPaste, setHaulImportPaste,
     haulImportPreview, haulImportError,
     haulImportSuccess,
     previewHaulImport, confirmHaulImport, clearHaulImport
 }) {
+    const { useState, useEffect } = React;
     const {
         formatExpiresIn, formatSeasoningStatus, getDaysUntilExpiry, normalizeSeasoningStatus,
         getSeasoningStatusColor, getItemQuantityDisplay, getFridgeTrackingMode,
-        estimateFridgeItemCalories, formatCalories, isFoodCategory
+        estimateFridgeItemCalories, formatCalories, isFoodCategory,
+        canImproveFridgeItemExpiration
     } = window.FB;
-    const { ImportHaulSection } = window.FBComponents;
+    const { ImportHaulSection, SectionHeroHeader, AddPanelModal } = window.FBComponents;
+    const [addPanelOpen, setAddPanelOpen] = useState(false);
+
+    useEffect(() => {
+        if (!haulImportSuccess) return;
+        setAddPanelOpen(false);
+    }, [haulImportSuccess]);
 
     const getItemCategory = (item) => {
         if (isLeftoverFridgeItem(item)) return 'leftovers';
@@ -50,6 +58,7 @@ function FridgeTab({
         const quantityColor = usesCapacity
             ? getSeasoningStatusColor(capacityStatus)
             : 'var(--text-secondary)';
+        const canImproveExpiration = canImproveFridgeItemExpiration(item, catalogItems);
 
         const renderCapacityStatusControl = (className) => (
             <button
@@ -60,6 +69,18 @@ function FridgeTab({
                 aria-label={`Amount left for ${item.name}: ${quantityLabel}. Click to lower.`}
             >
                 {quantityLabel}
+            </button>
+        );
+
+        const renderExpirationStatusControl = (className) => (
+            <button
+                type="button"
+                className={className}
+                onClick={() => improveFridgeItemExpiration(item.id)}
+                style={{ color: statusColor }}
+                aria-label={`${statusText} for ${item.name}. Click to improve freshness.`}
+            >
+                {statusText}
             </button>
         );
 
@@ -102,6 +123,8 @@ function FridgeTab({
                     <i className="ti ti-circle-filled" style={{ fontSize: '7px', color: statusColor }} aria-hidden="true"></i>
                     {isCatalogSeasoning ? (
                         renderCapacityStatusControl('fridge-column-status-btn fridge-column-status-btn--status-row')
+                    ) : canImproveExpiration ? (
+                        renderExpirationStatusControl('fridge-column-status-btn fridge-column-status-btn--status-row')
                     ) : (
                         <span style={{ color: statusColor }}>{statusText}</span>
                     )}
@@ -145,68 +168,74 @@ function FridgeTab({
         );
     };
 
-    return (
-        <div>
-            <section className="meals-section fridge-add-section">
-                <div className="meals-section-box">
-                    <h2 className="meals-section-title">Add to fridge</h2>
+    const addPanelContent = (
+        <div className="meals-section-box">
+            <div className="meals-add-columns">
+                <div className="meals-add-option">
+                    <p className="meals-option-label">Option A: Using AI</p>
+                    <ImportHaulSection
+                        haulImportPaste={haulImportPaste}
+                        setHaulImportPaste={setHaulImportPaste}
+                        haulImportPreview={haulImportPreview}
+                        haulImportError={haulImportError}
+                        haulImportSuccess={haulImportSuccess}
+                        previewHaulImport={previewHaulImport}
+                        confirmHaulImport={confirmHaulImport}
+                        clearHaulImport={clearHaulImport}
+                    />
+                </div>
 
-                    <div className="meals-add-columns">
-                        <div className="meals-add-option">
-                            <p className="meals-option-label">Option A: Using AI</p>
-                            <ImportHaulSection
-                                haulImportPaste={haulImportPaste}
-                                setHaulImportPaste={setHaulImportPaste}
-                                haulImportPreview={haulImportPreview}
-                                haulImportError={haulImportError}
-                                haulImportSuccess={haulImportSuccess}
-                                previewHaulImport={previewHaulImport}
-                                confirmHaulImport={confirmHaulImport}
-                                clearHaulImport={clearHaulImport}
-                            />
-                        </div>
-
-                        <div className="meals-add-option">
-                            <p className="meals-option-label">Option B: Add leftover</p>
-                            <div className="meals-add-column-card">
-                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0', lineHeight: 1.4 }}>
-                                    Log a leftover meal with a name and expiration date.
-                                </p>
-                                <button
-                                    type="button"
-                                    onClick={openAddLeftoverModal}
-                                    className="meals-add-btn"
-                                    style={{ marginTop: 0 }}
-                                >
-                                    Add leftover
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="meals-add-option">
-                            <p className="meals-option-label">Option C: Add from grocery store</p>
-                            <div className="meals-add-column-card">
-                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0', lineHeight: 1.4 }}>
-                                    Add items from your grocery store catalog to the fridge.
-                                </p>
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveTab('allItems')}
-                                    className="meals-add-btn"
-                                    style={{ marginTop: 0 }}
-                                >
-                                    Go to grocery store
-                                </button>
-                            </div>
-                        </div>
+                <div className="meals-add-option">
+                    <p className="meals-option-label">Option B: Add leftover</p>
+                    <div className="meals-add-column-card">
+                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0', lineHeight: 1.4 }}>
+                            Log a leftover meal with a name and expiration date.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setAddPanelOpen(false);
+                                openAddLeftoverModal();
+                            }}
+                            className="meals-add-btn"
+                            style={{ marginTop: 0 }}
+                        >
+                            Add leftover
+                        </button>
                     </div>
                 </div>
-            </section>
 
+                <div className="meals-add-option">
+                    <p className="meals-option-label">Option C: Add from grocery store</p>
+                    <div className="meals-add-column-card">
+                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0', lineHeight: 1.4 }}>
+                            Add items from your grocery store catalog to the fridge.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setAddPanelOpen(false);
+                                setActiveTab('allItems');
+                            }}
+                            className="meals-add-btn"
+                            style={{ marginTop: 0 }}
+                        >
+                            Go to grocery store
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <div>
             <section className="meals-section fridge-my-section">
-                <div className="fridge-my-header">
-                    <h2 className="meals-section-title">My fridge</h2>
-                    {items.length > 0 && (
+                <SectionHeroHeader
+                    title="My fridge"
+                    addLabel="Add to fridge"
+                    onAdd={() => setAddPanelOpen(true)}
+                    actions={items.length > 0 ? (
                         <button
                             type="button"
                             className="fridge-empty-btn"
@@ -214,8 +243,8 @@ function FridgeTab({
                         >
                             Empty fridge
                         </button>
-                    )}
-                </div>
+                    ) : null}
+                />
 
                 {items.length > 0 && (
                     <div className="fridge-my-controls">
@@ -266,6 +295,14 @@ function FridgeTab({
                     </div>
                 )}
             </section>
+
+            <AddPanelModal
+                title="Add to fridge"
+                open={addPanelOpen}
+                onClose={() => setAddPanelOpen(false)}
+            >
+                {addPanelContent}
+            </AddPanelModal>
         </div>
     );
 }

@@ -11,6 +11,7 @@ function RecipeViewModal({ recipe, catalogItems, items, toggleRecipeShowQuantiti
                     catalogItems={catalogItems}
                     items={items}
                     toggleRecipeShowQuantities={toggleRecipeShowQuantities}
+                    defaultExpanded={true}
                 />
             </div>
         </div>

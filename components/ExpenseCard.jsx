@@ -1,22 +1,27 @@
-function ExpenseCard({ expense, onEdit, onRemove }) {
+function ExpenseCard({ expense, onEdit, onRemove, hideTitle = false }) {
     const { formatExpenseCategory, formatExpensePrice, getExpenseTotal } = window.FB;
     const total = getExpenseTotal(expense);
     const items = expense.items || [];
+    const metaLine = [formatExpenseCategory(expense.category), expense.date].filter(Boolean).join(' · ');
 
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
-                    <div style={{ minWidth: 0 }}>
-                        <p style={{ fontSize: '14px', fontWeight: '600', margin: 0 }}>{expense.title}</p>
-                        <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
-                            {[formatExpenseCategory(expense.category), expense.date].filter(Boolean).join(' · ')}
-                        </p>
+                {!hideTitle ? (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+                        <div style={{ minWidth: 0 }}>
+                            <p style={{ fontSize: '14px', fontWeight: '600', margin: 0 }}>{expense.title}</p>
+                            {metaLine && (
+                                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
+                                    {metaLine}
+                                </p>
+                            )}
+                        </div>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flexShrink: 0 }}>
+                            {formatExpensePrice(total)}
+                        </span>
                     </div>
-                    <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)', flexShrink: 0 }}>
-                        {formatExpensePrice(total)}
-                    </span>
-                </div>
+                ) : null}
                 {items.length > 0 && (
                     <ul className="expense-card-items">
                         {items.map((item, index) => (

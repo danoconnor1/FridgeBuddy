@@ -4,7 +4,7 @@ function EditFridgeItemModal({
     editFridgeQuantity, setEditFridgeQuantity,
     editFridgeUnit, setEditFridgeUnit, adjustEditFridgeQuantity,
     editFridgeSeasoningStatus, adjustEditFridgeSeasoningStatus,
-    editFridgeLeftoverName, setEditFridgeLeftoverName,
+    editFridgeName, setEditFridgeName,
     editFridgeLeftoverDays, setEditFridgeLeftoverDays, adjustEditFridgeLeftoverDays,
     editFridgeExpirationValue, setEditFridgeExpirationValue,
     editFridgeExpirationUnit, setEditFridgeExpirationUnit,
@@ -24,25 +24,27 @@ function EditFridgeItemModal({
     const usesCapacity = usesFridgeCapacityTracking(editingFridgeItem);
     const itemQuantity = parseIngredientQuantity(editFridgeQuantity);
     const seasoningColor = getSeasoningStatusColor(editFridgeSeasoningStatus);
+    const canSave = Boolean(editFridgeName.trim());
 
     return (
         <div style={modalOverlay} onClick={closeEditFridgeItemModal}>
             <div style={{ ...modalCard, maxWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
                 <h3 style={{ fontSize: '18px', fontWeight: '500', margin: '0 0 1rem 0' }}>
-                    Edit {editingFridgeItem.name}
+                    Edit item
                 </h3>
+
+                <label style={{ display: 'block', marginBottom: '12px' }}>
+                    <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Name</span>
+                    <input
+                        type="text"
+                        value={editFridgeName}
+                        onChange={(e) => setEditFridgeName(e.target.value)}
+                        style={{ marginBottom: 0 }}
+                    />
+                </label>
 
                 {isLeftover ? (
                     <>
-                        <label style={{ display: 'block', marginBottom: '12px' }}>
-                            <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Name</span>
-                            <input
-                                type="text"
-                                value={editFridgeLeftoverName}
-                                onChange={(e) => setEditFridgeLeftoverName(e.target.value)}
-                                style={{ marginBottom: 0 }}
-                            />
-                        </label>
                         <label style={{ display: 'block', marginBottom: '1rem' }}>
                             <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Days until expiration</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -200,7 +202,7 @@ function EditFridgeItemModal({
 
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={closeEditFridgeItemModal} style={{ flex: 1, padding: '10px', background: 'transparent', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px' }}>Cancel</button>
-                    <button onClick={saveFridgeItemEdit} style={{ flex: 1, padding: '10px', background: 'var(--fill-accent)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px' }}>Save</button>
+                    <button onClick={saveFridgeItemEdit} disabled={!canSave} style={{ flex: 1, padding: '10px', background: 'var(--fill-accent)', color: 'var(--on-accent)', border: 'none', borderRadius: 'var(--radius)', fontWeight: '500', fontSize: '14px', opacity: canSave ? 1 : 0.5, cursor: canSave ? 'pointer' : 'not-allowed' }}>Save</button>
                 </div>
             </div>
         </div>

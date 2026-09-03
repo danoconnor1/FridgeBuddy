@@ -1,4 +1,4 @@
-function MealCard({ meal, catalogItems, onRemove, onRemoveIngredient, onUpdateCalories }) {
+function MealCard({ meal, catalogItems, onRemove, onRemoveIngredient, onUpdateCalories, hideTitle = false }) {
     const { MealIngredientList, CaloriesField } = window.FBComponents;
     const displayCalories = window.FB.getMealDisplayCalories(meal, catalogItems);
     const loggedTime = meal.loggedAt ? window.FB.formatMealTime(meal.loggedAt) : '';
@@ -6,9 +6,13 @@ function MealCard({ meal, catalogItems, onRemove, onRemoveIngredient, onUpdateCa
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '14px', fontWeight: '500', margin: '0 0 2px 0' }}>{meal.name}</p>
-                {loggedTime && (
-                    <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 8px 0' }}>{loggedTime}</p>
+                {!hideTitle && (
+                    <>
+                        <p style={{ fontSize: '14px', fontWeight: '500', margin: '0 0 2px 0' }}>{meal.name}</p>
+                        {loggedTime && (
+                            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 8px 0' }}>{loggedTime}</p>
+                        )}
+                    </>
                 )}
                 {onUpdateCalories && (
                     <div style={{ marginBottom: '8px', maxWidth: '240px' }}>

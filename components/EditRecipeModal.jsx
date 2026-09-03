@@ -1,5 +1,6 @@
 function EditRecipeModal({
     catalogItems, editRecipeName, setEditRecipeName,
+    editRecipeUrl, setEditRecipeUrl,
     editRecipeCalories, setEditRecipeCalories, adjustEditRecipeCalories,
     editDraftIngredients, setEditDraftIngredients,
     addIngredientRowToList, updateIngredientInList, adjustIngredientQuantityInList, removeIngredientRowFromList,
@@ -14,6 +15,16 @@ function EditRecipeModal({
                 <label style={{ display: 'block', marginBottom: '12px' }}>
                     <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Recipe name</span>
                     <input type="text" placeholder="Recipe name" value={editRecipeName} onChange={(e) => setEditRecipeName(e.target.value)} style={{ marginBottom: 0 }} />
+                </label>
+                <label style={{ display: 'block', marginBottom: '12px' }}>
+                    <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)', marginBottom: '8px' }}>Recipe link (optional)</span>
+                    <input
+                        type="url"
+                        placeholder="https://example.com/recipe"
+                        value={editRecipeUrl}
+                        onChange={(e) => setEditRecipeUrl(e.target.value)}
+                        style={{ marginBottom: 0 }}
+                    />
                 </label>
                 {catalogItems.length === 0 ? (
                     <p style={{ color: 'var(--text-secondary)', fontSize: '14px', margin: '0 0 12px 0' }}>

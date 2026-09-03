@@ -16,9 +16,11 @@ function MoneyTab({
     openAddExpenseCategoryModal,
     openDeleteExpenseCategoryModal
 }) {
-    const { ImportExpenseSection, ExpenseItemEditor, ExpenseChart, ExpenseCard } = window.FBComponents;
-    const { serializeExpenseDraftItems, normalizeExpenseCategory, normalizeExpensePrice } = window.FB;
+    const { useState, useEffect } = React;
+    const { ImportExpenseSection, ExpenseItemEditor, ExpenseChart, ExpenseCard, CollapsibleCard, SectionHeroHeader, AddPanelModal } = window.FBComponents;
+    const { serializeExpenseDraftItems, normalizeExpenseCategory, normalizeExpensePrice, formatExpensePrice, getExpenseTotal, formatExpenseCategory } = window.FB;
     const { compactSelect } = window.FB_STYLES;
+    const [addPanelOpen, setAddPanelOpen] = useState(false);
 
     const serializedItems = serializeExpenseDraftItems(expenseDraftItems);
     const category = normalizeExpenseCategory(expenseCategory);
@@ -32,99 +34,108 @@ function MoneyTab({
         { id: 'all', label: 'All time' }
     ];
 
-    return (
-        <div>
-            <section className="meals-section">
-                <div className="meals-section-box">
-                    <h2 className="meals-section-title">Add expense</h2>
+    useEffect(() => {
+        if (!expenseImportSuccess) return;
+        setAddPanelOpen(false);
+    }, [expenseImportSuccess]);
 
-                    <div className="recipes-add-columns">
-                        <div className="meals-add-option">
-                            <p className="meals-option-label">Option A: Using AI</p>
-                            <ImportExpenseSection
-                                expenseImportPaste={expenseImportPaste}
-                                setExpenseImportPaste={setExpenseImportPaste}
-                                expenseImportPreview={expenseImportPreview}
-                                expenseImportError={expenseImportError}
-                                expenseImportSuccess={expenseImportSuccess}
-                                previewExpenseImport={previewExpenseImport}
-                                confirmExpenseImport={confirmExpenseImport}
-                                clearExpenseImport={clearExpenseImport}
+    const handleAddExpense = () => {
+        if (!canAddExpense) return;
+        addExpense();
+        setAddPanelOpen(false);
+    };
+
+    const addPanelContent = (
+        <div className="meals-section-box">
+            <div className="recipes-add-columns">
+                <div className="meals-add-option">
+                    <p className="meals-option-label">Option A: Using AI</p>
+                    <ImportExpenseSection
+                        expenseImportPaste={expenseImportPaste}
+                        setExpenseImportPaste={setExpenseImportPaste}
+                        expenseImportPreview={expenseImportPreview}
+                        expenseImportError={expenseImportError}
+                        expenseImportSuccess={expenseImportSuccess}
+                        previewExpenseImport={previewExpenseImport}
+                        confirmExpenseImport={confirmExpenseImport}
+                        clearExpenseImport={clearExpenseImport}
+                    />
+                </div>
+
+                <div className="meals-add-option">
+                    <p className="meals-option-label">Option B: Add manually</p>
+                    <div className="meals-add-column-card">
+                        <div className="expense-manual-header">
+                            <input
+                                type="text"
+                                placeholder="Expense title"
+                                value={expenseTitle}
+                                onChange={(e) => setExpenseTitle(e.target.value)}
+                                className="expense-title-input"
+                            />
+                            <input
+                                type="date"
+                                value={expenseDate}
+                                onChange={(e) => setExpenseDate(e.target.value)}
+                                className="expense-date-input"
+                                aria-label="Expense date"
                             />
                         </div>
-
-                        <div className="meals-add-option">
-                            <p className="meals-option-label">Option B: Add manually</p>
-                            <div className="meals-add-column-card">
-                                <div className="expense-manual-header">
-                                    <input
-                                        type="text"
-                                        placeholder="Expense title"
-                                        value={expenseTitle}
-                                        onChange={(e) => setExpenseTitle(e.target.value)}
-                                        className="expense-title-input"
-                                    />
-                                    <input
-                                        type="date"
-                                        value={expenseDate}
-                                        onChange={(e) => setExpenseDate(e.target.value)}
-                                        className="expense-date-input"
-                                        aria-label="Expense date"
-                                    />
-                                </div>
-                                <div className="expense-manual-meta">
-                                    <select
-                                        value={expenseCategory}
-                                        onChange={(e) => setExpenseCategory(e.target.value)}
-                                        style={compactSelect}
-                                        className="expense-category-input"
-                                        aria-label="Expense category"
-                                    >
-                                        <option value="" disabled>Expense category</option>
-                                        {expenseCategories.map(entry => (
-                                            <option key={entry.id} value={entry.id}>{entry.label}</option>
-                                        ))}
-                                    </select>
-                                    <div className="expense-price-field expense-price-field--wide">
-                                        <span className="expense-price-prefix" aria-hidden="true">$</span>
-                                        <input
-                                            type="number"
-                                            min="0.01"
-                                            step="0.01"
-                                            placeholder="0.00"
-                                            value={expensePrice}
-                                            onChange={(e) => setExpensePrice(e.target.value)}
-                                            className="expense-total-price-input"
-                                            aria-label="Expense price in dollars"
-                                        />
-                                    </div>
-                                </div>
-                                <ExpenseItemEditor
-                                    items={expenseDraftItems}
-                                    updateExpenseDraftItem={updateExpenseDraftItem}
-                                    removeExpenseDraftItem={removeExpenseDraftItem}
+                        <div className="expense-manual-meta">
+                            <select
+                                value={expenseCategory}
+                                onChange={(e) => setExpenseCategory(e.target.value)}
+                                style={compactSelect}
+                                className="expense-category-input"
+                                aria-label="Expense category"
+                            >
+                                <option value="" disabled>Expense category</option>
+                                {expenseCategories.map(entry => (
+                                    <option key={entry.id} value={entry.id}>{entry.label}</option>
+                                ))}
+                            </select>
+                            <div className="expense-price-field expense-price-field--wide">
+                                <span className="expense-price-prefix" aria-hidden="true">$</span>
+                                <input
+                                    type="number"
+                                    min="0.01"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    value={expensePrice}
+                                    onChange={(e) => setExpensePrice(e.target.value)}
+                                    className="expense-total-price-input"
+                                    aria-label="Expense price in dollars"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={addExpenseItemRow}
-                                    className="meals-dashed-btn"
-                                >
-                                    Add item
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={addExpense}
-                                    disabled={!canAddExpense}
-                                    className="meals-add-btn"
-                                >
-                                    Add expense
-                                </button>
                             </div>
                         </div>
+                        <ExpenseItemEditor
+                            items={expenseDraftItems}
+                            updateExpenseDraftItem={updateExpenseDraftItem}
+                            removeExpenseDraftItem={removeExpenseDraftItem}
+                        />
+                        <button
+                            type="button"
+                            onClick={addExpenseItemRow}
+                            className="meals-dashed-btn"
+                        >
+                            Add item
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleAddExpense}
+                            disabled={!canAddExpense}
+                            className="meals-add-btn"
+                        >
+                            Add expense
+                        </button>
                     </div>
                 </div>
-            </section>
+            </div>
+        </div>
+    );
 
+    return (
+        <div>
             <section className="meals-section expense-category-action">
                 <button
                     type="button"
@@ -143,8 +154,8 @@ function MoneyTab({
             </section>
 
             <section className="meals-section">
+                <SectionHeroHeader title="Expense chart" />
                 <div className="meals-section-box">
-                    <h2 className="meals-section-title">Expense chart</h2>
                     <div className="expense-chart-filters" role="group" aria-label="Chart time range">
                         {chartFilters.map(option => (
                             <button
@@ -163,17 +174,46 @@ function MoneyTab({
             </section>
 
             <section className="meals-section">
-                <h2 className="meals-section-title">Your expenses</h2>
+                <SectionHeroHeader
+                    title="Your expenses"
+                    addLabel="Add expense"
+                    onAdd={() => setAddPanelOpen(true)}
+                />
                 {expenses.length === 0 ? (
                     <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>No expenses logged yet</p>
                 ) : (
-                    [...expenses].reverse().map(expense => (
-                        <div key={expense.id} className="fb-card">
-                            <ExpenseCard expense={expense} onEdit={openEditExpenseModal} onRemove={removeExpense} />
-                        </div>
-                    ))
+                    [...expenses].reverse().map(expense => {
+                        const total = getExpenseTotal(expense);
+                        const subtitle = [formatExpenseCategory(expense.category), expense.date]
+                            .filter(Boolean)
+                            .join(' · ');
+                        return (
+                            <div key={expense.id} className="fb-card fb-card--collapsible">
+                                <CollapsibleCard
+                                    title={expense.title}
+                                    subtitle={subtitle || undefined}
+                                    meta={formatExpensePrice(total)}
+                                >
+                                    <ExpenseCard
+                                        expense={expense}
+                                        hideTitle
+                                        onEdit={openEditExpenseModal}
+                                        onRemove={removeExpense}
+                                    />
+                                </CollapsibleCard>
+                            </div>
+                        );
+                    })
                 )}
             </section>
+
+            <AddPanelModal
+                title="Add expense"
+                open={addPanelOpen}
+                onClose={() => setAddPanelOpen(false)}
+            >
+                {addPanelContent}
+            </AddPanelModal>
         </div>
     );
 }

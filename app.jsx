@@ -226,6 +226,7 @@ function FridgeBuddy() {
                             isLeftoverFridgeItem={fb.isLeftoverFridgeItem}
                             removeItem={fb.removeItem}
                             lowerFridgeItemSeasoningStatus={fb.lowerFridgeItemSeasoningStatus}
+                            improveFridgeItemExpiration={fb.improveFridgeItemExpiration}
                             openEmptyFridgeConfirm={fb.openEmptyFridgeConfirm}
                             openEditFridgeItemModal={fb.openEditFridgeItemModal}
                             openAddLeftoverModal={fb.openAddLeftoverModal}
@@ -248,6 +249,8 @@ function FridgeBuddy() {
                         items={fb.items}
                         recipeName={fb.recipeName}
                         setRecipeName={fb.setRecipeName}
+                        recipeUrl={fb.recipeUrl}
+                        setRecipeUrl={fb.setRecipeUrl}
                         draftIngredients={fb.draftIngredients}
                         setDraftIngredients={fb.setDraftIngredients}
                         addIngredientRow={fb.addIngredientRow}
@@ -359,8 +362,8 @@ function FridgeBuddy() {
                     adjustEditFridgeQuantity={fb.adjustEditFridgeQuantity}
                     editFridgeSeasoningStatus={fb.editFridgeSeasoningStatus}
                     adjustEditFridgeSeasoningStatus={fb.adjustEditFridgeSeasoningStatus}
-                    editFridgeLeftoverName={fb.editFridgeLeftoverName}
-                    setEditFridgeLeftoverName={fb.setEditFridgeLeftoverName}
+                    editFridgeName={fb.editFridgeName}
+                    setEditFridgeName={fb.setEditFridgeName}
                     editFridgeLeftoverDays={fb.editFridgeLeftoverDays}
                     setEditFridgeLeftoverDays={fb.setEditFridgeLeftoverDays}
                     adjustEditFridgeLeftoverDays={fb.adjustEditFridgeLeftoverDays}
@@ -476,6 +479,8 @@ function FridgeBuddy() {
                     catalogItems={fb.catalogItems}
                     editRecipeName={fb.editRecipeName}
                     setEditRecipeName={fb.setEditRecipeName}
+                    editRecipeUrl={fb.editRecipeUrl}
+                    setEditRecipeUrl={fb.setEditRecipeUrl}
                     editRecipeCalories={fb.editRecipeCalories}
                     setEditRecipeCalories={fb.setEditRecipeCalories}
                     adjustEditRecipeCalories={fb.adjustEditRecipeCalories}

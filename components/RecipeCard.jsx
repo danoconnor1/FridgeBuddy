@@ -1,15 +1,76 @@
 function RecipeCard({
     recipe, catalogItems, items, toggleRecipeShowQuantities,
-    onEdit, onUpdateCalories, onAddToFridge
+    onEdit, onUpdateCalories, onAddToFridge,
+    defaultExpanded = false
 }) {
-    const { RecipeIngredientList, CaloriesField } = window.FBComponents;
-    const displayCalories = window.FB.getRecipeDisplayCalories(recipe, catalogItems);
+    const { RecipeIngredientList, CaloriesField, CollapsibleCard } = window.FBComponents;
+    const {
+        getRecipeDisplayCalories,
+        getRecipeIngredientProgress,
+        getDaysUntilExpiry,
+        formatRecipeLinkLabel
+    } = window.FB;
 
-    return (
+    const displayCalories = getRecipeDisplayCalories(recipe, catalogItems);
+    const progress = getRecipeIngredientProgress(recipe, items, getDaysUntilExpiry, catalogItems);
+    const progressTone = progress.percent >= 100
+        ? 'complete'
+        : progress.percent >= 50
+            ? 'partial'
+            : 'low';
+
+    const progressMeta = recipe.ingredients?.length ? (() => {
+        const size = 40;
+        const stroke = 4;
+        const radius = (size - stroke) / 2;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference * (1 - progress.percent / 100);
+
+        return (
+            <span
+                className={`recipe-card-progress recipe-card-progress--${progressTone}`}
+                aria-label={`${progress.percent}% of ingredients in fridge`}
+            >
+                <svg
+                    width={size}
+                    height={size}
+                    viewBox={`0 0 ${size} ${size}`}
+                    className="recipe-card-progress-ring"
+                    aria-hidden="true"
+                >
+                    <circle
+                        className="recipe-card-progress-track"
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        fill="none"
+                        strokeWidth={stroke}
+                    />
+                    <circle
+                        className="recipe-card-progress-fill"
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        fill="none"
+                        strokeWidth={stroke}
+                        strokeLinecap="round"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={offset}
+                        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                    />
+                </svg>
+                <span className="recipe-card-progress-label">{progress.percent}%</span>
+            </span>
+        );
+    })() : null;
+
+    const cardBody = (
         <div className="recipe-card">
             <div className="recipe-card-body">
                 <div className="recipe-card-header">
-                    <p className="recipe-card-name">{recipe.name}</p>
+                    {defaultExpanded && (
+                        <p className="recipe-card-name">{recipe.name}</p>
+                    )}
                     <button
                         type="button"
                         onClick={() => toggleRecipeShowQuantities(recipe.id)}
@@ -45,6 +106,16 @@ function RecipeCard({
                     fridgeItems={items}
                     catalogItems={catalogItems}
                 />
+                {recipe.url && (
+                    <a
+                        href={recipe.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="recipe-card-link"
+                    >
+                        {formatRecipeLinkLabel(recipe.url)}
+                    </a>
+                )}
             </div>
             {(onAddToFridge || onEdit) && (
                 <div className="recipe-card-actions">
@@ -74,6 +145,20 @@ function RecipeCard({
                 </div>
             )}
         </div>
+    );
+
+    if (defaultExpanded) {
+        return cardBody;
+    }
+
+    return (
+        <CollapsibleCard
+            title={recipe.name}
+            meta={progressMeta}
+            defaultExpanded={false}
+        >
+            {cardBody}
+        </CollapsibleCard>
     );
 }
 
