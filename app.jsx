@@ -226,7 +226,7 @@ function FridgeBuddy() {
                             isLeftoverFridgeItem={fb.isLeftoverFridgeItem}
                             removeItem={fb.removeItem}
                             lowerFridgeItemSeasoningStatus={fb.lowerFridgeItemSeasoningStatus}
-                            improveFridgeItemExpiration={fb.improveFridgeItemExpiration}
+                            cycleFridgeItemExpiration={fb.cycleFridgeItemExpiration}
                             openEmptyFridgeConfirm={fb.openEmptyFridgeConfirm}
                             openEditFridgeItemModal={fb.openEditFridgeItemModal}
                             openAddLeftoverModal={fb.openAddLeftoverModal}

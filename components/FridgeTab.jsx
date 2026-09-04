@@ -2,7 +2,7 @@ function FridgeTab({
     items, catalogItems, filteredFridgeItems, fridgeItemGroups, fridgeSearch, setFridgeSearch,
     fridgeSort, setFridgeSort, isSeasoningFridgeItem, usesFridgeCapacityTracking,
     canToggleFridgeTrackingMode, setFridgeItemTrackingMode, isLeftoverFridgeItem,
-    removeItem, lowerFridgeItemSeasoningStatus, improveFridgeItemExpiration, openEmptyFridgeConfirm, openEditFridgeItemModal, openAddLeftoverModal, setActiveTab,
+    removeItem, lowerFridgeItemSeasoningStatus, cycleFridgeItemExpiration, openEmptyFridgeConfirm, openEditFridgeItemModal, openAddLeftoverModal, setActiveTab,
     haulImportPaste, setHaulImportPaste,
     haulImportPreview, haulImportError,
     haulImportSuccess,
@@ -13,7 +13,7 @@ function FridgeTab({
         formatExpiresIn, formatSeasoningStatus, getDaysUntilExpiry, normalizeSeasoningStatus,
         getSeasoningStatusColor, getItemQuantityDisplay, getFridgeTrackingMode,
         estimateFridgeItemCalories, formatCalories, isFoodCategory,
-        canImproveFridgeItemExpiration
+        canCycleFridgeItemExpiration
     } = window.FB;
     const { ImportHaulSection, SectionHeroHeader, AddPanelModal } = window.FBComponents;
     const [addPanelOpen, setAddPanelOpen] = useState(false);
@@ -58,7 +58,7 @@ function FridgeTab({
         const quantityColor = usesCapacity
             ? getSeasoningStatusColor(capacityStatus)
             : 'var(--text-secondary)';
-        const canImproveExpiration = canImproveFridgeItemExpiration(item, catalogItems);
+        const canCycleExpiration = canCycleFridgeItemExpiration(item, catalogItems);
 
         const renderCapacityStatusControl = (className) => (
             <button
@@ -76,9 +76,9 @@ function FridgeTab({
             <button
                 type="button"
                 className={className}
-                onClick={() => improveFridgeItemExpiration(item.id)}
+                onClick={() => cycleFridgeItemExpiration(item.id)}
                 style={{ color: statusColor }}
-                aria-label={`${statusText} for ${item.name}. Click to improve freshness.`}
+                aria-label={`${statusText} for ${item.name}. Click to cycle expiration status.`}
             >
                 {statusText}
             </button>
@@ -123,7 +123,7 @@ function FridgeTab({
                     <i className="ti ti-circle-filled" style={{ fontSize: '7px', color: statusColor }} aria-hidden="true"></i>
                     {isCatalogSeasoning ? (
                         renderCapacityStatusControl('fridge-column-status-btn fridge-column-status-btn--status-row')
-                    ) : canImproveExpiration ? (
+                    ) : canCycleExpiration ? (
                         renderExpirationStatusControl('fridge-column-status-btn fridge-column-status-btn--status-row')
                     ) : (
                         <span style={{ color: statusColor }}>{statusText}</span>

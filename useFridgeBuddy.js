@@ -1328,11 +1328,11 @@ function useFridgeBuddy() {
         }));
     };
 
-    const improveFridgeItemExpiration = (itemId) => {
+    const cycleFridgeItemExpiration = (itemId) => {
         setItems(prev => prev.map(item => {
             if (item.id !== itemId || !item.expiry) return item;
-            if (!FB.canImproveFridgeItemExpiration(item, catalogItems)) return item;
-            return { ...item, expiry: FB.improveFridgeItemExpiration(item.expiry) };
+            if (!FB.canCycleFridgeItemExpiration(item, catalogItems)) return item;
+            return { ...item, expiry: FB.cycleFridgeItemExpiration(item.expiry) };
         }));
     };
 
@@ -2011,7 +2011,7 @@ function useFridgeBuddy() {
         openAddCatalogModal, closeAddCatalogModal, addCatalogItem,
         openEditCatalogModal, closeEditCatalogModal, saveCatalogItemEdit, deleteCatalogItemFromModal,
         addFromCatalogRow, confirmDuplicateFridgeAdd, cancelDuplicateFridgeAdd,
-        removeItem, lowerFridgeItemSeasoningStatus, improveFridgeItemExpiration,
+        removeItem, lowerFridgeItemSeasoningStatus, cycleFridgeItemExpiration,
         openEmptyFridgeConfirm,
         openAddLeftoverModal, closeAddLeftoverModal, addLeftover,
         addLeftoverModalOpen, leftoverName, setLeftoverName,

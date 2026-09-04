@@ -545,6 +545,8 @@
             box-shadow:
                 0 1px 0 color-mix(in srgb, #ffffff 35%, transparent) inset,
                 0 10px 24px color-mix(in srgb, var(--fill-accent) 10%, transparent);
+            flex-wrap: wrap;
+            min-width: 0;
         }
         .fb-section-hero-title {
             margin: 0;
@@ -553,12 +555,18 @@
             letter-spacing: -0.02em;
             color: var(--text-primary);
             line-height: 1.15;
+            flex: 1 1 12rem;
+            min-width: 0;
         }
         .fb-section-hero-actions {
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: 0.5rem;
-            flex-shrink: 0;
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: 100%;
+            flex-wrap: wrap;
         }
         .fb-section-hero-add-btn {
             padding: 0.55rem 0.95rem;
@@ -842,6 +850,71 @@
             width: auto;
         }
         .home-dashboard-section {
+            margin-bottom: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .home-collapsible-section {
+            margin-bottom: 0.75rem;
+        }
+        .home-collapsible-section-shell {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface-1);
+            overflow: hidden;
+        }
+        .home-collapsible-section-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.95rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            text-align: left;
+            cursor: pointer;
+        }
+        .home-collapsible-section-chevron {
+            color: var(--fill-accent);
+            font-size: 14px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .home-collapsible-section-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex: 1;
+        }
+        .home-collapsible-section-title {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .home-collapsible-section-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.3;
+        }
+        .home-collapsible-section-meta {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+        .home-collapsible-section-content {
+            padding: 0 1rem 1rem 1rem;
+        }
+        .home-collapsible-section-content .home-column-card {
+            min-height: 0;
+        }
+        .home-my-grocery-section {
+            margin-bottom: 1rem;
+        }
+        .home-my-grocery-section .meals-section-box {
             margin-bottom: 0;
         }
         .home-dashboard-columns {
@@ -2789,16 +2862,30 @@
 
             .fb-section-hero {
                 padding: 0.85rem 0.95rem;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
             }
 
             .fb-section-hero-title {
                 font-size: 1.25rem;
+                flex: none;
             }
 
             .fb-section-hero-actions {
                 width: 100%;
-                justify-content: flex-end;
-                flex-wrap: wrap;
+                justify-content: stretch;
+            }
+
+            .fb-section-hero-add-btn,
+            .fb-section-hero-actions .fridge-empty-btn {
+                flex: 1 1 calc(50% - 0.25rem);
+                min-width: 0;
+                text-align: center;
+            }
+
+            .fb-section-hero-actions .fb-section-hero-add-btn:only-child {
+                flex-basis: 100%;
             }
 
             .fb-add-panel-overlay {

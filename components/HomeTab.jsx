@@ -17,7 +17,7 @@ function HomeTab({
         formatFridgeItemLabel, getDaysUntilExpiry,
         formatExpiresIn, getExpirationTextColor, countFailingIngredients
     } = window.FB;
-    const { GroceryListItemEditor } = window.FBComponents;
+    const { GroceryListItemEditor, CollapsibleSection, SectionHeroHeader } = window.FBComponents;
     const fridgeImportInputRef = useRef(null);
 
     const handleFridgeImportFile = (event) => {
@@ -55,42 +55,12 @@ function HomeTab({
     const hasSuggestedMeals = leftoverItems.length > 0
         || readyToMakeRecipes.length > 0
         || almostThereRecipes.length > 0;
+    const suggestedMealsCount = leftoverItems.length + readyToMakeRecipes.length + almostThereRecipes.length;
     const canAddGroceryListItems = groceryListDraftItems.some(item => item.catalogItemId);
 
     const groceryMetaClassName = (tone) => (
         `home-grocery-list-item-meta${tone ? ` home-grocery-list-item-meta--${tone}` : ''}`
     );
-
-    const renderManualGroceryListItem = (item) => (
-            <li key={item.id} className="home-grocery-list-item">
-                <div className="home-grocery-list-item-info">
-                    <span className="home-grocery-list-item-name">{item.name}</span>
-                    {item.detail && (
-                        <span className={groceryMetaClassName(item.detailTone || 'success')}>
-                            {item.detail}
-                        </span>
-                    )}
-                </div>
-                <div className="home-grocery-list-actions">
-                    <button
-                        type="button"
-                        onClick={() => addGroceryListItemToFridge(item)}
-                        className="home-grocery-list-add"
-                        aria-label={`Add ${item.name} to fridge`}
-                    >
-                        +
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => removeGroceryListItem(item)}
-                        className="home-grocery-list-remove"
-                        aria-label={`Remove ${item.name}`}
-                    >
-                        −
-                    </button>
-                </div>
-            </li>
-        );
 
     const renderSuggestedGroceryListItem = (item) => {
         const onList = isOnManualGroceryList(item);
@@ -153,6 +123,37 @@ function HomeTab({
         );
     };
 
+    const renderManualGroceryListItem = (item) => (
+        <li key={item.id} className="home-grocery-list-item">
+            <div className="home-grocery-list-item-info">
+                <span className="home-grocery-list-item-name">{item.name}</span>
+                {item.detail && (
+                    <span className={groceryMetaClassName(item.detailTone || 'success')}>
+                        {item.detail}
+                    </span>
+                )}
+            </div>
+            <div className="home-grocery-list-actions">
+                <button
+                    type="button"
+                    onClick={() => addGroceryListItemToFridge(item)}
+                    className="home-grocery-list-add"
+                    aria-label={`Add ${item.name} to fridge`}
+                >
+                    +
+                </button>
+                <button
+                    type="button"
+                    onClick={() => removeGroceryListItem(item)}
+                    className="home-grocery-list-remove"
+                    aria-label={`Remove ${item.name}`}
+                >
+                    −
+                </button>
+            </div>
+        </li>
+    );
+
     return (
         <div>
             <div className="home-agent-prompt-bar">
@@ -171,207 +172,213 @@ function HomeTab({
                 </p>
             </div>
 
-            <section className="meals-section home-dashboard-section">
+            <section className="meals-section home-my-grocery-section">
+                <SectionHeroHeader title="My grocery list" />
                 <div className="meals-section-box">
-                    <div className="meals-add-columns home-dashboard-columns">
-                        <div className="meals-add-option">
-                            <p className="meals-option-label">Fridge items expiring soon</p>
-                            <div className="home-column-card">
-                                {!hasFridgeAlerts && (
-                                    <p className="home-column-empty">Nothing expiring soon.</p>
-                                )}
+                    <div className="home-column-card">
+                        {manualGroceryListItems.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={addAllGroceryListItemsToFridge}
+                                className="home-grocery-list-add-all-btn"
+                            >
+                                Add all to fridge
+                            </button>
+                        )}
+                        {manualGroceryListItems.length === 0 ? (
+                            <p className="home-column-empty">No items yet. Add from your grocery store below.</p>
+                        ) : (
+                            <ul className="home-grocery-list">
+                                {manualGroceryListItems.map(renderManualGroceryListItem)}
+                            </ul>
+                        )}
 
-                                {expiringItems.length > 0 && (
-                                    <div className="home-alert-group">
-                                        <p className="home-alert-group-label">Expiring soon</p>
-                                        <ul className="home-alert-list">
-                                            {expiringItems.map(item => {
-                                                const days = getDaysUntilExpiry(item.expiry);
-                                                return (
-                                                    <li key={item.id} className="home-alert-item home-alert-item--warning">
-                                                        <i className="ti ti-circle-filled" aria-hidden="true" />
-                                                        <span>
-                                                            <strong>{formatFridgeItemLabel(item, catalogItems)}</strong>
-                                                            {' — '}
-                                                            {days} day{days !== 1 ? 's' : ''} left
-                                                        </span>
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
+                        {catalogItems.length === 0 ? (
+                            <p className="home-column-empty" style={{ marginTop: '0.75rem' }}>
+                                Add items in the Grocery store first.
+                            </p>
+                        ) : (
+                            <>
+                                <GroceryListItemEditor
+                                    items={groceryListDraftItems}
+                                    catalogItems={catalogItems}
+                                    updateGroceryListDraftItem={updateGroceryListDraftItem}
+                                    removeGroceryListDraftItem={removeGroceryListDraftItem}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={addGroceryListItemRow}
+                                    className="meals-dashed-btn"
+                                >
+                                    Add item
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={addManualGroceryListItems}
+                                    disabled={!canAddGroceryListItems}
+                                    className="meals-add-btn"
+                                >
+                                    Add to list
+                                </button>
+
+                                {recipes.length > 0 && (
+                                    <div className="home-grocery-recipe-add">
+                                        <p className="home-grocery-recipe-add-label">Add from recipe</p>
+                                        <div className="home-grocery-recipe-add-row">
+                                            <select
+                                                value={groceryListRecipeId}
+                                                onChange={(e) => setGroceryListRecipeId(e.target.value)}
+                                                className="home-grocery-recipe-select"
+                                                aria-label="Recipe"
+                                            >
+                                                <option value="">Select recipe</option>
+                                                {recipes.map(recipe => (
+                                                    <option key={recipe.id} value={String(recipe.id)}>
+                                                        {recipe.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <button
+                                                type="button"
+                                                onClick={addRecipeIngredientsToGroceryList}
+                                                disabled={!groceryListRecipeId}
+                                                className="home-grocery-recipe-add-btn"
+                                            >
+                                                Add
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
-
-                                {expiredItems.length > 0 && (
-                                    <div className="home-alert-group">
-                                        <p className="home-alert-group-label">Expired</p>
-                                        <ul className="home-alert-list">
-                                            {expiredItems.map(item => {
-                                                const days = Math.abs(getDaysUntilExpiry(item.expiry));
-                                                return (
-                                                    <li key={item.id} className="home-alert-item home-alert-item--danger">
-                                                        <i className="ti ti-circle-filled" aria-hidden="true" />
-                                                        <span>
-                                                            {formatFridgeItemLabel(item, catalogItems)}
-                                                            {' — expired '}
-                                                            {days} day{days !== 1 ? 's' : ''} ago
-                                                        </span>
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="meals-add-option">
-                            <div className="home-column-card">
-                                <p className="home-grocery-list-section-title">My grocery list</p>
-                                {manualGroceryListItems.length > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={addAllGroceryListItemsToFridge}
-                                        className="home-grocery-list-add-all-btn"
-                                    >
-                                        Add all to fridge
-                                    </button>
-                                )}
-                                {manualGroceryListItems.length === 0 ? (
-                                    <p className="home-column-empty">No items yet. Add from your grocery store below.</p>
-                                ) : (
-                                    <ul className="home-grocery-list">
-                                        {manualGroceryListItems.map(renderManualGroceryListItem)}
-                                    </ul>
-                                )}
-
-                                {catalogItems.length === 0 ? (
-                                    <p className="home-column-empty" style={{ marginTop: '0.75rem' }}>
-                                        Add items in the Grocery store first.
-                                    </p>
-                                ) : (
-                                    <>
-                                        <GroceryListItemEditor
-                                            items={groceryListDraftItems}
-                                            catalogItems={catalogItems}
-                                            updateGroceryListDraftItem={updateGroceryListDraftItem}
-                                            removeGroceryListDraftItem={removeGroceryListDraftItem}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={addGroceryListItemRow}
-                                            className="meals-dashed-btn"
-                                        >
-                                            Add item
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={addManualGroceryListItems}
-                                            disabled={!canAddGroceryListItems}
-                                            className="meals-add-btn"
-                                        >
-                                            Add to list
-                                        </button>
-
-                                        {recipes.length > 0 && (
-                                            <div className="home-grocery-recipe-add">
-                                                <p className="home-grocery-recipe-add-label">Add from recipe</p>
-                                                <div className="home-grocery-recipe-add-row">
-                                                    <select
-                                                        value={groceryListRecipeId}
-                                                        onChange={(e) => setGroceryListRecipeId(e.target.value)}
-                                                        className="home-grocery-recipe-select"
-                                                        aria-label="Recipe"
-                                                    >
-                                                        <option value="">Select recipe</option>
-                                                        {recipes.map(recipe => (
-                                                            <option key={recipe.id} value={String(recipe.id)}>
-                                                                {recipe.name}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                    <button
-                                                        type="button"
-                                                        onClick={addRecipeIngredientsToGroceryList}
-                                                        disabled={!groceryListRecipeId}
-                                                        className="home-grocery-recipe-add-btn"
-                                                    >
-                                                        Add
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-
-                                <div className="home-grocery-list-divider" aria-hidden="true" />
-
-                                <p className="home-grocery-list-section-title">Suggested items</p>
-                                {suggestedGroceryListItems.length === 0 ? (
-                                    <p className="home-column-empty">Nothing to suggest right now.</p>
-                                ) : (
-                                    <ul className="home-grocery-list">
-                                        {suggestedGroceryListItems.map(renderSuggestedGroceryListItem)}
-                                    </ul>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="meals-add-option">
-                            <p className="meals-option-label">Suggested meals</p>
-                            <div className="home-column-card">
-                                {!hasSuggestedMeals && recipes.length === 0 && items.length === 0 && catalogItems.length === 0 && (
-                                    <p className="home-column-empty">
-                                        Start by adding items in the Grocery store, then stock your fridge and add recipes.
-                                    </p>
-                                )}
-
-                                {!hasSuggestedMeals && (recipes.length > 0 || items.length > 0 || catalogItems.length > 0) && (
-                                    <p className="home-column-empty">
-                                        No leftovers or recipes ready yet. Stock up on a few more ingredients!
-                                    </p>
-                                )}
-
-                                {leftoverItems.length > 0 && (
-                                    <div className="home-suggestion-group">
-                                        <p className="home-suggestion-group-label">Leftovers</p>
-                                        <ul className="home-suggestion-list">
-                                            {leftoverItems.map(item => (
-                                                <li key={item.id} className="home-suggestion-list-item">
-                                                    <i
-                                                        className="ti ti-circle-filled"
-                                                        style={{ color: getExpirationTextColor(item.expiry) }}
-                                                        aria-hidden="true"
-                                                    />
-                                                    <span>
-                                                        <strong>{item.name}</strong>
-                                                        <span style={{ color: getExpirationTextColor(item.expiry) }}>
-                                                            {' — '}{formatExpiresIn(item.expiry)}
-                                                        </span>
-                                                    </span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-
-                                {readyToMakeRecipes.length > 0 && (
-                                    <div className="home-suggestion-group">
-                                        <p className="home-suggestion-group-label">Ready to make</p>
-                                        {readyToMakeRecipes.map(recipe => renderRecipeSuggestion(recipe, 'ready'))}
-                                    </div>
-                                )}
-
-                                {almostThereRecipes.length > 0 && (
-                                    <div className="home-suggestion-group">
-                                        <p className="home-suggestion-group-label">Nearly ready</p>
-                                        {almostThereRecipes.map(recipe => renderRecipeSuggestion(recipe, 'almost'))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                            </>
+                        )}
                     </div>
                 </div>
+            </section>
+
+            <section className="meals-section home-dashboard-section">
+                <CollapsibleSection
+                    title="Suggested meals"
+                    meta={suggestedMealsCount > 0 ? suggestedMealsCount : null}
+                >
+                    <div className="home-column-card">
+                        {!hasSuggestedMeals && recipes.length === 0 && items.length === 0 && catalogItems.length === 0 && (
+                            <p className="home-column-empty">
+                                Start by adding items in the Grocery store, then stock your fridge and add recipes.
+                            </p>
+                        )}
+
+                        {!hasSuggestedMeals && (recipes.length > 0 || items.length > 0 || catalogItems.length > 0) && (
+                            <p className="home-column-empty">
+                                No leftovers or recipes ready yet. Stock up on a few more ingredients!
+                            </p>
+                        )}
+
+                        {leftoverItems.length > 0 && (
+                            <div className="home-suggestion-group">
+                                <p className="home-suggestion-group-label">Leftovers</p>
+                                <ul className="home-suggestion-list">
+                                    {leftoverItems.map(item => (
+                                        <li key={item.id} className="home-suggestion-list-item">
+                                            <i
+                                                className="ti ti-circle-filled"
+                                                style={{ color: getExpirationTextColor(item.expiry) }}
+                                                aria-hidden="true"
+                                            />
+                                            <span>
+                                                <strong>{item.name}</strong>
+                                                <span style={{ color: getExpirationTextColor(item.expiry) }}>
+                                                    {' — '}{formatExpiresIn(item.expiry)}
+                                                </span>
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {readyToMakeRecipes.length > 0 && (
+                            <div className="home-suggestion-group">
+                                <p className="home-suggestion-group-label">Ready to make</p>
+                                {readyToMakeRecipes.map(recipe => renderRecipeSuggestion(recipe, 'ready'))}
+                            </div>
+                        )}
+
+                        {almostThereRecipes.length > 0 && (
+                            <div className="home-suggestion-group">
+                                <p className="home-suggestion-group-label">Nearly ready</p>
+                                {almostThereRecipes.map(recipe => renderRecipeSuggestion(recipe, 'almost'))}
+                            </div>
+                        )}
+                    </div>
+                </CollapsibleSection>
+
+                <CollapsibleSection
+                    title="Suggested grocery list"
+                    meta={suggestedGroceryListItems.length > 0 ? suggestedGroceryListItems.length : null}
+                >
+                    <div className="home-column-card">
+                        {suggestedGroceryListItems.length === 0 ? (
+                            <p className="home-column-empty">Nothing to suggest right now.</p>
+                        ) : (
+                            <ul className="home-grocery-list">
+                                {suggestedGroceryListItems.map(renderSuggestedGroceryListItem)}
+                            </ul>
+                        )}
+                    </div>
+                </CollapsibleSection>
+
+                <CollapsibleSection
+                    title="Fridge items expiring soon"
+                    meta={hasFridgeAlerts ? expiringItems.length + expiredItems.length : null}
+                >
+                    <div className="home-column-card">
+                        {!hasFridgeAlerts && (
+                            <p className="home-column-empty">Nothing expiring soon.</p>
+                        )}
+
+                        {expiringItems.length > 0 && (
+                            <div className="home-alert-group">
+                                <p className="home-alert-group-label">Expiring soon</p>
+                                <ul className="home-alert-list">
+                                    {expiringItems.map(item => {
+                                        const days = getDaysUntilExpiry(item.expiry);
+                                        return (
+                                            <li key={item.id} className="home-alert-item home-alert-item--warning">
+                                                <i className="ti ti-circle-filled" aria-hidden="true" />
+                                                <span>
+                                                    <strong>{formatFridgeItemLabel(item, catalogItems)}</strong>
+                                                    {' — '}
+                                                    {days} day{days !== 1 ? 's' : ''} left
+                                                </span>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        )}
+
+                        {expiredItems.length > 0 && (
+                            <div className="home-alert-group">
+                                <p className="home-alert-group-label">Expired</p>
+                                <ul className="home-alert-list">
+                                    {expiredItems.map(item => {
+                                        const days = Math.abs(getDaysUntilExpiry(item.expiry));
+                                        return (
+                                            <li key={item.id} className="home-alert-item home-alert-item--danger">
+                                                <i className="ti ti-circle-filled" aria-hidden="true" />
+                                                <span>
+                                                    {formatFridgeItemLabel(item, catalogItems)}
+                                                    {' — expired '}
+                                                    {days} day{days !== 1 ? 's' : ''} ago
+                                                </span>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                </CollapsibleSection>
             </section>
 
             <section className="home-fridge-backup-section">

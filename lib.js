@@ -28,6 +28,7 @@
     ];
 
     const SEASONING_STATUS_ORDER = ['almost-empty', 'below-half', 'half', 'plenty-left', 'full'];
+    const FRIDGE_EXPIRATION_STATUS_ORDER = ['expired', 'expiring-soon', 'fresh'];
 
     const DEFAULT_CATALOG = [
         { name: 'Ground beef', category: 'meat', defaultUnit: 'lb', defaultQuantity: 1, caloriesPerDefault: 1500, expirationDays: 2 },
@@ -866,16 +867,25 @@
             if (days <= 3) return 'expiring-soon';
             return 'fresh';
         },
-        canImproveFridgeItemExpiration(item, catalogItems) {
+        canCycleFridgeItemExpiration(item, catalogItems) {
             if (window.FB.isSeasoningFridgeItem(item, catalogItems)) return false;
-            if (!item.expiry) return false;
-            return window.FB.getDaysUntilExpiry(item.expiry) <= 3;
+            return Boolean(item.expiry);
         },
-        improveFridgeItemExpiration(expiryDate) {
+        getFridgeExpirationStatusFromDays(days) {
+            if (days < 0) return 'expired';
+            if (days <= 3) return 'expiring-soon';
+            return 'fresh';
+        },
+        cycleFridgeItemExpiration(expiryDate) {
             const days = window.FB.getDaysUntilExpiry(expiryDate);
-            if (days > 3) return expiryDate;
-            if (days < 0) return window.FB.addExpirationFromToday(3, 'days');
-            return window.FB.addExpirationFromToday(4, 'days');
+            const bucket = window.FB.getFridgeExpirationStatusFromDays(days);
+            const current = FRIDGE_EXPIRATION_STATUS_ORDER.indexOf(bucket);
+            const nextBucket = FRIDGE_EXPIRATION_STATUS_ORDER[
+                (current - 1 + FRIDGE_EXPIRATION_STATUS_ORDER.length) % FRIDGE_EXPIRATION_STATUS_ORDER.length
+            ];
+            if (nextBucket === 'expired') return window.FB.addExpirationFromToday(-1, 'days');
+            if (nextBucket === 'expiring-soon') return window.FB.addExpirationFromToday(2, 'days');
+            return window.FB.addExpirationFromToday(7, 'days');
         },
         compareFridgeItemsByUrgency(a, b, catalogItems) {
             if (window.FB.isSeasoningFridgeItem(a, catalogItems) && window.FB.isSeasoningFridgeItem(b, catalogItems)) {
