@@ -793,6 +793,33 @@
             }
             return date.toISOString().split('T')[0];
         },
+        generateId() {
+            return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+        },
+        fridgeItemIdMatches(item, itemId) {
+            if (item == null || itemId == null || itemId === '') return false;
+            return String(item.id) === String(itemId);
+        },
+        ensureUniqueFridgeItemIds(items) {
+            if (!Array.isArray(items)) return [];
+            const seen = new Set();
+            return items.map(item => {
+                if (!item || item.id == null) {
+                    return { ...item, id: window.FB.generateId() };
+                }
+                let id = item.id;
+                if (!seen.has(String(id))) {
+                    seen.add(String(id));
+                    return item;
+                }
+                let nextId = window.FB.generateId();
+                while (seen.has(String(nextId))) {
+                    nextId = window.FB.generateId();
+                }
+                seen.add(String(nextId));
+                return { ...item, id: nextId };
+            });
+        },
         adjustDays(current, delta) {
             return Math.max(1, Number(current) + delta);
         },
@@ -1258,7 +1285,7 @@
             return {
                 bundle: {
                     catalog,
-                    items: itemsRaw || [],
+                    items: itemsRaw ? window.FB.ensureUniqueFridgeItemIds(itemsRaw) : [],
                     recipes: asArray(parsed.recipes) || [],
                     meals: asArray(parsed.meals) || [],
                     expenses: (asArray(parsed.expenses) || []).map(expense => window.FB.normalizeStoredExpense(expense)),

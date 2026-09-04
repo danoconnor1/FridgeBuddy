@@ -86,7 +86,6 @@ function FridgeTab({
 
         return (
             <div
-                key={item.id}
                 className="fridge-column-card"
                 data-category={isFoodCategory(itemCategory) ? itemCategory : undefined}
             >
@@ -287,7 +286,11 @@ function FridgeTab({
                                 >
                                     <h4 className="fridge-column-heading">{group.label}</h4>
                                     <div className="fridge-column-items">
-                                        {group.items.map(renderFridgeItemCard)}
+                                        {group.items.map((item, index) => (
+                                            <React.Fragment key={`${group.key}-${item.id}-${index}`}>
+                                                {renderFridgeItemCard(item)}
+                                            </React.Fragment>
+                                        ))}
                                     </div>
                                 </section>
                             ))}

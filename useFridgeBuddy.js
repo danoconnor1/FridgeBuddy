@@ -23,13 +23,21 @@ function useFridgeBuddy() {
         estimateCaloriesFromIngredients, parseCalories, resolveCalories, adjustCalories,
         getRecipeDisplayCalories,
         buildFridgeExportBundle, parseFridgeImportText, downloadFridgeExportBundle,
-        generateSessionRandomGroceryItems
+        generateSessionRandomGroceryItems,
+        generateId, fridgeItemIdMatches, ensureUniqueFridgeItemIds
     } = FB;
+
+    const matchesFridgeItemId = (item, itemId) => fridgeItemIdMatches(item, itemId);
 
     const [catalogItems, setCatalogItems] = useState(() => loadCatalogItems());
     const [items, setItems] = useState(() => {
         const saved = localStorage.getItem('fridgeItems');
-        return saved ? JSON.parse(saved) : [];
+        if (!saved) return [];
+        try {
+            return ensureUniqueFridgeItemIds(JSON.parse(saved));
+        } catch {
+            return [];
+        }
     });
     const [recipes, setRecipes] = useState(() => {
         const saved = localStorage.getItem('fridgeRecipes');
@@ -211,7 +219,7 @@ function useFridgeBuddy() {
     const groupedCatalogItems = groupItemsByCategory(filteredCatalogItems, getCatalogItemCategory);
     const fridgeItemGroups = buildFridgeItemGroups(filteredFridgeItems, fridgeSort, catalogItems, getFridgeItemCategory);
     const editingFridgeItem = editFridgeItemId != null
-        ? items.find(item => item.id === editFridgeItemId) ?? null
+        ? items.find(item => matchesFridgeItemId(item, editFridgeItemId)) ?? null
         : null;
 
     const getCatalogDraft = (item) => catalogDrafts[item.id] || (
@@ -458,16 +466,16 @@ function useFridgeBuddy() {
     const addCatalogItemToFridge = (catalogItem, quantity = null, unit = '', expirationValue = null, expirationUnit = 'days', seasoningStatus = null) => {
         if (!catalogItem) return;
         if (isSeasoningCatalogItem(catalogItem)) {
-            setItems([...items, {
-                id: Date.now(),
+            setItems(prev => [...prev, {
+                id: generateId(),
                 catalogItemId: catalogItem.id,
                 name: catalogItem.name,
                 seasoningStatus: seasoningStatus || catalogItem.defaultStatus || 'full'
             }]);
             return;
         }
-        setItems([...items, {
-            id: Date.now(),
+        setItems(prev => [...prev, {
+            id: generateId(),
             catalogItemId: catalogItem.id,
             name: catalogItem.name,
             expiry: addExpirationFromToday(expirationValue ?? catalogItem.expirationDays, expirationUnit),
@@ -550,7 +558,7 @@ function useFridgeBuddy() {
 
         const { bundle } = result;
         setCatalogItems(bundle.catalog);
-        setItems(bundle.items);
+        setItems(ensureUniqueFridgeItemIds(bundle.items));
         setRecipes(bundle.recipes);
         setMeals(bundle.meals);
         setExpenses(bundle.expenses);
@@ -606,7 +614,7 @@ function useFridgeBuddy() {
         let nextCatalog = [...catalogItems];
         const newFridgeItems = [];
         const catalogByName = new Map();
-        let nextId = Date.now();
+        let nextCatalogId = Date.now();
 
         toImport.forEach(row => {
             let catalogItem = row.catalogItem;
@@ -615,7 +623,7 @@ function useFridgeBuddy() {
                 if (catalogByName.has(normalizedName)) {
                     catalogItem = catalogByName.get(normalizedName);
                 } else {
-                    catalogItem = createCatalogItemFromImportRow(row, nextId++);
+                    catalogItem = createCatalogItemFromImportRow(row, nextCatalogId++);
                     catalogByName.set(normalizedName, catalogItem);
                     nextCatalog = [...nextCatalog, catalogItem];
                 }
@@ -624,14 +632,14 @@ function useFridgeBuddy() {
 
             if (isSeasoningCatalogItem(catalogItem)) {
                 newFridgeItems.push({
-                    id: nextId++,
+                    id: generateId(),
                     catalogItemId: catalogItem.id,
                     name: catalogItem.name,
                     seasoningStatus: catalogItem.defaultStatus || 'full'
                 });
             } else {
                 newFridgeItems.push({
-                    id: nextId++,
+                    id: generateId(),
                     catalogItemId: catalogItem.id,
                     name: catalogItem.name,
                     expiry: addExpirationFromToday(catalogItem.expirationDays, 'days'),
@@ -1319,21 +1327,36 @@ function useFridgeBuddy() {
         }));
     };
 
-    const removeItem = (id) => setItems(items.filter(item => item.id !== id));
+    const removeItem = (id) => setItems(prev => {
+        let removed = false;
+        return prev.filter(item => {
+            if (removed || !matchesFridgeItemId(item, id)) return true;
+            removed = true;
+            return false;
+        });
+    });
 
     const lowerFridgeItemSeasoningStatus = (itemId) => {
-        setItems(prev => prev.map(item => {
-            if (item.id !== itemId) return item;
-            return { ...item, seasoningStatus: FB.lowerSeasoningStatus(item.seasoningStatus) };
-        }));
+        setItems(prev => {
+            let updated = false;
+            return prev.map(item => {
+                if (updated || !matchesFridgeItemId(item, itemId)) return item;
+                updated = true;
+                return { ...item, seasoningStatus: FB.lowerSeasoningStatus(item.seasoningStatus) };
+            });
+        });
     };
 
     const cycleFridgeItemExpiration = (itemId) => {
-        setItems(prev => prev.map(item => {
-            if (item.id !== itemId || !item.expiry) return item;
-            if (!FB.canCycleFridgeItemExpiration(item, catalogItems)) return item;
-            return { ...item, expiry: FB.cycleFridgeItemExpiration(item.expiry) };
-        }));
+        setItems(prev => {
+            let updated = false;
+            return prev.map(item => {
+                if (updated || !matchesFridgeItemId(item, itemId) || !item.expiry) return item;
+                if (!FB.canCycleFridgeItemExpiration(item, catalogItems)) return item;
+                updated = true;
+                return { ...item, expiry: FB.cycleFridgeItemExpiration(item.expiry) };
+            });
+        });
     };
 
     const openEmptyFridgeConfirm = () => setEmptyFridgeConfirmOpen(true);
@@ -1381,8 +1404,8 @@ function useFridgeBuddy() {
             : null;
         const name = leftoverName.trim() || recipe?.name?.trim();
         if (!name) return;
-        setItems([...items, {
-            id: Date.now(),
+        setItems(prev => [...prev, {
+            id: generateId(),
             name,
             category: 'leftovers',
             expiry: addExpirationFromToday(Math.max(1, Number(leftoverExpirationDays) || 1), 'days')
@@ -1391,24 +1414,28 @@ function useFridgeBuddy() {
     };
 
     const setFridgeItemTrackingMode = (itemId, mode) => {
-        setItems(prev => prev.map(item => {
-            if (item.id !== itemId) return item;
-            if (!canToggleFridgeTrackingMode(item)) return item;
-            const catalogItem = catalogItems.find(entry => entry.id === item.catalogItemId);
-            if (mode === 'capacity') {
+        setItems(prev => {
+            let updated = false;
+            return prev.map(item => {
+                if (updated || !matchesFridgeItemId(item, itemId)) return item;
+                if (!canToggleFridgeTrackingMode(item)) return item;
+                updated = true;
+                const catalogItem = catalogItems.find(entry => entry.id === item.catalogItemId);
+                if (mode === 'capacity') {
+                    return {
+                        ...item,
+                        trackingMode: 'capacity',
+                        seasoningStatus: item.seasoningStatus || 'full'
+                    };
+                }
                 return {
                     ...item,
-                    trackingMode: 'capacity',
-                    seasoningStatus: item.seasoningStatus || 'full'
+                    trackingMode: 'amount',
+                    quantity: item.quantity ?? getDefaultCatalogQuantity(catalogItem) ?? 1,
+                    unit: item.unit || catalogItem?.defaultUnit || 'piece'
                 };
-            }
-            return {
-                ...item,
-                trackingMode: 'amount',
-                quantity: item.quantity ?? getDefaultCatalogQuantity(catalogItem) ?? 1,
-                unit: item.unit || catalogItem?.defaultUnit || 'piece'
-            };
-        }));
+            });
+        });
     };
 
     const openEditFridgeItemModal = (item) => {
@@ -1465,42 +1492,46 @@ function useFridgeBuddy() {
         if (editFridgeItemId == null) return;
         const trimmedName = editFridgeName.trim();
         if (!trimmedName) return;
-        setItems(prev => prev.map(item => {
-            if (item.id !== editFridgeItemId) return item;
-            if (isLeftoverFridgeItem(item)) {
-                return {
-                    ...item,
-                    name: trimmedName,
-                    expiry: addExpirationFromToday(Math.max(1, Number(editFridgeLeftoverDays) || 1), 'days')
-                };
-            }
-            if (usesFridgeCapacityTracking(item)) {
-                if (isSeasoningFridgeItem(item)) {
-                    return { ...item, name: trimmedName, seasoningStatus: editFridgeSeasoningStatus };
+        setItems(prev => {
+            let updated = false;
+            return prev.map(item => {
+                if (updated || !matchesFridgeItemId(item, editFridgeItemId)) return item;
+                updated = true;
+                if (isLeftoverFridgeItem(item)) {
+                    return {
+                        ...item,
+                        name: trimmedName,
+                        expiry: addExpirationFromToday(Math.max(1, Number(editFridgeLeftoverDays) || 1), 'days')
+                    };
+                }
+                if (usesFridgeCapacityTracking(item)) {
+                    if (isSeasoningFridgeItem(item)) {
+                        return { ...item, name: trimmedName, seasoningStatus: editFridgeSeasoningStatus };
+                    }
+                    return {
+                        ...item,
+                        name: trimmedName,
+                        trackingMode: 'capacity',
+                        seasoningStatus: editFridgeSeasoningStatus,
+                        expiry: addExpirationFromToday(
+                            Math.max(1, Number(editFridgeExpirationValue) || 1),
+                            editFridgeExpirationUnit
+                        )
+                    };
                 }
                 return {
                     ...item,
                     name: trimmedName,
-                    trackingMode: 'capacity',
-                    seasoningStatus: editFridgeSeasoningStatus,
+                    trackingMode: 'amount',
+                    quantity: roundIngredientQuantity(editFridgeQuantity),
+                    unit: editFridgeUnit || 'piece',
                     expiry: addExpirationFromToday(
                         Math.max(1, Number(editFridgeExpirationValue) || 1),
                         editFridgeExpirationUnit
                     )
                 };
-            }
-            return {
-                ...item,
-                name: trimmedName,
-                trackingMode: 'amount',
-                quantity: roundIngredientQuantity(editFridgeQuantity),
-                unit: editFridgeUnit || 'piece',
-                expiry: addExpirationFromToday(
-                    Math.max(1, Number(editFridgeExpirationValue) || 1),
-                    editFridgeExpirationUnit
-                )
-            };
-        }));
+            });
+        });
         closeEditFridgeItemModal();
     };
 
@@ -1670,14 +1701,13 @@ function useFridgeBuddy() {
 
     const confirmRecipeAddToFridge = () => {
         if (!recipeAddToFridgeRecipe || recipeAddToFridgeDraft.length === 0) return;
-        let nextId = Date.now();
         const newFridgeItems = recipeAddToFridgeDraft
             .filter(row => row.catalogItemId)
             .map(row => FB.buildFridgeItemFromGroceryListEntry({
                 catalogItemId: row.catalogItemId,
                 quantity: row.quantity,
                 unit: row.unit
-            }, catalogItems, nextId++))
+            }, catalogItems, generateId()))
             .filter(Boolean);
         if (newFridgeItems.length === 0) return;
         setItems(prev => [...prev, ...newFridgeItems]);
@@ -1832,7 +1862,7 @@ function useFridgeBuddy() {
     };
 
     const addGroceryListItemToFridge = (groceryItem) => {
-        const fridgeItem = FB.buildFridgeItemFromGroceryListEntry(groceryItem, catalogItems, Date.now());
+        const fridgeItem = FB.buildFridgeItemFromGroceryListEntry(groceryItem, catalogItems, generateId());
         if (!fridgeItem) return;
         setItems(prev => [...prev, fridgeItem]);
         setManualGroceryListItems(prev => prev.filter(entry => entry.id !== groceryItem.id));
@@ -1840,9 +1870,8 @@ function useFridgeBuddy() {
 
     const addAllGroceryListItemsToFridge = () => {
         if (manualGroceryListItems.length === 0) return;
-        let nextId = Date.now();
         const newFridgeItems = manualGroceryListItems
-            .map(item => FB.buildFridgeItemFromGroceryListEntry(item, catalogItems, nextId++))
+            .map(item => FB.buildFridgeItemFromGroceryListEntry(item, catalogItems, generateId()))
             .filter(Boolean);
         if (newFridgeItems.length === 0) return;
         setItems(prev => [...prev, ...newFridgeItems]);
